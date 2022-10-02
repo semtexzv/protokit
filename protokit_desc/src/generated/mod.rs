@@ -1,6 +1,6 @@
-pub mod google;
 pub mod validate;
+pub mod google;
 pub fn register_types(registry: &mut crate::reflect::Registry) {
-    google::register_types(registry);
     validate::register_types(registry);
+    google::register_types(registry);
 }

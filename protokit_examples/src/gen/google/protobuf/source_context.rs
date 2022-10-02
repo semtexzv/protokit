@@ -62,8 +62,8 @@ impl binformat::Decodable for SourceContext {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -78,7 +78,7 @@ impl binformat::Encodable for SourceContext {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.SourceContext"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.file_name, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;

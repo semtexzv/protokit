@@ -21,14 +21,14 @@ pub mod unk;
 pub mod varint;
 
 pub trait Decodable {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: &'b [u8]) -> Result<&'b [u8]>;
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>>;
 }
 
 impl<T> Decodable for Box<T>
 where
     T: Decodable,
 {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: &'b [u8]) -> Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         self.deref_mut().merge_field(tag, buf)
     }
 }
@@ -37,17 +37,20 @@ impl<T> Decodable for Option<Box<T>>
 where
     T: Decodable + Default,
 {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: &'b [u8]) -> Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         self.get_or_insert_with(Default::default)
             .deref_mut()
             .merge_field(tag, buf)
     }
 }
 
-pub type Buffer = Vec<u8>;
+pub type ReadBuffer<'a> = &'a [u8];
+
+pub type WriteBuffer = Vec<u8>;
+
 pub trait Encodable {
     fn qualified_name(&self) -> &'static str;
-    fn encode(&self, buf: &mut Buffer) -> Result<()>;
+    fn encode(&self, buf: &mut WriteBuffer) -> Result<()>;
 }
 
 impl<T> Encodable for Box<T>
@@ -58,7 +61,7 @@ where
         self.deref().qualified_name()
     }
 
-    fn encode(&self, buf: &mut Buffer) -> Result<()> {
+    fn encode(&self, buf: &mut WriteBuffer) -> Result<()> {
         self.deref().encode(buf)
     }
 }
@@ -71,7 +74,7 @@ where
         T::default().qualified_name()
     }
 
-    fn encode(&self, buf: &mut Buffer) -> Result<()> {
+    fn encode(&self, buf: &mut WriteBuffer) -> Result<()> {
         match self {
             Some(v) => Encodable::encode(v, buf),
             None => Ok(()),
@@ -90,14 +93,14 @@ impl Encodable for () {
     }
 
     #[inline(always)]
-    fn encode(&self, _buf: &mut Buffer) -> Result<()> {
+    fn encode(&self, _buf: &mut WriteBuffer) -> Result<()> {
         Ok(())
     }
 }
 
 impl Decodable for () {
     #[inline(never)]
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         match (tag & 0b111) as u8 {
             VINT => {
                 let (_vint, len) = u64::decode_var(buf).unwrap();
@@ -142,8 +145,8 @@ pub fn from_slice<T: Decodable + Default>(buf: &[u8]) -> Result<T> {
 }
 
 #[inline(never)]
-pub fn to_vec<T: Encodable>(v: &T) -> Result<Buffer> {
-    let mut buf = Buffer::new();
+pub fn to_vec<T: Encodable>(v: &T) -> Result<WriteBuffer> {
+    let mut buf = WriteBuffer::new();
     v.encode(&mut buf)?;
     Ok(buf)
 }

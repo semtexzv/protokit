@@ -3,9 +3,8 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-
-use crate as root;
 use crate::*;
+use crate as root;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Empty::default());
 }
@@ -29,12 +28,21 @@ impl textformat::Decodable for Empty {
     }
 }
 impl textformat::Encodable for Empty {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         Ok(())
     }
 }
 impl binformat::Decodable for Empty {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             other => buf = self._unknown.merge_field(tag, buf)?,
@@ -46,7 +54,7 @@ impl binformat::Encodable for Empty {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Empty"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())

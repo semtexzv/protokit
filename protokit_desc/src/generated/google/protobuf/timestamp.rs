@@ -3,9 +3,8 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-
-use crate as root;
 use crate::*;
+use crate as root;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Timestamp::default());
 }
@@ -58,7 +57,12 @@ impl textformat::Decodable for Timestamp {
     }
 }
 impl textformat::Encodable for Timestamp {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.seconds != <i64 as Default>::default() {
             out.indent(pad);
             out.push_str("seconds: ");
@@ -75,7 +79,11 @@ impl textformat::Encodable for Timestamp {
     }
 }
 impl binformat::Decodable for Timestamp {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -99,7 +107,7 @@ impl binformat::Encodable for Timestamp {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Timestamp"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.seconds, 8u32, buf)?;
         Decode::<VInt>::encode(&self.nanos, 16u32, buf)?;

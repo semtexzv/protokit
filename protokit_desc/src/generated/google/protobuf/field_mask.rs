@@ -3,9 +3,8 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-
-use crate as root;
 use crate::*;
+use crate as root;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&FieldMask::default());
 }
@@ -44,7 +43,12 @@ impl textformat::Decodable for FieldMask {
     }
 }
 impl textformat::Encodable for FieldMask {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.paths != <Vec<String> as Default>::default() {
             out.indent(pad);
             out.push_str("paths: ");
@@ -55,11 +59,15 @@ impl textformat::Encodable for FieldMask {
     }
 }
 impl binformat::Decodable for FieldMask {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Repeat<Bytes>>::decode(&mut self.paths, buf)?;
+                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.paths, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -70,9 +78,9 @@ impl binformat::Encodable for FieldMask {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.FieldMask"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat<Bytes>>::encode(&self.paths, 10u32, buf)?;
+        Decode::<Repeat::<Bytes>>::encode(&self.paths, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

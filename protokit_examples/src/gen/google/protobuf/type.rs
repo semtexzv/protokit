@@ -7,8 +7,8 @@ use ::protokit::*;
 use ::protokit as root;
 use root::types::any::*;
 use super::source_context::*;
-use root::types::any::*;
 use super::source_context::*;
+use root::types::any::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Type::default());
     registry.register(&Field::default());
@@ -170,8 +170,8 @@ impl binformat::Decodable for Type {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -204,7 +204,7 @@ impl binformat::Encodable for Type {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Type"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<Repeat::<Nest>>::encode(&self.fields, 18u32, buf)?;
@@ -450,8 +450,8 @@ impl binformat::Decodable for Field {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -508,7 +508,7 @@ impl binformat::Encodable for Field {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Field"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Enum>::encode(&self.kind, 8u32, buf)?;
         Decode::<Enum>::encode(&self.cardinality, 16u32, buf)?;
@@ -658,8 +658,8 @@ impl binformat::Decodable for Enum {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -689,7 +689,7 @@ impl binformat::Encodable for Enum {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Enum"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<Repeat::<Nest>>::encode(&self.enumvalue, 18u32, buf)?;
@@ -794,8 +794,8 @@ impl binformat::Decodable for EnumValue {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -819,7 +819,7 @@ impl binformat::Encodable for EnumValue {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.EnumValue"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<VInt>::encode(&self.number, 16u32, buf)?;
@@ -902,8 +902,8 @@ impl binformat::Decodable for ProtoOption {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -921,7 +921,7 @@ impl binformat::Encodable for ProtoOption {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Option"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<Nest>::encode(&self.value, 18u32, buf)?;

@@ -42,8 +42,8 @@ impl binformat::Decodable for Empty {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: ReadBuffer<'b>,
+    ) -> binformat::Result<ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             other => buf = self._unknown.merge_field(tag, buf)?,

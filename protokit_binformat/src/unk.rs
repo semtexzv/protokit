@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use integer_encoding::VarInt;
 
-use crate::{Buffer, Decodable, Decode, Encodable, Fix};
+use crate::{WriteBuffer, ReadBuffer,  Decodable, Decode, Encodable, Fix};
 
 pub(crate) const VINT: u8 = 0;
 pub(crate) const FIX64: u8 = 1;
@@ -40,7 +40,7 @@ pub struct UnknownFields {
 }
 
 impl Decodable for ProtoField {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         self.tag = tag;
         match (tag & 0b111) as u8 {
             VINT => {
@@ -76,7 +76,7 @@ impl Encodable for ProtoField {
         ""
     }
 
-    fn encode(&self, _buf: &mut crate::Buffer) -> Result<()> {
+    fn encode(&self, _buf: &mut crate::WriteBuffer) -> Result<()> {
         Ok(())
         // match &self.value {
         //     ProtoValue::VInt(v) => VInt::encode(v, self.tag, buf),
@@ -88,7 +88,7 @@ impl Encodable for ProtoField {
 }
 
 impl Decodable for UnknownFields {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let fields = self.fields.get_or_insert_with(Default::default);
         let mut field = ProtoField::default();
         buf = field.merge_field(tag, buf)?;
@@ -102,7 +102,7 @@ impl Encodable for UnknownFields {
         ""
     }
 
-    fn encode(&self, buf: &mut Buffer) -> Result<()> {
+    fn encode(&self, buf: &mut WriteBuffer) -> Result<()> {
         if let Some(f) = &self.fields {
             for f in f.iter() {
                 Encodable::encode(f, buf)?;

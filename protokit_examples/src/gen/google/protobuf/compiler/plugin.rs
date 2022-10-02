@@ -127,8 +127,8 @@ impl binformat::Decodable for Version {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -161,7 +161,7 @@ impl binformat::Encodable for Version {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.compiler.Version"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.major, 8u32, buf)?;
         Decode::<VInt>::encode(&self.minor, 16u32, buf)?;
@@ -285,8 +285,8 @@ impl binformat::Decodable for CodeGeneratorRequest {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -312,7 +312,7 @@ impl binformat::Encodable for CodeGeneratorRequest {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.compiler.CodeGeneratorRequest"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Repeat::<Bytes>>::encode(&self.file_to_generate, 10u32, buf)?;
         Decode::<Bytes>::encode(&self.parameter, 18u32, buf)?;
@@ -416,8 +416,8 @@ impl binformat::Decodable for CodeGeneratorResponse {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -441,7 +441,7 @@ impl binformat::Encodable for CodeGeneratorResponse {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.compiler.CodeGeneratorResponse"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.error, 10u32, buf)?;
         Decode::<VInt>::encode(&self.supported_features, 16u32, buf)?;
@@ -566,8 +566,8 @@ impl binformat::Decodable for CodeGeneratorResponseFile {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -591,7 +591,7 @@ impl binformat::Encodable for CodeGeneratorResponseFile {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.compiler.CodeGeneratorResponse.File"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<Bytes>::encode(&self.insertion_point, 18u32, buf)?;

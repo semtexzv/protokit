@@ -76,7 +76,7 @@ where
 }
 
 impl binformat::Decodable for dyn AnyMessage {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: &'b [u8]) -> crate::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: binformat::ReadBuffer<'b>) -> crate::Result<binformat::ReadBuffer<'b>> {
         self.as_bin_decodable().merge_field(tag, buf)
     }
 }
@@ -85,7 +85,7 @@ impl binformat::Encodable for dyn AnyMessage {
         self.as_bin_encodable().qualified_name()
     }
 
-    fn encode(&self, buf: &mut binformat::Buffer) -> crate::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> crate::Result<()> {
         self.as_bin_encodable().encode(buf)
     }
 }

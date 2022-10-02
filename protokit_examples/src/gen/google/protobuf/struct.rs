@@ -66,8 +66,8 @@ impl binformat::Decodable for Struct {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -82,7 +82,7 @@ impl binformat::Encodable for Struct {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Struct"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Map::<Bytes, Nest>>::encode(&self.fields, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -253,8 +253,8 @@ impl binformat::Decodable for Value {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -311,7 +311,7 @@ impl binformat::Encodable for Value {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Value"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         match &self.kind {
             ValueOneOfKind::NullValue(value) => {
@@ -408,8 +408,8 @@ impl binformat::Decodable for ListValue {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -424,7 +424,7 @@ impl binformat::Encodable for ListValue {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.ListValue"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Repeat::<Nest>>::encode(&self.values, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;

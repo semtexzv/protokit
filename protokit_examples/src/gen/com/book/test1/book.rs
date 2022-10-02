@@ -254,8 +254,8 @@ impl binformat::Decodable for Book {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             26u32 => {
@@ -312,7 +312,7 @@ impl binformat::Encodable for Book {
     fn qualified_name(&self) -> &'static str {
         "com.book.test1.Book"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.title, 26u32, buf)?;
         Decode::<Bytes>::encode(&self.author, 34u32, buf)?;
@@ -401,8 +401,8 @@ impl binformat::Decodable for BookSection {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -417,7 +417,7 @@ impl binformat::Encodable for BookSection {
     fn qualified_name(&self) -> &'static str {
         "com.book.test1.Book.Section"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.contents, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;

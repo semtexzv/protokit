@@ -3,12 +3,13 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-
+use crate::*;
+use crate as root;
 use super::super::google::protobuf::descriptor::*;
 use super::super::google::protobuf::duration::*;
 use super::super::google::protobuf::timestamp::*;
-use crate as root;
-use crate::*;
+use super::super::google::protobuf::duration::*;
+use super::super::google::protobuf::timestamp::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&FieldRules::default());
     registry.register(&FloatRules::default());
@@ -385,7 +386,12 @@ impl textformat::Decodable for FieldRules {
     }
 }
 impl textformat::Encodable for FieldRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.message != <Option<Box<MessageRules>> as Default>::default() {
             out.indent(pad);
             out.push_str("message ");
@@ -525,7 +531,11 @@ impl textformat::Encodable for FieldRules {
     }
 }
 impl binformat::Decodable for FieldRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             138u32 => {
@@ -645,7 +655,7 @@ impl binformat::Encodable for FieldRules {
     fn qualified_name(&self) -> &'static str {
         "validate.FieldRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Nest>::encode(&self.message, 138u32, buf)?;
         match &self.r#type {
@@ -882,7 +892,12 @@ impl textformat::Decodable for FloatRules {
     }
 }
 impl textformat::Encodable for FloatRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<f32> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -935,7 +950,11 @@ impl textformat::Encodable for FloatRules {
     }
 }
 impl binformat::Decodable for FloatRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             13u32 => {
@@ -969,16 +988,16 @@ impl binformat::Decodable for FloatRules {
                 buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
             }
             53u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             61u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -995,15 +1014,15 @@ impl binformat::Encodable for FloatRules {
     fn qualified_name(&self) -> &'static str {
         "validate.FloatRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.r#const, 13u32, buf)?;
         Decode::<Fix>::encode(&self.lt, 21u32, buf)?;
         Decode::<Fix>::encode(&self.lte, 29u32, buf)?;
         Decode::<Fix>::encode(&self.gt, 37u32, buf)?;
         Decode::<Fix>::encode(&self.gte, 45u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.r#in, 53u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.not_in, 61u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -1142,7 +1161,12 @@ impl textformat::Decodable for DoubleRules {
     }
 }
 impl textformat::Encodable for DoubleRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<f64> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -1195,7 +1219,11 @@ impl textformat::Encodable for DoubleRules {
     }
 }
 impl binformat::Decodable for DoubleRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             9u32 => {
@@ -1229,16 +1257,16 @@ impl binformat::Decodable for DoubleRules {
                 buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
             }
             49u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             57u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -1255,15 +1283,15 @@ impl binformat::Encodable for DoubleRules {
     fn qualified_name(&self) -> &'static str {
         "validate.DoubleRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.r#const, 9u32, buf)?;
         Decode::<Fix>::encode(&self.lt, 17u32, buf)?;
         Decode::<Fix>::encode(&self.lte, 25u32, buf)?;
         Decode::<Fix>::encode(&self.gt, 33u32, buf)?;
         Decode::<Fix>::encode(&self.gte, 41u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.r#in, 49u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.not_in, 57u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -1402,7 +1430,12 @@ impl textformat::Decodable for Int32Rules {
     }
 }
 impl textformat::Encodable for Int32Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -1455,7 +1488,11 @@ impl textformat::Encodable for Int32Rules {
     }
 }
 impl binformat::Decodable for Int32Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -1489,16 +1526,16 @@ impl binformat::Decodable for Int32Rules {
                 buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -1515,15 +1552,15 @@ impl binformat::Encodable for Int32Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.Int32Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
         Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
         Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
         Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
         Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -1662,7 +1699,12 @@ impl textformat::Decodable for Int64Rules {
     }
 }
 impl textformat::Encodable for Int64Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<i64> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -1715,7 +1757,11 @@ impl textformat::Encodable for Int64Rules {
     }
 }
 impl binformat::Decodable for Int64Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -1749,16 +1795,16 @@ impl binformat::Decodable for Int64Rules {
                 buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -1775,15 +1821,15 @@ impl binformat::Encodable for Int64Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.Int64Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
         Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
         Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
         Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
         Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -1922,7 +1968,12 @@ impl textformat::Decodable for UInt32Rules {
     }
 }
 impl textformat::Encodable for UInt32Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<u32> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -1975,7 +2026,11 @@ impl textformat::Encodable for UInt32Rules {
     }
 }
 impl binformat::Decodable for UInt32Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -2009,16 +2064,16 @@ impl binformat::Decodable for UInt32Rules {
                 buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -2035,15 +2090,15 @@ impl binformat::Encodable for UInt32Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.UInt32Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
         Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
         Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
         Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
         Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -2182,7 +2237,12 @@ impl textformat::Decodable for UInt64Rules {
     }
 }
 impl textformat::Encodable for UInt64Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<u64> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -2235,7 +2295,11 @@ impl textformat::Encodable for UInt64Rules {
     }
 }
 impl binformat::Decodable for UInt64Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -2269,16 +2333,16 @@ impl binformat::Decodable for UInt64Rules {
                 buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -2295,15 +2359,15 @@ impl binformat::Encodable for UInt64Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.UInt64Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
         Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
         Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
         Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
         Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -2442,7 +2506,12 @@ impl textformat::Decodable for SInt32Rules {
     }
 }
 impl textformat::Encodable for SInt32Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -2495,7 +2564,11 @@ impl textformat::Encodable for SInt32Rules {
     }
 }
 impl binformat::Decodable for SInt32Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -2529,16 +2602,16 @@ impl binformat::Decodable for SInt32Rules {
                 buf = Decode::<SInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -2555,15 +2628,15 @@ impl binformat::Encodable for SInt32Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.SInt32Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<SInt>::encode(&self.r#const, 8u32, buf)?;
         Decode::<SInt>::encode(&self.lt, 16u32, buf)?;
         Decode::<SInt>::encode(&self.lte, 24u32, buf)?;
         Decode::<SInt>::encode(&self.gt, 32u32, buf)?;
         Decode::<SInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat<SInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat<SInt>>::encode(&self.not_in, 56u32, buf)?;
+        Decode::<Repeat::<SInt>>::encode(&self.r#in, 48u32, buf)?;
+        Decode::<Repeat::<SInt>>::encode(&self.not_in, 56u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -2702,7 +2775,12 @@ impl textformat::Decodable for SInt64Rules {
     }
 }
 impl textformat::Encodable for SInt64Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<i64> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -2755,7 +2833,11 @@ impl textformat::Encodable for SInt64Rules {
     }
 }
 impl binformat::Decodable for SInt64Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -2789,16 +2871,16 @@ impl binformat::Decodable for SInt64Rules {
                 buf = Decode::<SInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -2815,15 +2897,15 @@ impl binformat::Encodable for SInt64Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.SInt64Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<SInt>::encode(&self.r#const, 8u32, buf)?;
         Decode::<SInt>::encode(&self.lt, 16u32, buf)?;
         Decode::<SInt>::encode(&self.lte, 24u32, buf)?;
         Decode::<SInt>::encode(&self.gt, 32u32, buf)?;
         Decode::<SInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat<SInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat<SInt>>::encode(&self.not_in, 56u32, buf)?;
+        Decode::<Repeat::<SInt>>::encode(&self.r#in, 48u32, buf)?;
+        Decode::<Repeat::<SInt>>::encode(&self.not_in, 56u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -2962,7 +3044,12 @@ impl textformat::Decodable for Fixed32Rules {
     }
 }
 impl textformat::Encodable for Fixed32Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<u32> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -3015,7 +3102,11 @@ impl textformat::Encodable for Fixed32Rules {
     }
 }
 impl binformat::Decodable for Fixed32Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             13u32 => {
@@ -3049,16 +3140,16 @@ impl binformat::Decodable for Fixed32Rules {
                 buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
             }
             53u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             61u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -3075,15 +3166,15 @@ impl binformat::Encodable for Fixed32Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.Fixed32Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.r#const, 13u32, buf)?;
         Decode::<Fix>::encode(&self.lt, 21u32, buf)?;
         Decode::<Fix>::encode(&self.lte, 29u32, buf)?;
         Decode::<Fix>::encode(&self.gt, 37u32, buf)?;
         Decode::<Fix>::encode(&self.gte, 45u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.r#in, 53u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.not_in, 61u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3222,7 +3313,12 @@ impl textformat::Decodable for Fixed64Rules {
     }
 }
 impl textformat::Encodable for Fixed64Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<u64> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -3275,7 +3371,11 @@ impl textformat::Encodable for Fixed64Rules {
     }
 }
 impl binformat::Decodable for Fixed64Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             9u32 => {
@@ -3309,16 +3409,16 @@ impl binformat::Decodable for Fixed64Rules {
                 buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
             }
             49u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             57u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -3335,15 +3435,15 @@ impl binformat::Encodable for Fixed64Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.Fixed64Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.r#const, 9u32, buf)?;
         Decode::<Fix>::encode(&self.lt, 17u32, buf)?;
         Decode::<Fix>::encode(&self.lte, 25u32, buf)?;
         Decode::<Fix>::encode(&self.gt, 33u32, buf)?;
         Decode::<Fix>::encode(&self.gte, 41u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.r#in, 49u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.not_in, 57u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3482,7 +3582,12 @@ impl textformat::Decodable for SFixed32Rules {
     }
 }
 impl textformat::Encodable for SFixed32Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -3535,7 +3640,11 @@ impl textformat::Encodable for SFixed32Rules {
     }
 }
 impl binformat::Decodable for SFixed32Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             13u32 => {
@@ -3569,16 +3678,16 @@ impl binformat::Decodable for SFixed32Rules {
                 buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
             }
             53u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             61u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -3595,15 +3704,15 @@ impl binformat::Encodable for SFixed32Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.SFixed32Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.r#const, 13u32, buf)?;
         Decode::<Fix>::encode(&self.lt, 21u32, buf)?;
         Decode::<Fix>::encode(&self.lte, 29u32, buf)?;
         Decode::<Fix>::encode(&self.gt, 37u32, buf)?;
         Decode::<Fix>::encode(&self.gte, 45u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.r#in, 53u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.not_in, 61u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3742,7 +3851,12 @@ impl textformat::Decodable for SFixed64Rules {
     }
 }
 impl textformat::Encodable for SFixed64Rules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<i64> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -3795,7 +3909,11 @@ impl textformat::Encodable for SFixed64Rules {
     }
 }
 impl binformat::Decodable for SFixed64Rules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             9u32 => {
@@ -3829,16 +3947,16 @@ impl binformat::Decodable for SFixed64Rules {
                 buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
             }
             49u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             57u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -3855,15 +3973,15 @@ impl binformat::Encodable for SFixed64Rules {
     fn qualified_name(&self) -> &'static str {
         "validate.SFixed64Rules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.r#const, 9u32, buf)?;
         Decode::<Fix>::encode(&self.lt, 17u32, buf)?;
         Decode::<Fix>::encode(&self.lte, 25u32, buf)?;
         Decode::<Fix>::encode(&self.gt, 33u32, buf)?;
         Decode::<Fix>::encode(&self.gte, 41u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.r#in, 49u32, buf)?;
-        Decode::<Repeat<Fix>>::encode(&self.not_in, 57u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
+        Decode::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3904,7 +4022,12 @@ impl textformat::Decodable for BoolRules {
     }
 }
 impl textformat::Encodable for BoolRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -3915,7 +4038,11 @@ impl textformat::Encodable for BoolRules {
     }
 }
 impl binformat::Decodable for BoolRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -3933,7 +4060,7 @@ impl binformat::Encodable for BoolRules {
     fn qualified_name(&self) -> &'static str {
         "validate.BoolRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.r#const, 8u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -4336,7 +4463,12 @@ impl textformat::Decodable for StringRules {
     }
 }
 impl textformat::Encodable for StringRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -4500,7 +4632,11 @@ impl textformat::Encodable for StringRules {
     }
 }
 impl binformat::Decodable for StringRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -4558,10 +4694,10 @@ impl binformat::Decodable for StringRules {
                 buf = Decode::<Bytes>::decode(&mut self.not_contains, buf)?;
             }
             82u32 => {
-                buf = Decode::<Repeat<Bytes>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
             }
             90u32 => {
-                buf = Decode::<Repeat<Bytes>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
             }
             200u32 => {
                 buf = Decode::<Fix>::decode(&mut self.strict, buf)?;
@@ -4684,7 +4820,7 @@ impl binformat::Encodable for StringRules {
     fn qualified_name(&self) -> &'static str {
         "validate.StringRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.r#const, 10u32, buf)?;
         Decode::<VInt>::encode(&self.len, 152u32, buf)?;
@@ -4698,8 +4834,8 @@ impl binformat::Encodable for StringRules {
         Decode::<Bytes>::encode(&self.suffix, 66u32, buf)?;
         Decode::<Bytes>::encode(&self.contains, 74u32, buf)?;
         Decode::<Bytes>::encode(&self.not_contains, 186u32, buf)?;
-        Decode::<Repeat<Bytes>>::encode(&self.r#in, 82u32, buf)?;
-        Decode::<Repeat<Bytes>>::encode(&self.not_in, 90u32, buf)?;
+        Decode::<Repeat::<Bytes>>::encode(&self.r#in, 82u32, buf)?;
+        Decode::<Repeat::<Bytes>>::encode(&self.not_in, 90u32, buf)?;
         Decode::<Fix>::encode(&self.strict, 200u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 208u32, buf)?;
         match &self.well_known {
@@ -4980,7 +5116,12 @@ impl textformat::Decodable for BytesRules {
     }
 }
 impl textformat::Encodable for BytesRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<Vec<u8>> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -5072,7 +5213,11 @@ impl textformat::Encodable for BytesRules {
     }
 }
 impl binformat::Decodable for BytesRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -5109,10 +5254,10 @@ impl binformat::Decodable for BytesRules {
                 buf = Decode::<Bytes>::decode(&mut self.contains, buf)?;
             }
             66u32 => {
-                buf = Decode::<Repeat<Bytes>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
             }
             74u32 => {
-                buf = Decode::<Repeat<Bytes>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
             }
             112u32 => {
                 buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
@@ -5159,7 +5304,7 @@ impl binformat::Encodable for BytesRules {
     fn qualified_name(&self) -> &'static str {
         "validate.BytesRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.r#const, 10u32, buf)?;
         Decode::<VInt>::encode(&self.len, 104u32, buf)?;
@@ -5169,8 +5314,8 @@ impl binformat::Encodable for BytesRules {
         Decode::<Bytes>::encode(&self.prefix, 42u32, buf)?;
         Decode::<Bytes>::encode(&self.suffix, 50u32, buf)?;
         Decode::<Bytes>::encode(&self.contains, 58u32, buf)?;
-        Decode::<Repeat<Bytes>>::encode(&self.r#in, 66u32, buf)?;
-        Decode::<Repeat<Bytes>>::encode(&self.not_in, 74u32, buf)?;
+        Decode::<Repeat::<Bytes>>::encode(&self.r#in, 66u32, buf)?;
+        Decode::<Repeat::<Bytes>>::encode(&self.not_in, 74u32, buf)?;
         Decode::<Fix>::encode(&self.ignore_empty, 112u32, buf)?;
         match &self.well_known {
             BytesRulesOneOfWellKnown::Ip(value) => {
@@ -5278,7 +5423,12 @@ impl textformat::Decodable for EnumRules {
     }
 }
 impl textformat::Encodable for EnumRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.r#const != <Option<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("const: ");
@@ -5307,7 +5457,11 @@ impl textformat::Encodable for EnumRules {
     }
 }
 impl binformat::Decodable for EnumRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -5323,16 +5477,16 @@ impl binformat::Decodable for EnumRules {
                 buf = Decode::<Fix>::decode(&mut self.defined_only, buf)?;
             }
             24u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             26u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             32u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             34u32 => {
-                buf = Decode::<Repeat<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5343,12 +5497,12 @@ impl binformat::Encodable for EnumRules {
     fn qualified_name(&self) -> &'static str {
         "validate.EnumRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
         Decode::<Fix>::encode(&self.defined_only, 16u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.r#in, 24u32, buf)?;
-        Decode::<Repeat<VInt>>::encode(&self.not_in, 32u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.r#in, 24u32, buf)?;
+        Decode::<Repeat::<VInt>>::encode(&self.not_in, 32u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -5402,7 +5556,12 @@ impl textformat::Decodable for MessageRules {
     }
 }
 impl textformat::Encodable for MessageRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.skip != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("skip: ");
@@ -5419,7 +5578,11 @@ impl textformat::Encodable for MessageRules {
     }
 }
 impl binformat::Decodable for MessageRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -5443,7 +5606,7 @@ impl binformat::Encodable for MessageRules {
     fn qualified_name(&self) -> &'static str {
         "validate.MessageRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.skip, 8u32, buf)?;
         Decode::<Fix>::encode(&self.required, 16u32, buf)?;
@@ -5542,7 +5705,12 @@ impl textformat::Decodable for RepeatedRules {
     }
 }
 impl textformat::Encodable for RepeatedRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.min_items != <Option<u64> as Default>::default() {
             out.indent(pad);
             out.push_str("min_items: ");
@@ -5577,7 +5745,11 @@ impl textformat::Encodable for RepeatedRules {
     }
 }
 impl binformat::Decodable for RepeatedRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -5616,7 +5788,7 @@ impl binformat::Encodable for RepeatedRules {
     fn qualified_name(&self) -> &'static str {
         "validate.RepeatedRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.min_items, 8u32, buf)?;
         Decode::<VInt>::encode(&self.max_items, 16u32, buf)?;
@@ -5732,7 +5904,12 @@ impl textformat::Decodable for MapRules {
     }
 }
 impl textformat::Encodable for MapRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.min_pairs != <Option<u64> as Default>::default() {
             out.indent(pad);
             out.push_str("min_pairs: ");
@@ -5773,7 +5950,11 @@ impl textformat::Encodable for MapRules {
     }
 }
 impl binformat::Decodable for MapRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -5815,7 +5996,7 @@ impl binformat::Encodable for MapRules {
     fn qualified_name(&self) -> &'static str {
         "validate.MapRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<VInt>::encode(&self.min_pairs, 8u32, buf)?;
         Decode::<VInt>::encode(&self.max_pairs, 16u32, buf)?;
@@ -5890,7 +6071,12 @@ impl textformat::Decodable for AnyRules {
     }
 }
 impl textformat::Encodable for AnyRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.required != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("required: ");
@@ -5913,7 +6099,11 @@ impl textformat::Encodable for AnyRules {
     }
 }
 impl binformat::Decodable for AnyRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -5923,10 +6113,10 @@ impl binformat::Decodable for AnyRules {
                 buf = Decode::<Fix>::decode(&mut self.required, buf)?;
             }
             18u32 => {
-                buf = Decode::<Repeat<Bytes>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
             }
             26u32 => {
-                buf = Decode::<Repeat<Bytes>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5937,11 +6127,11 @@ impl binformat::Encodable for AnyRules {
     fn qualified_name(&self) -> &'static str {
         "validate.AnyRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.required, 8u32, buf)?;
-        Decode::<Repeat<Bytes>>::encode(&self.r#in, 18u32, buf)?;
-        Decode::<Repeat<Bytes>>::encode(&self.not_in, 26u32, buf)?;
+        Decode::<Repeat::<Bytes>>::encode(&self.r#in, 18u32, buf)?;
+        Decode::<Repeat::<Bytes>>::encode(&self.not_in, 26u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -6079,7 +6269,12 @@ impl textformat::Decodable for DurationRules {
     }
 }
 impl textformat::Encodable for DurationRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.required != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("required: ");
@@ -6132,7 +6327,11 @@ impl textformat::Encodable for DurationRules {
     }
 }
 impl binformat::Decodable for DurationRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -6157,10 +6356,10 @@ impl binformat::Decodable for DurationRules {
                 buf = Decode::<Nest>::decode(&mut self.gte, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat<Nest>>::decode(&mut self.r#in, buf)?;
+                buf = Decode::<Repeat::<Nest>>::decode(&mut self.r#in, buf)?;
             }
             66u32 => {
-                buf = Decode::<Repeat<Nest>>::decode(&mut self.not_in, buf)?;
+                buf = Decode::<Repeat::<Nest>>::decode(&mut self.not_in, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -6171,7 +6370,7 @@ impl binformat::Encodable for DurationRules {
     fn qualified_name(&self) -> &'static str {
         "validate.DurationRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.required, 8u32, buf)?;
         Decode::<Nest>::encode(&self.r#const, 18u32, buf)?;
@@ -6179,8 +6378,8 @@ impl binformat::Encodable for DurationRules {
         Decode::<Nest>::encode(&self.lte, 34u32, buf)?;
         Decode::<Nest>::encode(&self.gt, 42u32, buf)?;
         Decode::<Nest>::encode(&self.gte, 50u32, buf)?;
-        Decode::<Repeat<Nest>>::encode(&self.r#in, 58u32, buf)?;
-        Decode::<Repeat<Nest>>::encode(&self.not_in, 66u32, buf)?;
+        Decode::<Repeat::<Nest>>::encode(&self.r#in, 58u32, buf)?;
+        Decode::<Repeat::<Nest>>::encode(&self.not_in, 66u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -6332,7 +6531,12 @@ impl textformat::Decodable for TimestampRules {
     }
 }
 impl textformat::Encodable for TimestampRules {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.required != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("required: ");
@@ -6391,7 +6595,11 @@ impl textformat::Encodable for TimestampRules {
     }
 }
 impl binformat::Decodable for TimestampRules {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -6439,7 +6647,7 @@ impl binformat::Encodable for TimestampRules {
     fn qualified_name(&self) -> &'static str {
         "validate.TimestampRules"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Fix>::encode(&self.required, 8u32, buf)?;
         Decode::<Nest>::encode(&self.r#const, 18u32, buf)?;
@@ -6488,7 +6696,12 @@ impl From<KnownRegex> for u32 {
     }
 }
 impl textformat::Field for KnownRegex {
-    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
+    fn format(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut String,
+    ) -> ::std::fmt::Result {
         let str = match self {
             KnownRegex::UNKNOWN => "UNKNOWN",
             KnownRegex::HTTP_HEADER_NAME => "HTTP_HEADER_NAME",
@@ -6501,7 +6714,11 @@ impl textformat::Field for KnownRegex {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
+    fn merge_scalar(
+        &mut self,
+        _ctx: &textformat::Context,
+        v: &textformat::ast::Literal,
+    ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("UNKNOWN") => {
                 *self = KnownRegex::UNKNOWN;

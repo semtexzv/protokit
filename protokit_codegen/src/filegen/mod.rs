@@ -709,7 +709,7 @@ impl CodeGenerator<'_> {
             #text_format
 
             impl binformat::Decodable for #msg_name {
-                fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> binformat::Result<&'b [u8]> {
+                fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: binformat::ReadBuffer<'b>) -> binformat::Result< binformat::ReadBuffer<'b>> {
                     use binformat::format::*;
                     match tag {
                         #(#bin_decoders)*
@@ -723,7 +723,7 @@ impl CodeGenerator<'_> {
                 fn qualified_name(&self) -> &'static str {
                     #qualified_name
                 }
-                fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+                fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
                     use binformat::format::*;
                     #(#bin_encoders)*
                     binformat::Encodable::encode(&self._unknown, buf)?;

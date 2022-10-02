@@ -4,6 +4,7 @@
 use std::fmt::Write;
 
 use anyhow::{bail, Result};
+use binformat::ReadBuffer;
 use textformat::{Indent, INDENT};
 
 use crate::textformat::ast::{FieldName, FieldValue};
@@ -51,7 +52,7 @@ impl Any {
 }
 
 impl binformat::Decodable for Any {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: &'b [u8]) -> Result<&'b [u8]> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         use crate::binformat::format::*;
         match tag {
             10u32 => {

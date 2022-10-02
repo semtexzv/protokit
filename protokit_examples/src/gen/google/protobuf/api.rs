@@ -188,8 +188,8 @@ impl binformat::Decodable for Api {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -225,7 +225,7 @@ impl binformat::Encodable for Api {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Api"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<Repeat::<Nest>>::encode(&self.methods, 18u32, buf)?;
@@ -412,8 +412,8 @@ impl binformat::Decodable for Method {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -455,7 +455,7 @@ impl binformat::Encodable for Method {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Method"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<Bytes>::encode(&self.request_type_url, 18u32, buf)?;
@@ -542,8 +542,8 @@ impl binformat::Decodable for Mixin {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
-        mut buf: &'b [u8],
-    ) -> binformat::Result<&'b [u8]> {
+        mut buf: binformat::ReadBuffer<'b>,
+    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             10u32 => {
@@ -561,7 +561,7 @@ impl binformat::Encodable for Mixin {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.Mixin"
     }
-    fn encode(&self, buf: &mut binformat::Buffer) -> binformat::Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
         Decode::<Bytes>::encode(&self.root, 18u32, buf)?;
