@@ -7,8 +7,8 @@ use ::protokit::*;
 use ::protokit as root;
 use super::source_context::*;
 use super::r#type::*;
-use super::source_context::*;
 use super::r#type::*;
+use super::source_context::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Api::default());
     registry.register(&Method::default());
@@ -193,28 +193,28 @@ impl binformat::Decodable for Api {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.methods, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.methods, buf)?;
             }
             26u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.options, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.options, buf)?;
             }
             34u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.version, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.version, buf)?;
             }
             42u32 => {
-                buf = Decode::<Nest>::decode(&mut self.source_context, buf)?;
+                buf = Format::<Nest>::decode(&mut self.source_context, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.mixins, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.mixins, buf)?;
             }
             56u32 => {
-                buf = Decode::<Enum>::decode(&mut self.syntax, buf)?;
+                buf = Format::<Enum>::decode(&mut self.syntax, buf)?;
             }
             58u32 => {
-                buf = Decode::<Enum>::decode(&mut self.syntax, buf)?;
+                buf = Format::<Enum>::decode(&mut self.syntax, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -227,13 +227,13 @@ impl binformat::Encodable for Api {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.methods, 18u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.options, 26u32, buf)?;
-        Decode::<Bytes>::encode(&self.version, 34u32, buf)?;
-        Decode::<Nest>::encode(&self.source_context, 42u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.mixins, 50u32, buf)?;
-        Decode::<Enum>::encode(&self.syntax, 56u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.methods, 18u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.options, 26u32, buf)?;
+        Format::<Bytes>::encode(&self.version, 34u32, buf)?;
+        Format::<Nest>::encode(&self.source_context, 42u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.mixins, 50u32, buf)?;
+        Format::<Enum>::encode(&self.syntax, 56u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -417,34 +417,34 @@ impl binformat::Decodable for Method {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.request_type_url, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.request_type_url, buf)?;
             }
             24u32 => {
-                buf = Decode::<Fix>::decode(&mut self.request_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.request_streaming, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.request_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.request_streaming, buf)?;
             }
             34u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.response_type_url, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.response_type_url, buf)?;
             }
             40u32 => {
-                buf = Decode::<Fix>::decode(&mut self.response_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.response_streaming, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.response_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.response_streaming, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.options, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.options, buf)?;
             }
             56u32 => {
-                buf = Decode::<Enum>::decode(&mut self.syntax, buf)?;
+                buf = Format::<Enum>::decode(&mut self.syntax, buf)?;
             }
             58u32 => {
-                buf = Decode::<Enum>::decode(&mut self.syntax, buf)?;
+                buf = Format::<Enum>::decode(&mut self.syntax, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -457,13 +457,13 @@ impl binformat::Encodable for Method {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.request_type_url, 18u32, buf)?;
-        Decode::<Fix>::encode(&self.request_streaming, 24u32, buf)?;
-        Decode::<Bytes>::encode(&self.response_type_url, 34u32, buf)?;
-        Decode::<Fix>::encode(&self.response_streaming, 40u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.options, 50u32, buf)?;
-        Decode::<Enum>::encode(&self.syntax, 56u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.request_type_url, 18u32, buf)?;
+        Format::<Fix>::encode(&self.request_streaming, 24u32, buf)?;
+        Format::<Bytes>::encode(&self.response_type_url, 34u32, buf)?;
+        Format::<Fix>::encode(&self.response_streaming, 40u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.options, 50u32, buf)?;
+        Format::<Enum>::encode(&self.syntax, 56u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -547,10 +547,10 @@ impl binformat::Decodable for Mixin {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.root, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.root, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -563,8 +563,8 @@ impl binformat::Encodable for Mixin {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.root, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.root, 18u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

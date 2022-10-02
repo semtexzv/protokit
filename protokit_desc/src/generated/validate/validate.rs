@@ -539,111 +539,111 @@ impl binformat::Decodable for FieldRules {
         use binformat::format::*;
         match tag {
             138u32 => {
-                buf = Decode::<Nest>::decode(&mut self.message, buf)?;
+                buf = Format::<Nest>::decode(&mut self.message, buf)?;
             }
             10u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Float(tmp);
             }
             18u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Double(tmp);
             }
             26u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Int32(tmp);
             }
             34u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Int64(tmp);
             }
             42u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Uint32(tmp);
             }
             50u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Uint64(tmp);
             }
             58u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Sint32(tmp);
             }
             66u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Sint64(tmp);
             }
             74u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Fixed32(tmp);
             }
             82u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Fixed64(tmp);
             }
             90u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Sfixed32(tmp);
             }
             98u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Sfixed64(tmp);
             }
             106u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Bool(tmp);
             }
             114u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::String(tmp);
             }
             122u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Bytes(tmp);
             }
             130u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Enum(tmp);
             }
             146u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Repeated(tmp);
             }
             154u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Map(tmp);
             }
             162u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Any(tmp);
             }
             170u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Duration(tmp);
             }
             178u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.r#type = FieldRulesOneOfType::Timestamp(tmp);
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
@@ -657,70 +657,70 @@ impl binformat::Encodable for FieldRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Nest>::encode(&self.message, 138u32, buf)?;
+        Format::<Nest>::encode(&self.message, 138u32, buf)?;
         match &self.r#type {
             FieldRulesOneOfType::Float(value) => {
-                Decode::<Nest>::encode(value, 10u32, buf)?;
+                Format::<Nest>::encode(value, 10u32, buf)?;
             }
             FieldRulesOneOfType::Double(value) => {
-                Decode::<Nest>::encode(value, 18u32, buf)?;
+                Format::<Nest>::encode(value, 18u32, buf)?;
             }
             FieldRulesOneOfType::Int32(value) => {
-                Decode::<Nest>::encode(value, 26u32, buf)?;
+                Format::<Nest>::encode(value, 26u32, buf)?;
             }
             FieldRulesOneOfType::Int64(value) => {
-                Decode::<Nest>::encode(value, 34u32, buf)?;
+                Format::<Nest>::encode(value, 34u32, buf)?;
             }
             FieldRulesOneOfType::Uint32(value) => {
-                Decode::<Nest>::encode(value, 42u32, buf)?;
+                Format::<Nest>::encode(value, 42u32, buf)?;
             }
             FieldRulesOneOfType::Uint64(value) => {
-                Decode::<Nest>::encode(value, 50u32, buf)?;
+                Format::<Nest>::encode(value, 50u32, buf)?;
             }
             FieldRulesOneOfType::Sint32(value) => {
-                Decode::<Nest>::encode(value, 58u32, buf)?;
+                Format::<Nest>::encode(value, 58u32, buf)?;
             }
             FieldRulesOneOfType::Sint64(value) => {
-                Decode::<Nest>::encode(value, 66u32, buf)?;
+                Format::<Nest>::encode(value, 66u32, buf)?;
             }
             FieldRulesOneOfType::Fixed32(value) => {
-                Decode::<Nest>::encode(value, 74u32, buf)?;
+                Format::<Nest>::encode(value, 74u32, buf)?;
             }
             FieldRulesOneOfType::Fixed64(value) => {
-                Decode::<Nest>::encode(value, 82u32, buf)?;
+                Format::<Nest>::encode(value, 82u32, buf)?;
             }
             FieldRulesOneOfType::Sfixed32(value) => {
-                Decode::<Nest>::encode(value, 90u32, buf)?;
+                Format::<Nest>::encode(value, 90u32, buf)?;
             }
             FieldRulesOneOfType::Sfixed64(value) => {
-                Decode::<Nest>::encode(value, 98u32, buf)?;
+                Format::<Nest>::encode(value, 98u32, buf)?;
             }
             FieldRulesOneOfType::Bool(value) => {
-                Decode::<Nest>::encode(value, 106u32, buf)?;
+                Format::<Nest>::encode(value, 106u32, buf)?;
             }
             FieldRulesOneOfType::String(value) => {
-                Decode::<Nest>::encode(value, 114u32, buf)?;
+                Format::<Nest>::encode(value, 114u32, buf)?;
             }
             FieldRulesOneOfType::Bytes(value) => {
-                Decode::<Nest>::encode(value, 122u32, buf)?;
+                Format::<Nest>::encode(value, 122u32, buf)?;
             }
             FieldRulesOneOfType::Enum(value) => {
-                Decode::<Nest>::encode(value, 130u32, buf)?;
+                Format::<Nest>::encode(value, 130u32, buf)?;
             }
             FieldRulesOneOfType::Repeated(value) => {
-                Decode::<Nest>::encode(value, 146u32, buf)?;
+                Format::<Nest>::encode(value, 146u32, buf)?;
             }
             FieldRulesOneOfType::Map(value) => {
-                Decode::<Nest>::encode(value, 154u32, buf)?;
+                Format::<Nest>::encode(value, 154u32, buf)?;
             }
             FieldRulesOneOfType::Any(value) => {
-                Decode::<Nest>::encode(value, 162u32, buf)?;
+                Format::<Nest>::encode(value, 162u32, buf)?;
             }
             FieldRulesOneOfType::Duration(value) => {
-                Decode::<Nest>::encode(value, 170u32, buf)?;
+                Format::<Nest>::encode(value, 170u32, buf)?;
             }
             FieldRulesOneOfType::Timestamp(value) => {
-                Decode::<Nest>::encode(value, 178u32, buf)?;
+                Format::<Nest>::encode(value, 178u32, buf)?;
             }
             FieldRulesOneOfType::Unknown(..) => {}
         }
@@ -958,52 +958,52 @@ impl binformat::Decodable for FloatRules {
         use binformat::format::*;
         match tag {
             13u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             21u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             29u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             37u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             45u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             53u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             61u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1016,14 +1016,14 @@ impl binformat::Encodable for FloatRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.r#const, 13u32, buf)?;
-        Decode::<Fix>::encode(&self.lt, 21u32, buf)?;
-        Decode::<Fix>::encode(&self.lte, 29u32, buf)?;
-        Decode::<Fix>::encode(&self.gt, 37u32, buf)?;
-        Decode::<Fix>::encode(&self.gte, 45u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<Fix>::encode(&self.r#const, 13u32, buf)?;
+        Format::<Fix>::encode(&self.lt, 21u32, buf)?;
+        Format::<Fix>::encode(&self.lte, 29u32, buf)?;
+        Format::<Fix>::encode(&self.gt, 37u32, buf)?;
+        Format::<Fix>::encode(&self.gte, 45u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1227,52 +1227,52 @@ impl binformat::Decodable for DoubleRules {
         use binformat::format::*;
         match tag {
             9u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             17u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             25u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             33u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             41u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             49u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             57u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1285,14 +1285,14 @@ impl binformat::Encodable for DoubleRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.r#const, 9u32, buf)?;
-        Decode::<Fix>::encode(&self.lt, 17u32, buf)?;
-        Decode::<Fix>::encode(&self.lte, 25u32, buf)?;
-        Decode::<Fix>::encode(&self.gt, 33u32, buf)?;
-        Decode::<Fix>::encode(&self.gte, 41u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<Fix>::encode(&self.r#const, 9u32, buf)?;
+        Format::<Fix>::encode(&self.lt, 17u32, buf)?;
+        Format::<Fix>::encode(&self.lte, 25u32, buf)?;
+        Format::<Fix>::encode(&self.gt, 33u32, buf)?;
+        Format::<Fix>::encode(&self.gte, 41u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1496,52 +1496,52 @@ impl binformat::Decodable for Int32Rules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             32u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             40u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1554,14 +1554,14 @@ impl binformat::Encodable for Int32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
-        Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
-        Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
-        Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<VInt>::encode(&self.r#const, 8u32, buf)?;
+        Format::<VInt>::encode(&self.lt, 16u32, buf)?;
+        Format::<VInt>::encode(&self.lte, 24u32, buf)?;
+        Format::<VInt>::encode(&self.gt, 32u32, buf)?;
+        Format::<VInt>::encode(&self.gte, 40u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1765,52 +1765,52 @@ impl binformat::Decodable for Int64Rules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             32u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             40u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1823,14 +1823,14 @@ impl binformat::Encodable for Int64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
-        Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
-        Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
-        Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<VInt>::encode(&self.r#const, 8u32, buf)?;
+        Format::<VInt>::encode(&self.lt, 16u32, buf)?;
+        Format::<VInt>::encode(&self.lte, 24u32, buf)?;
+        Format::<VInt>::encode(&self.gt, 32u32, buf)?;
+        Format::<VInt>::encode(&self.gte, 40u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2034,52 +2034,52 @@ impl binformat::Decodable for UInt32Rules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             32u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             40u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -2092,14 +2092,14 @@ impl binformat::Encodable for UInt32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
-        Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
-        Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
-        Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<VInt>::encode(&self.r#const, 8u32, buf)?;
+        Format::<VInt>::encode(&self.lt, 16u32, buf)?;
+        Format::<VInt>::encode(&self.lte, 24u32, buf)?;
+        Format::<VInt>::encode(&self.gt, 32u32, buf)?;
+        Format::<VInt>::encode(&self.gte, 40u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2303,52 +2303,52 @@ impl binformat::Decodable for UInt64Rules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lt, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.lte, buf)?;
             }
             32u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gt, buf)?;
             }
             40u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<VInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<VInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -2361,14 +2361,14 @@ impl binformat::Encodable for UInt64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.lt, 16u32, buf)?;
-        Decode::<VInt>::encode(&self.lte, 24u32, buf)?;
-        Decode::<VInt>::encode(&self.gt, 32u32, buf)?;
-        Decode::<VInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<VInt>::encode(&self.r#const, 8u32, buf)?;
+        Format::<VInt>::encode(&self.lt, 16u32, buf)?;
+        Format::<VInt>::encode(&self.lte, 24u32, buf)?;
+        Format::<VInt>::encode(&self.gt, 32u32, buf)?;
+        Format::<VInt>::encode(&self.gte, 40u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.r#in, 48u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.not_in, 56u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2572,52 +2572,52 @@ impl binformat::Decodable for SInt32Rules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<SInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<SInt>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<SInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<SInt>::decode(&mut self.r#const, buf)?;
             }
             16u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lt, buf)?;
             }
             24u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lte, buf)?;
             }
             32u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gt, buf)?;
             }
             40u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -2630,14 +2630,14 @@ impl binformat::Encodable for SInt32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<SInt>::encode(&self.r#const, 8u32, buf)?;
-        Decode::<SInt>::encode(&self.lt, 16u32, buf)?;
-        Decode::<SInt>::encode(&self.lte, 24u32, buf)?;
-        Decode::<SInt>::encode(&self.gt, 32u32, buf)?;
-        Decode::<SInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat::<SInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat::<SInt>>::encode(&self.not_in, 56u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<SInt>::encode(&self.r#const, 8u32, buf)?;
+        Format::<SInt>::encode(&self.lt, 16u32, buf)?;
+        Format::<SInt>::encode(&self.lte, 24u32, buf)?;
+        Format::<SInt>::encode(&self.gt, 32u32, buf)?;
+        Format::<SInt>::encode(&self.gte, 40u32, buf)?;
+        Format::<Repeat::<SInt>>::encode(&self.r#in, 48u32, buf)?;
+        Format::<Repeat::<SInt>>::encode(&self.not_in, 56u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2841,52 +2841,52 @@ impl binformat::Decodable for SInt64Rules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<SInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<SInt>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<SInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<SInt>::decode(&mut self.r#const, buf)?;
             }
             16u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lt, buf)?;
             }
             24u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<SInt>::decode(&mut self.lte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.lte, buf)?;
             }
             32u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gt, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gt, buf)?;
             }
             40u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<SInt>::decode(&mut self.gte, buf)?;
+                buf = Format::<SInt>::decode(&mut self.gte, buf)?;
             }
             48u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.r#in, buf)?;
             }
             56u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<SInt>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -2899,14 +2899,14 @@ impl binformat::Encodable for SInt64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<SInt>::encode(&self.r#const, 8u32, buf)?;
-        Decode::<SInt>::encode(&self.lt, 16u32, buf)?;
-        Decode::<SInt>::encode(&self.lte, 24u32, buf)?;
-        Decode::<SInt>::encode(&self.gt, 32u32, buf)?;
-        Decode::<SInt>::encode(&self.gte, 40u32, buf)?;
-        Decode::<Repeat::<SInt>>::encode(&self.r#in, 48u32, buf)?;
-        Decode::<Repeat::<SInt>>::encode(&self.not_in, 56u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<SInt>::encode(&self.r#const, 8u32, buf)?;
+        Format::<SInt>::encode(&self.lt, 16u32, buf)?;
+        Format::<SInt>::encode(&self.lte, 24u32, buf)?;
+        Format::<SInt>::encode(&self.gt, 32u32, buf)?;
+        Format::<SInt>::encode(&self.gte, 40u32, buf)?;
+        Format::<Repeat::<SInt>>::encode(&self.r#in, 48u32, buf)?;
+        Format::<Repeat::<SInt>>::encode(&self.not_in, 56u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3110,52 +3110,52 @@ impl binformat::Decodable for Fixed32Rules {
         use binformat::format::*;
         match tag {
             13u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             21u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             29u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             37u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             45u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             53u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             61u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3168,14 +3168,14 @@ impl binformat::Encodable for Fixed32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.r#const, 13u32, buf)?;
-        Decode::<Fix>::encode(&self.lt, 21u32, buf)?;
-        Decode::<Fix>::encode(&self.lte, 29u32, buf)?;
-        Decode::<Fix>::encode(&self.gt, 37u32, buf)?;
-        Decode::<Fix>::encode(&self.gte, 45u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<Fix>::encode(&self.r#const, 13u32, buf)?;
+        Format::<Fix>::encode(&self.lt, 21u32, buf)?;
+        Format::<Fix>::encode(&self.lte, 29u32, buf)?;
+        Format::<Fix>::encode(&self.gt, 37u32, buf)?;
+        Format::<Fix>::encode(&self.gte, 45u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3379,52 +3379,52 @@ impl binformat::Decodable for Fixed64Rules {
         use binformat::format::*;
         match tag {
             9u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             17u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             25u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             33u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             41u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             49u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             57u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3437,14 +3437,14 @@ impl binformat::Encodable for Fixed64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.r#const, 9u32, buf)?;
-        Decode::<Fix>::encode(&self.lt, 17u32, buf)?;
-        Decode::<Fix>::encode(&self.lte, 25u32, buf)?;
-        Decode::<Fix>::encode(&self.gt, 33u32, buf)?;
-        Decode::<Fix>::encode(&self.gte, 41u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<Fix>::encode(&self.r#const, 9u32, buf)?;
+        Format::<Fix>::encode(&self.lt, 17u32, buf)?;
+        Format::<Fix>::encode(&self.lte, 25u32, buf)?;
+        Format::<Fix>::encode(&self.gt, 33u32, buf)?;
+        Format::<Fix>::encode(&self.gte, 41u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3648,52 +3648,52 @@ impl binformat::Decodable for SFixed32Rules {
         use binformat::format::*;
         match tag {
             13u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             21u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             29u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             37u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             45u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             53u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             61u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3706,14 +3706,14 @@ impl binformat::Encodable for SFixed32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.r#const, 13u32, buf)?;
-        Decode::<Fix>::encode(&self.lt, 21u32, buf)?;
-        Decode::<Fix>::encode(&self.lte, 29u32, buf)?;
-        Decode::<Fix>::encode(&self.gt, 37u32, buf)?;
-        Decode::<Fix>::encode(&self.gte, 45u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<Fix>::encode(&self.r#const, 13u32, buf)?;
+        Format::<Fix>::encode(&self.lt, 21u32, buf)?;
+        Format::<Fix>::encode(&self.lte, 29u32, buf)?;
+        Format::<Fix>::encode(&self.gt, 37u32, buf)?;
+        Format::<Fix>::encode(&self.gte, 45u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.r#in, 53u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.not_in, 61u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3917,52 +3917,52 @@ impl binformat::Decodable for SFixed64Rules {
         use binformat::format::*;
         match tag {
             9u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             17u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt, buf)?;
             }
             25u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lte, buf)?;
             }
             33u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt, buf)?;
             }
             41u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gte, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gte, buf)?;
             }
             49u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.r#in, buf)?;
             }
             57u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.not_in, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3975,14 +3975,14 @@ impl binformat::Encodable for SFixed64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.r#const, 9u32, buf)?;
-        Decode::<Fix>::encode(&self.lt, 17u32, buf)?;
-        Decode::<Fix>::encode(&self.lte, 25u32, buf)?;
-        Decode::<Fix>::encode(&self.gt, 33u32, buf)?;
-        Decode::<Fix>::encode(&self.gte, 41u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
-        Decode::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
+        Format::<Fix>::encode(&self.r#const, 9u32, buf)?;
+        Format::<Fix>::encode(&self.lt, 17u32, buf)?;
+        Format::<Fix>::encode(&self.lte, 25u32, buf)?;
+        Format::<Fix>::encode(&self.gt, 33u32, buf)?;
+        Format::<Fix>::encode(&self.gte, 41u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.r#in, 49u32, buf)?;
+        Format::<Repeat::<Fix>>::encode(&self.not_in, 57u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 64u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4046,10 +4046,10 @@ impl binformat::Decodable for BoolRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Fix>::decode(&mut self.r#const, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4062,7 +4062,7 @@ impl binformat::Encodable for BoolRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.r#const, 8u32, buf)?;
+        Format::<Fix>::encode(&self.r#const, 8u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4640,175 +4640,175 @@ impl binformat::Decodable for StringRules {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.r#const, buf)?;
             }
             152u32 => {
-                buf = Decode::<VInt>::decode(&mut self.len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.len, buf)?;
             }
             154u32 => {
-                buf = Decode::<VInt>::decode(&mut self.len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.len, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_len, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_len, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_len, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_len, buf)?;
             }
             160u32 => {
-                buf = Decode::<VInt>::decode(&mut self.len_bytes, buf)?;
+                buf = Format::<VInt>::decode(&mut self.len_bytes, buf)?;
             }
             162u32 => {
-                buf = Decode::<VInt>::decode(&mut self.len_bytes, buf)?;
+                buf = Format::<VInt>::decode(&mut self.len_bytes, buf)?;
             }
             32u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_bytes, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_bytes, buf)?;
             }
             34u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_bytes, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_bytes, buf)?;
             }
             40u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_bytes, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_bytes, buf)?;
             }
             42u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_bytes, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_bytes, buf)?;
             }
             50u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.pattern, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.pattern, buf)?;
             }
             58u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.prefix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.prefix, buf)?;
             }
             66u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.suffix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.suffix, buf)?;
             }
             74u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.contains, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.contains, buf)?;
             }
             186u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.not_contains, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.not_contains, buf)?;
             }
             82u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
             }
             90u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
             }
             200u32 => {
-                buf = Decode::<Fix>::decode(&mut self.strict, buf)?;
+                buf = Format::<Fix>::decode(&mut self.strict, buf)?;
             }
             202u32 => {
-                buf = Decode::<Fix>::decode(&mut self.strict, buf)?;
+                buf = Format::<Fix>::decode(&mut self.strict, buf)?;
             }
             208u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             210u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             96u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Email(tmp);
             }
             98u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Email(tmp);
             }
             104u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Hostname(tmp);
             }
             106u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Hostname(tmp);
             }
             112u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Ip(tmp);
             }
             114u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Ip(tmp);
             }
             120u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Ipv4(tmp);
             }
             122u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Ipv4(tmp);
             }
             128u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Ipv6(tmp);
             }
             130u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Ipv6(tmp);
             }
             136u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Uri(tmp);
             }
             138u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Uri(tmp);
             }
             144u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::UriRef(tmp);
             }
             146u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::UriRef(tmp);
             }
             168u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Address(tmp);
             }
             170u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Address(tmp);
             }
             176u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Uuid(tmp);
             }
             178u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::Uuid(tmp);
             }
             192u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Enum>::decode(&mut tmp, buf)?;
+                buf = Format::<Enum>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::WellKnownRegex(tmp);
             }
             194u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Enum>::decode(&mut tmp, buf)?;
+                buf = Format::<Enum>::decode(&mut tmp, buf)?;
                 self.well_known = StringRulesOneOfWellKnown::WellKnownRegex(tmp);
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
@@ -4822,52 +4822,52 @@ impl binformat::Encodable for StringRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.r#const, 10u32, buf)?;
-        Decode::<VInt>::encode(&self.len, 152u32, buf)?;
-        Decode::<VInt>::encode(&self.min_len, 16u32, buf)?;
-        Decode::<VInt>::encode(&self.max_len, 24u32, buf)?;
-        Decode::<VInt>::encode(&self.len_bytes, 160u32, buf)?;
-        Decode::<VInt>::encode(&self.min_bytes, 32u32, buf)?;
-        Decode::<VInt>::encode(&self.max_bytes, 40u32, buf)?;
-        Decode::<Bytes>::encode(&self.pattern, 50u32, buf)?;
-        Decode::<Bytes>::encode(&self.prefix, 58u32, buf)?;
-        Decode::<Bytes>::encode(&self.suffix, 66u32, buf)?;
-        Decode::<Bytes>::encode(&self.contains, 74u32, buf)?;
-        Decode::<Bytes>::encode(&self.not_contains, 186u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.r#in, 82u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.not_in, 90u32, buf)?;
-        Decode::<Fix>::encode(&self.strict, 200u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 208u32, buf)?;
+        Format::<Bytes>::encode(&self.r#const, 10u32, buf)?;
+        Format::<VInt>::encode(&self.len, 152u32, buf)?;
+        Format::<VInt>::encode(&self.min_len, 16u32, buf)?;
+        Format::<VInt>::encode(&self.max_len, 24u32, buf)?;
+        Format::<VInt>::encode(&self.len_bytes, 160u32, buf)?;
+        Format::<VInt>::encode(&self.min_bytes, 32u32, buf)?;
+        Format::<VInt>::encode(&self.max_bytes, 40u32, buf)?;
+        Format::<Bytes>::encode(&self.pattern, 50u32, buf)?;
+        Format::<Bytes>::encode(&self.prefix, 58u32, buf)?;
+        Format::<Bytes>::encode(&self.suffix, 66u32, buf)?;
+        Format::<Bytes>::encode(&self.contains, 74u32, buf)?;
+        Format::<Bytes>::encode(&self.not_contains, 186u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.r#in, 82u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.not_in, 90u32, buf)?;
+        Format::<Fix>::encode(&self.strict, 200u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 208u32, buf)?;
         match &self.well_known {
             StringRulesOneOfWellKnown::Email(value) => {
-                Decode::<Fix>::encode(value, 96u32, buf)?;
+                Format::<Fix>::encode(value, 96u32, buf)?;
             }
             StringRulesOneOfWellKnown::Hostname(value) => {
-                Decode::<Fix>::encode(value, 104u32, buf)?;
+                Format::<Fix>::encode(value, 104u32, buf)?;
             }
             StringRulesOneOfWellKnown::Ip(value) => {
-                Decode::<Fix>::encode(value, 112u32, buf)?;
+                Format::<Fix>::encode(value, 112u32, buf)?;
             }
             StringRulesOneOfWellKnown::Ipv4(value) => {
-                Decode::<Fix>::encode(value, 120u32, buf)?;
+                Format::<Fix>::encode(value, 120u32, buf)?;
             }
             StringRulesOneOfWellKnown::Ipv6(value) => {
-                Decode::<Fix>::encode(value, 128u32, buf)?;
+                Format::<Fix>::encode(value, 128u32, buf)?;
             }
             StringRulesOneOfWellKnown::Uri(value) => {
-                Decode::<Fix>::encode(value, 136u32, buf)?;
+                Format::<Fix>::encode(value, 136u32, buf)?;
             }
             StringRulesOneOfWellKnown::UriRef(value) => {
-                Decode::<Fix>::encode(value, 144u32, buf)?;
+                Format::<Fix>::encode(value, 144u32, buf)?;
             }
             StringRulesOneOfWellKnown::Address(value) => {
-                Decode::<Fix>::encode(value, 168u32, buf)?;
+                Format::<Fix>::encode(value, 168u32, buf)?;
             }
             StringRulesOneOfWellKnown::Uuid(value) => {
-                Decode::<Fix>::encode(value, 176u32, buf)?;
+                Format::<Fix>::encode(value, 176u32, buf)?;
             }
             StringRulesOneOfWellKnown::WellKnownRegex(value) => {
-                Decode::<Enum>::encode(value, 192u32, buf)?;
+                Format::<Enum>::encode(value, 192u32, buf)?;
             }
             StringRulesOneOfWellKnown::Unknown(..) => {}
         }
@@ -5221,78 +5221,78 @@ impl binformat::Decodable for BytesRules {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.r#const, buf)?;
             }
             104u32 => {
-                buf = Decode::<VInt>::decode(&mut self.len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.len, buf)?;
             }
             106u32 => {
-                buf = Decode::<VInt>::decode(&mut self.len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.len, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_len, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_len, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_len, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_len, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_len, buf)?;
             }
             34u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.pattern, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.pattern, buf)?;
             }
             42u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.prefix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.prefix, buf)?;
             }
             50u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.suffix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.suffix, buf)?;
             }
             58u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.contains, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.contains, buf)?;
             }
             66u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
             }
             74u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
             }
             112u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             114u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             80u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = BytesRulesOneOfWellKnown::Ip(tmp);
             }
             82u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = BytesRulesOneOfWellKnown::Ip(tmp);
             }
             88u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = BytesRulesOneOfWellKnown::Ipv4(tmp);
             }
             90u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = BytesRulesOneOfWellKnown::Ipv4(tmp);
             }
             96u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = BytesRulesOneOfWellKnown::Ipv6(tmp);
             }
             98u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.well_known = BytesRulesOneOfWellKnown::Ipv6(tmp);
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
@@ -5306,26 +5306,26 @@ impl binformat::Encodable for BytesRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.r#const, 10u32, buf)?;
-        Decode::<VInt>::encode(&self.len, 104u32, buf)?;
-        Decode::<VInt>::encode(&self.min_len, 16u32, buf)?;
-        Decode::<VInt>::encode(&self.max_len, 24u32, buf)?;
-        Decode::<Bytes>::encode(&self.pattern, 34u32, buf)?;
-        Decode::<Bytes>::encode(&self.prefix, 42u32, buf)?;
-        Decode::<Bytes>::encode(&self.suffix, 50u32, buf)?;
-        Decode::<Bytes>::encode(&self.contains, 58u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.r#in, 66u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.not_in, 74u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 112u32, buf)?;
+        Format::<Bytes>::encode(&self.r#const, 10u32, buf)?;
+        Format::<VInt>::encode(&self.len, 104u32, buf)?;
+        Format::<VInt>::encode(&self.min_len, 16u32, buf)?;
+        Format::<VInt>::encode(&self.max_len, 24u32, buf)?;
+        Format::<Bytes>::encode(&self.pattern, 34u32, buf)?;
+        Format::<Bytes>::encode(&self.prefix, 42u32, buf)?;
+        Format::<Bytes>::encode(&self.suffix, 50u32, buf)?;
+        Format::<Bytes>::encode(&self.contains, 58u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.r#in, 66u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.not_in, 74u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 112u32, buf)?;
         match &self.well_known {
             BytesRulesOneOfWellKnown::Ip(value) => {
-                Decode::<Fix>::encode(value, 80u32, buf)?;
+                Format::<Fix>::encode(value, 80u32, buf)?;
             }
             BytesRulesOneOfWellKnown::Ipv4(value) => {
-                Decode::<Fix>::encode(value, 88u32, buf)?;
+                Format::<Fix>::encode(value, 88u32, buf)?;
             }
             BytesRulesOneOfWellKnown::Ipv6(value) => {
-                Decode::<Fix>::encode(value, 96u32, buf)?;
+                Format::<Fix>::encode(value, 96u32, buf)?;
             }
             BytesRulesOneOfWellKnown::Unknown(..) => {}
         }
@@ -5465,28 +5465,28 @@ impl binformat::Decodable for EnumRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.r#const, buf)?;
+                buf = Format::<VInt>::decode(&mut self.r#const, buf)?;
             }
             16u32 => {
-                buf = Decode::<Fix>::decode(&mut self.defined_only, buf)?;
+                buf = Format::<Fix>::decode(&mut self.defined_only, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.defined_only, buf)?;
+                buf = Format::<Fix>::decode(&mut self.defined_only, buf)?;
             }
             24u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             26u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.r#in, buf)?;
             }
             32u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             34u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.not_in, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5499,10 +5499,10 @@ impl binformat::Encodable for EnumRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.r#const, 8u32, buf)?;
-        Decode::<Fix>::encode(&self.defined_only, 16u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.r#in, 24u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.not_in, 32u32, buf)?;
+        Format::<VInt>::encode(&self.r#const, 8u32, buf)?;
+        Format::<Fix>::encode(&self.defined_only, 16u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.r#in, 24u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.not_in, 32u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -5586,16 +5586,16 @@ impl binformat::Decodable for MessageRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Fix>::decode(&mut self.skip, buf)?;
+                buf = Format::<Fix>::decode(&mut self.skip, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.skip, buf)?;
+                buf = Format::<Fix>::decode(&mut self.skip, buf)?;
             }
             16u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5608,8 +5608,8 @@ impl binformat::Encodable for MessageRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.skip, 8u32, buf)?;
-        Decode::<Fix>::encode(&self.required, 16u32, buf)?;
+        Format::<Fix>::encode(&self.skip, 8u32, buf)?;
+        Format::<Fix>::encode(&self.required, 16u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -5753,31 +5753,31 @@ impl binformat::Decodable for RepeatedRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_items, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_items, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_items, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_items, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_items, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_items, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_items, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_items, buf)?;
             }
             24u32 => {
-                buf = Decode::<Fix>::decode(&mut self.unique, buf)?;
+                buf = Format::<Fix>::decode(&mut self.unique, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.unique, buf)?;
+                buf = Format::<Fix>::decode(&mut self.unique, buf)?;
             }
             34u32 => {
-                buf = Decode::<Nest>::decode(&mut self.items, buf)?;
+                buf = Format::<Nest>::decode(&mut self.items, buf)?;
             }
             40u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5790,11 +5790,11 @@ impl binformat::Encodable for RepeatedRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.min_items, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.max_items, 16u32, buf)?;
-        Decode::<Fix>::encode(&self.unique, 24u32, buf)?;
-        Decode::<Nest>::encode(&self.items, 34u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 40u32, buf)?;
+        Format::<VInt>::encode(&self.min_items, 8u32, buf)?;
+        Format::<VInt>::encode(&self.max_items, 16u32, buf)?;
+        Format::<Fix>::encode(&self.unique, 24u32, buf)?;
+        Format::<Nest>::encode(&self.items, 34u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 40u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -5958,34 +5958,34 @@ impl binformat::Decodable for MapRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_pairs, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_pairs, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.min_pairs, buf)?;
+                buf = Format::<VInt>::decode(&mut self.min_pairs, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_pairs, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_pairs, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.max_pairs, buf)?;
+                buf = Format::<VInt>::decode(&mut self.max_pairs, buf)?;
             }
             24u32 => {
-                buf = Decode::<Fix>::decode(&mut self.no_sparse, buf)?;
+                buf = Format::<Fix>::decode(&mut self.no_sparse, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.no_sparse, buf)?;
+                buf = Format::<Fix>::decode(&mut self.no_sparse, buf)?;
             }
             34u32 => {
-                buf = Decode::<Nest>::decode(&mut self.keys, buf)?;
+                buf = Format::<Nest>::decode(&mut self.keys, buf)?;
             }
             42u32 => {
-                buf = Decode::<Nest>::decode(&mut self.values, buf)?;
+                buf = Format::<Nest>::decode(&mut self.values, buf)?;
             }
             48u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             50u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignore_empty, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5998,12 +5998,12 @@ impl binformat::Encodable for MapRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.min_pairs, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.max_pairs, 16u32, buf)?;
-        Decode::<Fix>::encode(&self.no_sparse, 24u32, buf)?;
-        Decode::<Nest>::encode(&self.keys, 34u32, buf)?;
-        Decode::<Nest>::encode(&self.values, 42u32, buf)?;
-        Decode::<Fix>::encode(&self.ignore_empty, 48u32, buf)?;
+        Format::<VInt>::encode(&self.min_pairs, 8u32, buf)?;
+        Format::<VInt>::encode(&self.max_pairs, 16u32, buf)?;
+        Format::<Fix>::encode(&self.no_sparse, 24u32, buf)?;
+        Format::<Nest>::encode(&self.keys, 34u32, buf)?;
+        Format::<Nest>::encode(&self.values, 42u32, buf)?;
+        Format::<Fix>::encode(&self.ignore_empty, 48u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -6107,16 +6107,16 @@ impl binformat::Decodable for AnyRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             18u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.r#in, buf)?;
             }
             26u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.not_in, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -6129,9 +6129,9 @@ impl binformat::Encodable for AnyRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.required, 8u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.r#in, 18u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.not_in, 26u32, buf)?;
+        Format::<Fix>::encode(&self.required, 8u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.r#in, 18u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.not_in, 26u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -6335,31 +6335,31 @@ impl binformat::Decodable for DurationRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             18u32 => {
-                buf = Decode::<Nest>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Nest>::decode(&mut self.r#const, buf)?;
             }
             26u32 => {
-                buf = Decode::<Nest>::decode(&mut self.lt, buf)?;
+                buf = Format::<Nest>::decode(&mut self.lt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Nest>::decode(&mut self.lte, buf)?;
+                buf = Format::<Nest>::decode(&mut self.lte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Nest>::decode(&mut self.gt, buf)?;
+                buf = Format::<Nest>::decode(&mut self.gt, buf)?;
             }
             50u32 => {
-                buf = Decode::<Nest>::decode(&mut self.gte, buf)?;
+                buf = Format::<Nest>::decode(&mut self.gte, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.r#in, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.r#in, buf)?;
             }
             66u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.not_in, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.not_in, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -6372,14 +6372,14 @@ impl binformat::Encodable for DurationRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.required, 8u32, buf)?;
-        Decode::<Nest>::encode(&self.r#const, 18u32, buf)?;
-        Decode::<Nest>::encode(&self.lt, 26u32, buf)?;
-        Decode::<Nest>::encode(&self.lte, 34u32, buf)?;
-        Decode::<Nest>::encode(&self.gt, 42u32, buf)?;
-        Decode::<Nest>::encode(&self.gte, 50u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.r#in, 58u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.not_in, 66u32, buf)?;
+        Format::<Fix>::encode(&self.required, 8u32, buf)?;
+        Format::<Nest>::encode(&self.r#const, 18u32, buf)?;
+        Format::<Nest>::encode(&self.lt, 26u32, buf)?;
+        Format::<Nest>::encode(&self.lte, 34u32, buf)?;
+        Format::<Nest>::encode(&self.gt, 42u32, buf)?;
+        Format::<Nest>::encode(&self.gte, 50u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.r#in, 58u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.not_in, 66u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -6603,40 +6603,40 @@ impl binformat::Decodable for TimestampRules {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             18u32 => {
-                buf = Decode::<Nest>::decode(&mut self.r#const, buf)?;
+                buf = Format::<Nest>::decode(&mut self.r#const, buf)?;
             }
             26u32 => {
-                buf = Decode::<Nest>::decode(&mut self.lt, buf)?;
+                buf = Format::<Nest>::decode(&mut self.lt, buf)?;
             }
             34u32 => {
-                buf = Decode::<Nest>::decode(&mut self.lte, buf)?;
+                buf = Format::<Nest>::decode(&mut self.lte, buf)?;
             }
             42u32 => {
-                buf = Decode::<Nest>::decode(&mut self.gt, buf)?;
+                buf = Format::<Nest>::decode(&mut self.gt, buf)?;
             }
             50u32 => {
-                buf = Decode::<Nest>::decode(&mut self.gte, buf)?;
+                buf = Format::<Nest>::decode(&mut self.gte, buf)?;
             }
             56u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt_now, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt_now, buf)?;
             }
             58u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lt_now, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lt_now, buf)?;
             }
             64u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt_now, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt_now, buf)?;
             }
             66u32 => {
-                buf = Decode::<Fix>::decode(&mut self.gt_now, buf)?;
+                buf = Format::<Fix>::decode(&mut self.gt_now, buf)?;
             }
             74u32 => {
-                buf = Decode::<Nest>::decode(&mut self.within, buf)?;
+                buf = Format::<Nest>::decode(&mut self.within, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -6649,15 +6649,15 @@ impl binformat::Encodable for TimestampRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.required, 8u32, buf)?;
-        Decode::<Nest>::encode(&self.r#const, 18u32, buf)?;
-        Decode::<Nest>::encode(&self.lt, 26u32, buf)?;
-        Decode::<Nest>::encode(&self.lte, 34u32, buf)?;
-        Decode::<Nest>::encode(&self.gt, 42u32, buf)?;
-        Decode::<Nest>::encode(&self.gte, 50u32, buf)?;
-        Decode::<Fix>::encode(&self.lt_now, 56u32, buf)?;
-        Decode::<Fix>::encode(&self.gt_now, 64u32, buf)?;
-        Decode::<Nest>::encode(&self.within, 74u32, buf)?;
+        Format::<Fix>::encode(&self.required, 8u32, buf)?;
+        Format::<Nest>::encode(&self.r#const, 18u32, buf)?;
+        Format::<Nest>::encode(&self.lt, 26u32, buf)?;
+        Format::<Nest>::encode(&self.lte, 34u32, buf)?;
+        Format::<Nest>::encode(&self.gt, 42u32, buf)?;
+        Format::<Nest>::encode(&self.gte, 50u32, buf)?;
+        Format::<Fix>::encode(&self.lt_now, 56u32, buf)?;
+        Format::<Fix>::encode(&self.gt_now, 64u32, buf)?;
+        Format::<Nest>::encode(&self.within, 74u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

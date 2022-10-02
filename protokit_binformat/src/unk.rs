@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use integer_encoding::VarInt;
 
-use crate::{WriteBuffer, ReadBuffer,  Decodable, Decode, Encodable, Fix};
+use crate::{WriteBuffer, ReadBuffer, Decodable, Format, Encodable, Fix};
 
 pub(crate) const VINT: u8 = 0;
 pub(crate) const FIX64: u8 = 1;
@@ -50,13 +50,13 @@ impl Decodable for ProtoField {
             }
             FIX64 => {
                 let mut v = 0;
-                buf = Decode::<Fix>::decode(&mut v, buf)?;
+                buf = Format::<Fix>::decode(&mut v, buf)?;
                 self.value = ProtoValue::Fix64(v);
                 Ok(buf)
             }
             FIX32 => {
                 let mut v = 0;
-                buf = Decode::<Fix>::decode(&mut v, buf)?;
+                buf = Format::<Fix>::decode(&mut v, buf)?;
                 self.value = ProtoValue::Fix32(v);
                 Ok(buf)
             }

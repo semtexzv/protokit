@@ -94,7 +94,7 @@ impl binformat::Decodable for FileDescriptorSet {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.file, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.file, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -107,7 +107,7 @@ impl binformat::Encodable for FileDescriptorSet {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Nest>>::encode(&self.file, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.file, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -391,50 +391,50 @@ impl binformat::Decodable for FileDescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.package, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.package, buf)?;
             }
             26u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.dependency, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.dependency, buf)?;
             }
             80u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<VInt>,
                 >::decode(&mut self.public_dependency, buf)?;
             }
             82u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<VInt>,
                 >::decode(&mut self.public_dependency, buf)?;
             }
             88u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.weak_dependency, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.weak_dependency, buf)?;
             }
             90u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.weak_dependency, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.weak_dependency, buf)?;
             }
             34u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.message_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.message_type, buf)?;
             }
             42u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.enum_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.enum_type, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.service, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.service, buf)?;
             }
             58u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.extension, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.extension, buf)?;
             }
             66u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             74u32 => {
-                buf = Decode::<Nest>::decode(&mut self.source_code_info, buf)?;
+                buf = Format::<Nest>::decode(&mut self.source_code_info, buf)?;
             }
             98u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.syntax, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.syntax, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -447,18 +447,18 @@ impl binformat::Encodable for FileDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.package, 18u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.dependency, 26u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.public_dependency, 80u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.weak_dependency, 88u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.message_type, 34u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.enum_type, 42u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.service, 50u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.extension, 58u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 66u32, buf)?;
-        Decode::<Nest>::encode(&self.source_code_info, 74u32, buf)?;
-        Decode::<Bytes>::encode(&self.syntax, 98u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.package, 18u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.dependency, 26u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.public_dependency, 80u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.weak_dependency, 88u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.message_type, 34u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.enum_type, 42u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.service, 50u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.extension, 58u32, buf)?;
+        Format::<Nest>::encode(&self.options, 66u32, buf)?;
+        Format::<Nest>::encode(&self.source_code_info, 74u32, buf)?;
+        Format::<Bytes>::encode(&self.syntax, 98u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -712,34 +712,34 @@ impl binformat::Decodable for DescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.field, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.field, buf)?;
             }
             50u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.extension, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.extension, buf)?;
             }
             26u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.nested_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.nested_type, buf)?;
             }
             34u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.enum_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.enum_type, buf)?;
             }
             42u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.extension_range, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.extension_range, buf)?;
             }
             66u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.oneof_decl, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.oneof_decl, buf)?;
             }
             58u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             74u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.reserved_range, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.reserved_range, buf)?;
             }
             82u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.reserved_name, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.reserved_name, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -752,16 +752,16 @@ impl binformat::Encodable for DescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.field, 18u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.extension, 50u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.nested_type, 26u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.enum_type, 34u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.extension_range, 42u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.oneof_decl, 66u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 58u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.reserved_range, 74u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.reserved_name, 82u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.field, 18u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.extension, 50u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.nested_type, 26u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.enum_type, 34u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.extension_range, 42u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.oneof_decl, 66u32, buf)?;
+        Format::<Nest>::encode(&self.options, 58u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.reserved_range, 74u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 82u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -865,19 +865,19 @@ impl binformat::Decodable for DescriptorProtoExtensionRange {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.start, buf)?;
+                buf = Format::<VInt>::decode(&mut self.start, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.start, buf)?;
+                buf = Format::<VInt>::decode(&mut self.start, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             26u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -890,9 +890,9 @@ impl binformat::Encodable for DescriptorProtoExtensionRange {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.start, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.end, 16u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 26u32, buf)?;
+        Format::<VInt>::encode(&self.start, 8u32, buf)?;
+        Format::<VInt>::encode(&self.end, 16u32, buf)?;
+        Format::<Nest>::encode(&self.options, 26u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -976,16 +976,16 @@ impl binformat::Decodable for DescriptorProtoReservedRange {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.start, buf)?;
+                buf = Format::<VInt>::decode(&mut self.start, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.start, buf)?;
+                buf = Format::<VInt>::decode(&mut self.start, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -998,8 +998,8 @@ impl binformat::Encodable for DescriptorProtoReservedRange {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.start, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.end, 16u32, buf)?;
+        Format::<VInt>::encode(&self.start, 8u32, buf)?;
+        Format::<VInt>::encode(&self.end, 16u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1064,7 +1064,7 @@ impl binformat::Decodable for ExtensionRangeOptions {
         use binformat::format::*;
         match tag {
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
@@ -1079,7 +1079,7 @@ impl binformat::Encodable for ExtensionRangeOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1343,52 +1343,52 @@ impl binformat::Decodable for FieldDescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.number, buf)?;
+                buf = Format::<VInt>::decode(&mut self.number, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.number, buf)?;
+                buf = Format::<VInt>::decode(&mut self.number, buf)?;
             }
             32u32 => {
-                buf = Decode::<Enum>::decode(&mut self.label, buf)?;
+                buf = Format::<Enum>::decode(&mut self.label, buf)?;
             }
             34u32 => {
-                buf = Decode::<Enum>::decode(&mut self.label, buf)?;
+                buf = Format::<Enum>::decode(&mut self.label, buf)?;
             }
             40u32 => {
-                buf = Decode::<Enum>::decode(&mut self.r#type, buf)?;
+                buf = Format::<Enum>::decode(&mut self.r#type, buf)?;
             }
             42u32 => {
-                buf = Decode::<Enum>::decode(&mut self.r#type, buf)?;
+                buf = Format::<Enum>::decode(&mut self.r#type, buf)?;
             }
             50u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.type_name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.type_name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.extendee, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.extendee, buf)?;
             }
             58u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.default_value, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.default_value, buf)?;
             }
             72u32 => {
-                buf = Decode::<VInt>::decode(&mut self.oneof_index, buf)?;
+                buf = Format::<VInt>::decode(&mut self.oneof_index, buf)?;
             }
             74u32 => {
-                buf = Decode::<VInt>::decode(&mut self.oneof_index, buf)?;
+                buf = Format::<VInt>::decode(&mut self.oneof_index, buf)?;
             }
             82u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.json_name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.json_name, buf)?;
             }
             66u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             136u32 => {
-                buf = Decode::<Fix>::decode(&mut self.proto3_optional, buf)?;
+                buf = Format::<Fix>::decode(&mut self.proto3_optional, buf)?;
             }
             138u32 => {
-                buf = Decode::<Fix>::decode(&mut self.proto3_optional, buf)?;
+                buf = Format::<Fix>::decode(&mut self.proto3_optional, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1401,17 +1401,17 @@ impl binformat::Encodable for FieldDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<VInt>::encode(&self.number, 24u32, buf)?;
-        Decode::<Enum>::encode(&self.label, 32u32, buf)?;
-        Decode::<Enum>::encode(&self.r#type, 40u32, buf)?;
-        Decode::<Bytes>::encode(&self.type_name, 50u32, buf)?;
-        Decode::<Bytes>::encode(&self.extendee, 18u32, buf)?;
-        Decode::<Bytes>::encode(&self.default_value, 58u32, buf)?;
-        Decode::<VInt>::encode(&self.oneof_index, 72u32, buf)?;
-        Decode::<Bytes>::encode(&self.json_name, 82u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 66u32, buf)?;
-        Decode::<Fix>::encode(&self.proto3_optional, 136u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<VInt>::encode(&self.number, 24u32, buf)?;
+        Format::<Enum>::encode(&self.label, 32u32, buf)?;
+        Format::<Enum>::encode(&self.r#type, 40u32, buf)?;
+        Format::<Bytes>::encode(&self.type_name, 50u32, buf)?;
+        Format::<Bytes>::encode(&self.extendee, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.default_value, 58u32, buf)?;
+        Format::<VInt>::encode(&self.oneof_index, 72u32, buf)?;
+        Format::<Bytes>::encode(&self.json_name, 82u32, buf)?;
+        Format::<Nest>::encode(&self.options, 66u32, buf)?;
+        Format::<Fix>::encode(&self.proto3_optional, 136u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1495,10 +1495,10 @@ impl binformat::Decodable for OneofDescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1511,8 +1511,8 @@ impl binformat::Encodable for OneofDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Nest>::encode(&self.options, 18u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1664,19 +1664,19 @@ impl binformat::Decodable for EnumDescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.value, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.value, buf)?;
             }
             26u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             34u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.reserved_range, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.reserved_range, buf)?;
             }
             42u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.reserved_name, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.reserved_name, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1689,11 +1689,11 @@ impl binformat::Encodable for EnumDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.value, 18u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 26u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.reserved_range, 34u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.reserved_name, 42u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.value, 18u32, buf)?;
+        Format::<Nest>::encode(&self.options, 26u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.reserved_range, 34u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 42u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1777,16 +1777,16 @@ impl binformat::Decodable for EnumDescriptorProtoEnumReservedRange {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.start, buf)?;
+                buf = Format::<VInt>::decode(&mut self.start, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.start, buf)?;
+                buf = Format::<VInt>::decode(&mut self.start, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1799,8 +1799,8 @@ impl binformat::Encodable for EnumDescriptorProtoEnumReservedRange {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.start, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.end, 16u32, buf)?;
+        Format::<VInt>::encode(&self.start, 8u32, buf)?;
+        Format::<VInt>::encode(&self.end, 16u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1904,16 +1904,16 @@ impl binformat::Decodable for EnumValueDescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.number, buf)?;
+                buf = Format::<VInt>::decode(&mut self.number, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.number, buf)?;
+                buf = Format::<VInt>::decode(&mut self.number, buf)?;
             }
             26u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1926,9 +1926,9 @@ impl binformat::Encodable for EnumValueDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<VInt>::encode(&self.number, 16u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 26u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<VInt>::encode(&self.number, 16u32, buf)?;
+        Format::<Nest>::encode(&self.options, 26u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2032,13 +2032,13 @@ impl binformat::Decodable for ServiceDescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.method, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.method, buf)?;
             }
             26u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -2051,9 +2051,9 @@ impl binformat::Encodable for ServiceDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.method, 18u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 26u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.method, 18u32, buf)?;
+        Format::<Nest>::encode(&self.options, 26u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2217,28 +2217,28 @@ impl binformat::Decodable for MethodDescriptorProto {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.input_type, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.input_type, buf)?;
             }
             26u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.output_type, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.output_type, buf)?;
             }
             34u32 => {
-                buf = Decode::<Nest>::decode(&mut self.options, buf)?;
+                buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             40u32 => {
-                buf = Decode::<Fix>::decode(&mut self.client_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.client_streaming, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.client_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.client_streaming, buf)?;
             }
             48u32 => {
-                buf = Decode::<Fix>::decode(&mut self.server_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.server_streaming, buf)?;
             }
             50u32 => {
-                buf = Decode::<Fix>::decode(&mut self.server_streaming, buf)?;
+                buf = Format::<Fix>::decode(&mut self.server_streaming, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -2251,12 +2251,12 @@ impl binformat::Encodable for MethodDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.input_type, 18u32, buf)?;
-        Decode::<Bytes>::encode(&self.output_type, 26u32, buf)?;
-        Decode::<Nest>::encode(&self.options, 34u32, buf)?;
-        Decode::<Fix>::encode(&self.client_streaming, 40u32, buf)?;
-        Decode::<Fix>::encode(&self.server_streaming, 48u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.input_type, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.output_type, 26u32, buf)?;
+        Format::<Nest>::encode(&self.options, 34u32, buf)?;
+        Format::<Fix>::encode(&self.client_streaming, 40u32, buf)?;
+        Format::<Fix>::encode(&self.server_streaming, 48u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2730,101 +2730,101 @@ impl binformat::Decodable for FileOptions {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.java_package, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.java_package, buf)?;
             }
             66u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.java_outer_classname, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.java_outer_classname, buf)?;
             }
             80u32 => {
-                buf = Decode::<Fix>::decode(&mut self.java_multiple_files, buf)?;
+                buf = Format::<Fix>::decode(&mut self.java_multiple_files, buf)?;
             }
             82u32 => {
-                buf = Decode::<Fix>::decode(&mut self.java_multiple_files, buf)?;
+                buf = Format::<Fix>::decode(&mut self.java_multiple_files, buf)?;
             }
             160u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Fix,
                 >::decode(&mut self.java_generate_equals_and_hash, buf)?;
             }
             162u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Fix,
                 >::decode(&mut self.java_generate_equals_and_hash, buf)?;
             }
             216u32 => {
-                buf = Decode::<Fix>::decode(&mut self.java_string_check_utf8, buf)?;
+                buf = Format::<Fix>::decode(&mut self.java_string_check_utf8, buf)?;
             }
             218u32 => {
-                buf = Decode::<Fix>::decode(&mut self.java_string_check_utf8, buf)?;
+                buf = Format::<Fix>::decode(&mut self.java_string_check_utf8, buf)?;
             }
             72u32 => {
-                buf = Decode::<Enum>::decode(&mut self.optimize_for, buf)?;
+                buf = Format::<Enum>::decode(&mut self.optimize_for, buf)?;
             }
             74u32 => {
-                buf = Decode::<Enum>::decode(&mut self.optimize_for, buf)?;
+                buf = Format::<Enum>::decode(&mut self.optimize_for, buf)?;
             }
             90u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.go_package, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.go_package, buf)?;
             }
             128u32 => {
-                buf = Decode::<Fix>::decode(&mut self.cc_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.cc_generic_services, buf)?;
             }
             130u32 => {
-                buf = Decode::<Fix>::decode(&mut self.cc_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.cc_generic_services, buf)?;
             }
             136u32 => {
-                buf = Decode::<Fix>::decode(&mut self.java_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.java_generic_services, buf)?;
             }
             138u32 => {
-                buf = Decode::<Fix>::decode(&mut self.java_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.java_generic_services, buf)?;
             }
             144u32 => {
-                buf = Decode::<Fix>::decode(&mut self.py_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.py_generic_services, buf)?;
             }
             146u32 => {
-                buf = Decode::<Fix>::decode(&mut self.py_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.py_generic_services, buf)?;
             }
             336u32 => {
-                buf = Decode::<Fix>::decode(&mut self.php_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.php_generic_services, buf)?;
             }
             338u32 => {
-                buf = Decode::<Fix>::decode(&mut self.php_generic_services, buf)?;
+                buf = Format::<Fix>::decode(&mut self.php_generic_services, buf)?;
             }
             184u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             186u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             248u32 => {
-                buf = Decode::<Fix>::decode(&mut self.cc_enable_arenas, buf)?;
+                buf = Format::<Fix>::decode(&mut self.cc_enable_arenas, buf)?;
             }
             250u32 => {
-                buf = Decode::<Fix>::decode(&mut self.cc_enable_arenas, buf)?;
+                buf = Format::<Fix>::decode(&mut self.cc_enable_arenas, buf)?;
             }
             290u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.objc_class_prefix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.objc_class_prefix, buf)?;
             }
             298u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.csharp_namespace, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.csharp_namespace, buf)?;
             }
             314u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.swift_prefix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.swift_prefix, buf)?;
             }
             322u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.php_class_prefix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.php_class_prefix, buf)?;
             }
             330u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.php_namespace, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.php_namespace, buf)?;
             }
             354u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.php_metadata_namespace, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.php_metadata_namespace, buf)?;
             }
             362u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.ruby_package, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.ruby_package, buf)?;
             }
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
@@ -2839,27 +2839,27 @@ impl binformat::Encodable for FileOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.java_package, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.java_outer_classname, 66u32, buf)?;
-        Decode::<Fix>::encode(&self.java_multiple_files, 80u32, buf)?;
-        Decode::<Fix>::encode(&self.java_generate_equals_and_hash, 160u32, buf)?;
-        Decode::<Fix>::encode(&self.java_string_check_utf8, 216u32, buf)?;
-        Decode::<Enum>::encode(&self.optimize_for, 72u32, buf)?;
-        Decode::<Bytes>::encode(&self.go_package, 90u32, buf)?;
-        Decode::<Fix>::encode(&self.cc_generic_services, 128u32, buf)?;
-        Decode::<Fix>::encode(&self.java_generic_services, 136u32, buf)?;
-        Decode::<Fix>::encode(&self.py_generic_services, 144u32, buf)?;
-        Decode::<Fix>::encode(&self.php_generic_services, 336u32, buf)?;
-        Decode::<Fix>::encode(&self.deprecated, 184u32, buf)?;
-        Decode::<Fix>::encode(&self.cc_enable_arenas, 248u32, buf)?;
-        Decode::<Bytes>::encode(&self.objc_class_prefix, 290u32, buf)?;
-        Decode::<Bytes>::encode(&self.csharp_namespace, 298u32, buf)?;
-        Decode::<Bytes>::encode(&self.swift_prefix, 314u32, buf)?;
-        Decode::<Bytes>::encode(&self.php_class_prefix, 322u32, buf)?;
-        Decode::<Bytes>::encode(&self.php_namespace, 330u32, buf)?;
-        Decode::<Bytes>::encode(&self.php_metadata_namespace, 354u32, buf)?;
-        Decode::<Bytes>::encode(&self.ruby_package, 362u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Bytes>::encode(&self.java_package, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.java_outer_classname, 66u32, buf)?;
+        Format::<Fix>::encode(&self.java_multiple_files, 80u32, buf)?;
+        Format::<Fix>::encode(&self.java_generate_equals_and_hash, 160u32, buf)?;
+        Format::<Fix>::encode(&self.java_string_check_utf8, 216u32, buf)?;
+        Format::<Enum>::encode(&self.optimize_for, 72u32, buf)?;
+        Format::<Bytes>::encode(&self.go_package, 90u32, buf)?;
+        Format::<Fix>::encode(&self.cc_generic_services, 128u32, buf)?;
+        Format::<Fix>::encode(&self.java_generic_services, 136u32, buf)?;
+        Format::<Fix>::encode(&self.py_generic_services, 144u32, buf)?;
+        Format::<Fix>::encode(&self.php_generic_services, 336u32, buf)?;
+        Format::<Fix>::encode(&self.deprecated, 184u32, buf)?;
+        Format::<Fix>::encode(&self.cc_enable_arenas, 248u32, buf)?;
+        Format::<Bytes>::encode(&self.objc_class_prefix, 290u32, buf)?;
+        Format::<Bytes>::encode(&self.csharp_namespace, 298u32, buf)?;
+        Format::<Bytes>::encode(&self.swift_prefix, 314u32, buf)?;
+        Format::<Bytes>::encode(&self.php_class_prefix, 322u32, buf)?;
+        Format::<Bytes>::encode(&self.php_namespace, 330u32, buf)?;
+        Format::<Bytes>::encode(&self.php_metadata_namespace, 354u32, buf)?;
+        Format::<Bytes>::encode(&self.ruby_package, 362u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3053,49 +3053,49 @@ impl binformat::Decodable for MessageOptions {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Fix>::decode(&mut self.message_set_wire_format, buf)?;
+                buf = Format::<Fix>::decode(&mut self.message_set_wire_format, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.message_set_wire_format, buf)?;
+                buf = Format::<Fix>::decode(&mut self.message_set_wire_format, buf)?;
             }
             16u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Fix,
                 >::decode(&mut self.no_standard_descriptor_accessor, buf)?;
             }
             18u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Fix,
                 >::decode(&mut self.no_standard_descriptor_accessor, buf)?;
             }
             24u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             56u32 => {
-                buf = Decode::<Fix>::decode(&mut self.map_entry, buf)?;
+                buf = Format::<Fix>::decode(&mut self.map_entry, buf)?;
             }
             58u32 => {
-                buf = Decode::<Fix>::decode(&mut self.map_entry, buf)?;
+                buf = Format::<Fix>::decode(&mut self.map_entry, buf)?;
             }
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
             8568u32 => {
-                buf = Decode::<Fix>::decode(&mut self.disabled, buf)?;
+                buf = Format::<Fix>::decode(&mut self.disabled, buf)?;
             }
             8570u32 => {
-                buf = Decode::<Fix>::decode(&mut self.disabled, buf)?;
+                buf = Format::<Fix>::decode(&mut self.disabled, buf)?;
             }
             8576u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignored, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignored, buf)?;
             }
             8578u32 => {
-                buf = Decode::<Fix>::decode(&mut self.ignored, buf)?;
+                buf = Format::<Fix>::decode(&mut self.ignored, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3108,13 +3108,13 @@ impl binformat::Encodable for MessageOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.message_set_wire_format, 8u32, buf)?;
-        Decode::<Fix>::encode(&self.no_standard_descriptor_accessor, 16u32, buf)?;
-        Decode::<Fix>::encode(&self.deprecated, 24u32, buf)?;
-        Decode::<Fix>::encode(&self.map_entry, 56u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
-        Decode::<Fix>::encode(&self.disabled, 8568u32, buf)?;
-        Decode::<Fix>::encode(&self.ignored, 8576u32, buf)?;
+        Format::<Fix>::encode(&self.message_set_wire_format, 8u32, buf)?;
+        Format::<Fix>::encode(&self.no_standard_descriptor_accessor, 16u32, buf)?;
+        Format::<Fix>::encode(&self.deprecated, 24u32, buf)?;
+        Format::<Fix>::encode(&self.map_entry, 56u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Fix>::encode(&self.disabled, 8568u32, buf)?;
+        Format::<Fix>::encode(&self.ignored, 8576u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3319,48 +3319,48 @@ impl binformat::Decodable for FieldOptions {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Enum>::decode(&mut self.ctype, buf)?;
+                buf = Format::<Enum>::decode(&mut self.ctype, buf)?;
             }
             10u32 => {
-                buf = Decode::<Enum>::decode(&mut self.ctype, buf)?;
+                buf = Format::<Enum>::decode(&mut self.ctype, buf)?;
             }
             16u32 => {
-                buf = Decode::<Fix>::decode(&mut self.packed, buf)?;
+                buf = Format::<Fix>::decode(&mut self.packed, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.packed, buf)?;
+                buf = Format::<Fix>::decode(&mut self.packed, buf)?;
             }
             48u32 => {
-                buf = Decode::<Enum>::decode(&mut self.jstype, buf)?;
+                buf = Format::<Enum>::decode(&mut self.jstype, buf)?;
             }
             50u32 => {
-                buf = Decode::<Enum>::decode(&mut self.jstype, buf)?;
+                buf = Format::<Enum>::decode(&mut self.jstype, buf)?;
             }
             40u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lazy, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lazy, buf)?;
             }
             42u32 => {
-                buf = Decode::<Fix>::decode(&mut self.lazy, buf)?;
+                buf = Format::<Fix>::decode(&mut self.lazy, buf)?;
             }
             24u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             80u32 => {
-                buf = Decode::<Fix>::decode(&mut self.weak, buf)?;
+                buf = Format::<Fix>::decode(&mut self.weak, buf)?;
             }
             82u32 => {
-                buf = Decode::<Fix>::decode(&mut self.weak, buf)?;
+                buf = Format::<Fix>::decode(&mut self.weak, buf)?;
             }
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
             8570u32 => {
-                buf = Decode::<Nest>::decode(&mut self.rules, buf)?;
+                buf = Format::<Nest>::decode(&mut self.rules, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3373,14 +3373,14 @@ impl binformat::Encodable for FieldOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Enum>::encode(&self.ctype, 8u32, buf)?;
-        Decode::<Fix>::encode(&self.packed, 16u32, buf)?;
-        Decode::<Enum>::encode(&self.jstype, 48u32, buf)?;
-        Decode::<Fix>::encode(&self.lazy, 40u32, buf)?;
-        Decode::<Fix>::encode(&self.deprecated, 24u32, buf)?;
-        Decode::<Fix>::encode(&self.weak, 80u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
-        Decode::<Nest>::encode(&self.rules, 8570u32, buf)?;
+        Format::<Enum>::encode(&self.ctype, 8u32, buf)?;
+        Format::<Fix>::encode(&self.packed, 16u32, buf)?;
+        Format::<Enum>::encode(&self.jstype, 48u32, buf)?;
+        Format::<Fix>::encode(&self.lazy, 40u32, buf)?;
+        Format::<Fix>::encode(&self.deprecated, 24u32, buf)?;
+        Format::<Fix>::encode(&self.weak, 80u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Nest>::encode(&self.rules, 8570u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3465,15 +3465,15 @@ impl binformat::Decodable for OneofOptions {
         use binformat::format::*;
         match tag {
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
             8568u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             8570u32 => {
-                buf = Decode::<Fix>::decode(&mut self.required, buf)?;
+                buf = Format::<Fix>::decode(&mut self.required, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3486,8 +3486,8 @@ impl binformat::Encodable for OneofOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
-        Decode::<Fix>::encode(&self.required, 8568u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Fix>::encode(&self.required, 8568u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3592,19 +3592,19 @@ impl binformat::Decodable for EnumOptions {
         use binformat::format::*;
         match tag {
             16u32 => {
-                buf = Decode::<Fix>::decode(&mut self.allow_alias, buf)?;
+                buf = Format::<Fix>::decode(&mut self.allow_alias, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.allow_alias, buf)?;
+                buf = Format::<Fix>::decode(&mut self.allow_alias, buf)?;
             }
             24u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             26u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
@@ -3619,9 +3619,9 @@ impl binformat::Encodable for EnumOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.allow_alias, 16u32, buf)?;
-        Decode::<Fix>::encode(&self.deprecated, 24u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Fix>::encode(&self.allow_alias, 16u32, buf)?;
+        Format::<Fix>::encode(&self.deprecated, 24u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3706,13 +3706,13 @@ impl binformat::Decodable for EnumValueOptions {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             10u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
@@ -3727,8 +3727,8 @@ impl binformat::Encodable for EnumValueOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.deprecated, 8u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Fix>::encode(&self.deprecated, 8u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3813,13 +3813,13 @@ impl binformat::Decodable for ServiceOptions {
         use binformat::format::*;
         match tag {
             264u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             266u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
@@ -3834,8 +3834,8 @@ impl binformat::Encodable for ServiceOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.deprecated, 264u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Fix>::encode(&self.deprecated, 264u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3948,19 +3948,19 @@ impl binformat::Decodable for MethodOptions {
         use binformat::format::*;
         match tag {
             264u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             266u32 => {
-                buf = Decode::<Fix>::decode(&mut self.deprecated, buf)?;
+                buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             272u32 => {
-                buf = Decode::<Enum>::decode(&mut self.idempotency_level, buf)?;
+                buf = Format::<Enum>::decode(&mut self.idempotency_level, buf)?;
             }
             274u32 => {
-                buf = Decode::<Enum>::decode(&mut self.idempotency_level, buf)?;
+                buf = Format::<Enum>::decode(&mut self.idempotency_level, buf)?;
             }
             7994u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Nest>,
                 >::decode(&mut self.uninterpreted_option, buf)?;
             }
@@ -3975,9 +3975,9 @@ impl binformat::Encodable for MethodOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Fix>::encode(&self.deprecated, 264u32, buf)?;
-        Decode::<Enum>::encode(&self.idempotency_level, 272u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        Format::<Fix>::encode(&self.deprecated, 264u32, buf)?;
+        Format::<Enum>::encode(&self.idempotency_level, 272u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4161,34 +4161,34 @@ impl binformat::Decodable for UninterpretedOption {
         use binformat::format::*;
         match tag {
             18u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.name, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.name, buf)?;
             }
             26u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.identifier_value, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.identifier_value, buf)?;
             }
             32u32 => {
-                buf = Decode::<VInt>::decode(&mut self.positive_int_value, buf)?;
+                buf = Format::<VInt>::decode(&mut self.positive_int_value, buf)?;
             }
             34u32 => {
-                buf = Decode::<VInt>::decode(&mut self.positive_int_value, buf)?;
+                buf = Format::<VInt>::decode(&mut self.positive_int_value, buf)?;
             }
             40u32 => {
-                buf = Decode::<VInt>::decode(&mut self.negative_int_value, buf)?;
+                buf = Format::<VInt>::decode(&mut self.negative_int_value, buf)?;
             }
             42u32 => {
-                buf = Decode::<VInt>::decode(&mut self.negative_int_value, buf)?;
+                buf = Format::<VInt>::decode(&mut self.negative_int_value, buf)?;
             }
             49u32 => {
-                buf = Decode::<Fix>::decode(&mut self.double_value, buf)?;
+                buf = Format::<Fix>::decode(&mut self.double_value, buf)?;
             }
             50u32 => {
-                buf = Decode::<Fix>::decode(&mut self.double_value, buf)?;
+                buf = Format::<Fix>::decode(&mut self.double_value, buf)?;
             }
             58u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.string_value, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.string_value, buf)?;
             }
             66u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.aggregate_value, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.aggregate_value, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4201,13 +4201,13 @@ impl binformat::Encodable for UninterpretedOption {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Nest>>::encode(&self.name, 18u32, buf)?;
-        Decode::<Bytes>::encode(&self.identifier_value, 26u32, buf)?;
-        Decode::<VInt>::encode(&self.positive_int_value, 32u32, buf)?;
-        Decode::<VInt>::encode(&self.negative_int_value, 40u32, buf)?;
-        Decode::<Fix>::encode(&self.double_value, 49u32, buf)?;
-        Decode::<Bytes>::encode(&self.string_value, 58u32, buf)?;
-        Decode::<Bytes>::encode(&self.aggregate_value, 66u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.name, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.identifier_value, 26u32, buf)?;
+        Format::<VInt>::encode(&self.positive_int_value, 32u32, buf)?;
+        Format::<VInt>::encode(&self.negative_int_value, 40u32, buf)?;
+        Format::<Fix>::encode(&self.double_value, 49u32, buf)?;
+        Format::<Bytes>::encode(&self.string_value, 58u32, buf)?;
+        Format::<Bytes>::encode(&self.aggregate_value, 66u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4291,13 +4291,13 @@ impl binformat::Decodable for UninterpretedOptionNamePart {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name_part, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name_part, buf)?;
             }
             16u32 => {
-                buf = Decode::<Fix>::decode(&mut self.is_extension, buf)?;
+                buf = Format::<Fix>::decode(&mut self.is_extension, buf)?;
             }
             18u32 => {
-                buf = Decode::<Fix>::decode(&mut self.is_extension, buf)?;
+                buf = Format::<Fix>::decode(&mut self.is_extension, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4310,8 +4310,8 @@ impl binformat::Encodable for UninterpretedOptionNamePart {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name_part, 10u32, buf)?;
-        Decode::<Fix>::encode(&self.is_extension, 16u32, buf)?;
+        Format::<Bytes>::encode(&self.name_part, 10u32, buf)?;
+        Format::<Fix>::encode(&self.is_extension, 16u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4375,7 +4375,7 @@ impl binformat::Decodable for SourceCodeInfo {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.location, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.location, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4388,7 +4388,7 @@ impl binformat::Encodable for SourceCodeInfo {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Nest>>::encode(&self.location, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.location, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4536,25 +4536,25 @@ impl binformat::Decodable for SourceCodeInfoLocation {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             10u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             16u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.span, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.span, buf)?;
             }
             18u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.span, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.span, buf)?;
             }
             26u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.leading_comments, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.leading_comments, buf)?;
             }
             34u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.trailing_comments, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.trailing_comments, buf)?;
             }
             50u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Bytes>,
                 >::decode(&mut self.leading_detached_comments, buf)?;
             }
@@ -4569,11 +4569,11 @@ impl binformat::Encodable for SourceCodeInfoLocation {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<VInt>>::encode(&self.path, 8u32, buf)?;
-        Decode::<Repeat::<VInt>>::encode(&self.span, 16u32, buf)?;
-        Decode::<Bytes>::encode(&self.leading_comments, 26u32, buf)?;
-        Decode::<Bytes>::encode(&self.trailing_comments, 34u32, buf)?;
-        Decode::<Repeat::<Bytes>>::encode(&self.leading_detached_comments, 50u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.path, 8u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.span, 16u32, buf)?;
+        Format::<Bytes>::encode(&self.leading_comments, 26u32, buf)?;
+        Format::<Bytes>::encode(&self.trailing_comments, 34u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.leading_detached_comments, 50u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4637,7 +4637,7 @@ impl binformat::Decodable for GeneratedCodeInfo {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.annotation, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.annotation, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4650,7 +4650,7 @@ impl binformat::Encodable for GeneratedCodeInfo {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Nest>>::encode(&self.annotation, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.annotation, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4774,25 +4774,25 @@ impl binformat::Decodable for GeneratedCodeInfoAnnotation {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             10u32 => {
-                buf = Decode::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.source_file, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.source_file, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.begin, buf)?;
+                buf = Format::<VInt>::decode(&mut self.begin, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.begin, buf)?;
+                buf = Format::<VInt>::decode(&mut self.begin, buf)?;
             }
             32u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             34u32 => {
-                buf = Decode::<VInt>::decode(&mut self.end, buf)?;
+                buf = Format::<VInt>::decode(&mut self.end, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4805,10 +4805,10 @@ impl binformat::Encodable for GeneratedCodeInfoAnnotation {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<VInt>>::encode(&self.path, 8u32, buf)?;
-        Decode::<Bytes>::encode(&self.source_file, 18u32, buf)?;
-        Decode::<VInt>::encode(&self.begin, 24u32, buf)?;
-        Decode::<VInt>::encode(&self.end, 32u32, buf)?;
+        Format::<Repeat::<VInt>>::encode(&self.path, 8u32, buf)?;
+        Format::<Bytes>::encode(&self.source_file, 18u32, buf)?;
+        Format::<VInt>::encode(&self.begin, 24u32, buf)?;
+        Format::<VInt>::encode(&self.end, 32u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

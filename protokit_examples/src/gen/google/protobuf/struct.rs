@@ -71,7 +71,7 @@ impl binformat::Decodable for Struct {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Map::<Bytes, Nest>>::decode(&mut self.fields, buf)?;
+                buf = Format::<Map::<Bytes, Nest>>::decode(&mut self.fields, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -84,7 +84,7 @@ impl binformat::Encodable for Struct {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Map::<Bytes, Nest>>::encode(&self.fields, 10u32, buf)?;
+        Format::<Map::<Bytes, Nest>>::encode(&self.fields, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -259,47 +259,47 @@ impl binformat::Decodable for Value {
         match tag {
             8u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Enum>::decode(&mut tmp, buf)?;
+                buf = Format::<Enum>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::NullValue(tmp);
             }
             10u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Enum>::decode(&mut tmp, buf)?;
+                buf = Format::<Enum>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::NullValue(tmp);
             }
             17u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::NumberValue(tmp);
             }
             18u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::NumberValue(tmp);
             }
             26u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Bytes>::decode(&mut tmp, buf)?;
+                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::StringValue(tmp);
             }
             32u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::BoolValue(tmp);
             }
             34u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Fix>::decode(&mut tmp, buf)?;
+                buf = Format::<Fix>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::BoolValue(tmp);
             }
             42u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::StructValue(tmp);
             }
             50u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Nest>::decode(&mut tmp, buf)?;
+                buf = Format::<Nest>::decode(&mut tmp, buf)?;
                 self.kind = ValueOneOfKind::ListValue(tmp);
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
@@ -315,22 +315,22 @@ impl binformat::Encodable for Value {
         use binformat::format::*;
         match &self.kind {
             ValueOneOfKind::NullValue(value) => {
-                Decode::<Enum>::encode(value, 8u32, buf)?;
+                Format::<Enum>::encode(value, 8u32, buf)?;
             }
             ValueOneOfKind::NumberValue(value) => {
-                Decode::<Fix>::encode(value, 17u32, buf)?;
+                Format::<Fix>::encode(value, 17u32, buf)?;
             }
             ValueOneOfKind::StringValue(value) => {
-                Decode::<Bytes>::encode(value, 26u32, buf)?;
+                Format::<Bytes>::encode(value, 26u32, buf)?;
             }
             ValueOneOfKind::BoolValue(value) => {
-                Decode::<Fix>::encode(value, 32u32, buf)?;
+                Format::<Fix>::encode(value, 32u32, buf)?;
             }
             ValueOneOfKind::StructValue(value) => {
-                Decode::<Nest>::encode(value, 42u32, buf)?;
+                Format::<Nest>::encode(value, 42u32, buf)?;
             }
             ValueOneOfKind::ListValue(value) => {
-                Decode::<Nest>::encode(value, 50u32, buf)?;
+                Format::<Nest>::encode(value, 50u32, buf)?;
             }
             ValueOneOfKind::Unknown(..) => {}
         }
@@ -413,7 +413,7 @@ impl binformat::Decodable for ListValue {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.values, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.values, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -426,7 +426,7 @@ impl binformat::Encodable for ListValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Nest>>::encode(&self.values, 10u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.values, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

@@ -18,6 +18,8 @@ pub struct Book {
     pub title: String,
     pub author: Option<String>,
     pub x: Option<i32>,
+    pub pack: Vec<i32>,
+    pub pack2: Vec<f32>,
     pub category: Vec<Category>,
     pub sections: Vec<BookSection>,
     pub test1: ::std::collections::HashMap<String, String>,
@@ -55,6 +57,26 @@ impl Book {
     #[inline(always)]
     pub fn r#set_x(&mut self, it: i32) -> &mut Self {
         self.x = it.into();
+        self
+    }
+    #[inline(always)]
+    pub fn r#with_pack(mut self, it: i32) -> Self {
+        self.r#add_pack(it);
+        self
+    }
+    #[inline(always)]
+    pub fn r#add_pack(&mut self, it: i32) -> &mut Self {
+        self.pack.push(it);
+        self
+    }
+    #[inline(always)]
+    pub fn r#with_pack2(mut self, it: f32) -> Self {
+        self.r#add_pack2(it);
+        self
+    }
+    #[inline(always)]
+    pub fn r#add_pack2(&mut self, it: f32) -> &mut Self {
+        self.pack2.push(it);
         self
     }
     #[inline(always)]
@@ -145,6 +167,12 @@ impl textformat::Decodable for Book {
             textformat::ast::FieldName::Normal("x") => {
                 textformat::Field::merge(&mut self.x, ctx, value)?;
             }
+            textformat::ast::FieldName::Normal("pack") => {
+                textformat::Field::merge(&mut self.pack, ctx, value)?;
+            }
+            textformat::ast::FieldName::Normal("pack2") => {
+                textformat::Field::merge(&mut self.pack2, ctx, value)?;
+            }
             textformat::ast::FieldName::Normal("category") => {
                 textformat::Field::merge(&mut self.category, ctx, value)?;
             }
@@ -198,6 +226,18 @@ impl textformat::Encodable for Book {
             out.indent(pad);
             out.push_str("x: ");
             textformat::Field::format(&self.x, ctx, pad, out)?;
+            out.push('\n');
+        }
+        if self.pack != <Vec<i32> as Default>::default() {
+            out.indent(pad);
+            out.push_str("pack: ");
+            textformat::Field::format(&self.pack, ctx, pad, out)?;
+            out.push('\n');
+        }
+        if self.pack2 != <Vec<f32> as Default>::default() {
+            out.indent(pad);
+            out.push_str("pack2: ");
+            textformat::Field::format(&self.pack2, ctx, pad, out)?;
             out.push('\n');
         }
         if self.category != <Vec<Category> as Default>::default() {
@@ -259,48 +299,60 @@ impl binformat::Decodable for Book {
         use binformat::format::*;
         match tag {
             26u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.title, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.title, buf)?;
             }
             34u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.author, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.author, buf)?;
             }
             1848u32 => {
-                buf = Decode::<VInt>::decode(&mut self.x, buf)?;
+                buf = Format::<VInt>::decode(&mut self.x, buf)?;
             }
             1850u32 => {
-                buf = Decode::<VInt>::decode(&mut self.x, buf)?;
+                buf = Format::<VInt>::decode(&mut self.x, buf)?;
+            }
+            2584u32 => {
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.pack, buf)?;
+            }
+            2586u32 => {
+                buf = Format::<Pack::<VInt>>::decode(&mut self.pack, buf)?;
+            }
+            25869u32 => {
+                buf = Format::<Repeat::<Fix>>::decode(&mut self.pack2, buf)?;
+            }
+            25866u32 => {
+                buf = Format::<Pack::<Fix>>::decode(&mut self.pack2, buf)?;
             }
             256u32 => {
-                buf = Decode::<Repeat::<Enum>>::decode(&mut self.category, buf)?;
+                buf = Format::<Repeat::<Enum>>::decode(&mut self.category, buf)?;
             }
             258u32 => {
-                buf = Decode::<Repeat::<Enum>>::decode(&mut self.category, buf)?;
+                buf = Format::<Repeat::<Enum>>::decode(&mut self.category, buf)?;
             }
             642u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.sections, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.sections, buf)?;
             }
             2578u32 => {
-                buf = Decode::<Map::<Bytes, Bytes>>::decode(&mut self.test1, buf)?;
+                buf = Format::<Map::<Bytes, Bytes>>::decode(&mut self.test1, buf)?;
             }
             282u32 => {
-                buf = Decode::<Nest>::decode(&mut self.other, buf)?;
+                buf = Format::<Nest>::decode(&mut self.other, buf)?;
             }
             530u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.extfield, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.extfield, buf)?;
             }
             8u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<VInt>::decode(&mut tmp, buf)?;
+                buf = Format::<VInt>::decode(&mut tmp, buf)?;
                 self.id = BookOneOfId::Local(tmp);
             }
             10u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<VInt>::decode(&mut tmp, buf)?;
+                buf = Format::<VInt>::decode(&mut tmp, buf)?;
                 self.id = BookOneOfId::Local(tmp);
             }
             18u32 => {
                 let mut tmp = Default::default();
-                buf = Decode::<Bytes>::decode(&mut tmp, buf)?;
+                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
                 self.id = BookOneOfId::Isbn(tmp);
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
@@ -314,20 +366,22 @@ impl binformat::Encodable for Book {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.title, 26u32, buf)?;
-        Decode::<Bytes>::encode(&self.author, 34u32, buf)?;
-        Decode::<VInt>::encode(&self.x, 1848u32, buf)?;
-        Decode::<Repeat::<Enum>>::encode(&self.category, 256u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.sections, 642u32, buf)?;
-        Decode::<Map::<Bytes, Bytes>>::encode(&self.test1, 2578u32, buf)?;
-        Decode::<Nest>::encode(&self.other, 282u32, buf)?;
-        Decode::<Bytes>::encode(&self.extfield, 530u32, buf)?;
+        Format::<Bytes>::encode(&self.title, 26u32, buf)?;
+        Format::<Bytes>::encode(&self.author, 34u32, buf)?;
+        Format::<VInt>::encode(&self.x, 1848u32, buf)?;
+        Format::<Pack::<VInt>>::encode(&self.pack, 2586u32, buf)?;
+        Format::<Pack::<Fix>>::encode(&self.pack2, 25866u32, buf)?;
+        Format::<Repeat::<Enum>>::encode(&self.category, 258u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.sections, 642u32, buf)?;
+        Format::<Map::<Bytes, Bytes>>::encode(&self.test1, 2578u32, buf)?;
+        Format::<Nest>::encode(&self.other, 282u32, buf)?;
+        Format::<Bytes>::encode(&self.extfield, 530u32, buf)?;
         match &self.id {
             BookOneOfId::Local(value) => {
-                Decode::<VInt>::encode(value, 8u32, buf)?;
+                Format::<VInt>::encode(value, 8u32, buf)?;
             }
             BookOneOfId::Isbn(value) => {
-                Decode::<Bytes>::encode(value, 18u32, buf)?;
+                Format::<Bytes>::encode(value, 18u32, buf)?;
             }
             BookOneOfId::Unknown(..) => {}
         }
@@ -406,7 +460,7 @@ impl binformat::Decodable for BookSection {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.contents, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.contents, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -419,7 +473,7 @@ impl binformat::Encodable for BookSection {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.contents, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.contents, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

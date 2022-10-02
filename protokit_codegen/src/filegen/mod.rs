@@ -8,6 +8,7 @@ use protokit_binformat::Encodable;
 use protokit_proto::translate::TranslateCtx;
 use quote::__private::{Ident, TokenStream};
 use quote::{format_ident, quote};
+use protokit_desc::Syntax::Proto3;
 
 use crate::arcstr::ArcStr;
 use crate::deps::*;
@@ -161,20 +162,20 @@ impl CodeGenerator<'_> {
             }
         })
     }
-    pub fn type_to_encoder(&self, f: &FieldDef) -> Result<TokenStream> {
-        let format = self.type_to_binformat(f)?;
-        Ok(quote! { Decode::<#format>::encode })
+    pub fn type_to_encoder(&self, f: &FieldDef, force_packed: bool) -> Result<TokenStream> {
+        let format = self.type_to_binformat(f, force_packed)?;
+        Ok(quote! { Format::<#format>::encode })
     }
     pub fn type_to_decoder(&self, f: &FieldDef) -> Result<TokenStream> {
-        let format = self.type_to_binformat(f)?;
-        Ok(quote! { Decode::<#format>::decode })
+        let format = self.type_to_binformat(f, false)?;
+        Ok(quote! { Format::<#format>::decode })
     }
-    pub fn type_to_binformat(&self, f: &FieldDef) -> Result<TokenStream> {
+    pub fn type_to_binformat(&self, f: &FieldDef, force_packed: bool) -> Result<TokenStream> {
         use BuiltinType::*;
         match &f.typ {
             DataType::Builtin(String_ | Bytes_) if f.is_repeated() => Ok(quote! { Repeat::<Bytes> }),
             DataType::Builtin(String_ | Bytes_) => Ok(quote! { Bytes }),
-            DataType::Builtin(bt) if f.is_packed() => {
+            DataType::Builtin(bt) if f.is_repeated() && (f.is_packed() || force_packed) => {
                 let inner = format_ident!("{}", builtin_parser(*bt));
                 Ok(quote! { Pack::<#inner> })
             }
@@ -215,7 +216,7 @@ impl CodeGenerator<'_> {
                     options: Default::default(),
                 };
 
-                let vp = self.type_to_binformat(&fd)?;
+                let vp = self.type_to_binformat(&fd, false)?;
                 Ok(quote! { Map::<#kp, #vp> })
             }
             DataType::Unresolved(name) => panic!("{name} was not resolved"),
@@ -225,6 +226,7 @@ impl CodeGenerator<'_> {
     pub fn field_binformat(
         &self,
         out: &mut MsgOutput,
+        file: &FileDef,
         _msg_name: &Ident,
         name: &Ident,
         _field_idx: usize,
@@ -233,9 +235,9 @@ impl CodeGenerator<'_> {
         let mut field: FieldDef = field.clone();
         let field_num = field.num as u32;
 
-        let encode_tag = field.default_wire_type();
+        let encode_tag = field.default_wire_type(file.syntax == Syntax::Proto3);
         let encode_tag = (field_num << 3 | encode_tag as u32) as u32;
-        let encode_fn = self.type_to_encoder(&field).unwrap();
+        let encode_fn = self.type_to_encoder(&field, file.syntax == Syntax::Proto3).unwrap();
 
         out.bin_encoders.push(quote! {
             #encode_fn(&self.#name, #encode_tag, buf)?;
@@ -427,12 +429,13 @@ impl CodeGenerator<'_> {
         if self.options.generate_text {
             self.field_textformat(out, &field_name, field, field_raw_name, &field_type, ext_pkg);
         }
-        self.field_binformat(out, msg_name, &field_name, field_idx, field);
+        self.field_binformat(out, file,msg_name, &field_name, field_idx, field);
     }
 
     pub fn oneof_variant(
         &self,
         out: &mut MsgOutput,
+        file: &FileDef,
         variant_encoders: &mut Vec<TokenStream>,
         variant_text_encoders: &mut Vec<TokenStream>,
         oneof: &OneOfDef,
@@ -467,7 +470,7 @@ impl CodeGenerator<'_> {
         });
 
         let (normal, packed) = variant.wire_types();
-        let encode_fn = self.type_to_encoder(variant).unwrap();
+        let encode_fn = self.type_to_encoder(variant, file.syntax == Proto3).unwrap();
         let decode_fn = self.type_to_decoder(variant).unwrap();
         let id = variant.num as u32;
 
@@ -532,6 +535,7 @@ impl CodeGenerator<'_> {
     pub fn message_oneof(
         &self,
         out: &mut MsgOutput,
+        file: &FileDef,
         normal_field_count: usize,
         _msg_id: u64,
         _msg: &MessageDef,
@@ -556,6 +560,7 @@ impl CodeGenerator<'_> {
             let variant = &oneof.fields.by_number[var_num];
             self.oneof_variant(
                 out,
+                file,
                 &mut variant_encoders,
                 &mut variant_text_encoders,
                 oneof,
@@ -650,7 +655,7 @@ impl CodeGenerator<'_> {
         }
 
         for (oneof_idx, (_oneof_name, oneof)) in unit.oneofs.iter().enumerate() {
-            self.message_oneof(&mut out, normal_field_count, unit_id, unit, &msg_name, oneof_idx, oneof)
+            self.message_oneof(&mut out, file, normal_field_count, unit_id, unit, &msg_name, oneof_idx, oneof)
         }
 
         let MsgOutput {

@@ -67,7 +67,7 @@ impl binformat::Decodable for SourceContext {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.file_name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.file_name, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -80,7 +80,7 @@ impl binformat::Encodable for SourceContext {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.file_name, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.file_name, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

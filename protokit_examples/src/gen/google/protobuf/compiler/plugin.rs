@@ -132,25 +132,25 @@ impl binformat::Decodable for Version {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.major, buf)?;
+                buf = Format::<VInt>::decode(&mut self.major, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.major, buf)?;
+                buf = Format::<VInt>::decode(&mut self.major, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.minor, buf)?;
+                buf = Format::<VInt>::decode(&mut self.minor, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.minor, buf)?;
+                buf = Format::<VInt>::decode(&mut self.minor, buf)?;
             }
             24u32 => {
-                buf = Decode::<VInt>::decode(&mut self.patch, buf)?;
+                buf = Format::<VInt>::decode(&mut self.patch, buf)?;
             }
             26u32 => {
-                buf = Decode::<VInt>::decode(&mut self.patch, buf)?;
+                buf = Format::<VInt>::decode(&mut self.patch, buf)?;
             }
             34u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.suffix, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.suffix, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -163,10 +163,10 @@ impl binformat::Encodable for Version {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.major, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.minor, 16u32, buf)?;
-        Decode::<VInt>::encode(&self.patch, 24u32, buf)?;
-        Decode::<Bytes>::encode(&self.suffix, 34u32, buf)?;
+        Format::<VInt>::encode(&self.major, 8u32, buf)?;
+        Format::<VInt>::encode(&self.minor, 16u32, buf)?;
+        Format::<VInt>::encode(&self.patch, 24u32, buf)?;
+        Format::<Bytes>::encode(&self.suffix, 34u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -290,18 +290,18 @@ impl binformat::Decodable for CodeGeneratorRequest {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<
+                buf = Format::<
                     Repeat::<Bytes>,
                 >::decode(&mut self.file_to_generate, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.parameter, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.parameter, buf)?;
             }
             122u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.proto_file, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.proto_file, buf)?;
             }
             26u32 => {
-                buf = Decode::<Nest>::decode(&mut self.compiler_version, buf)?;
+                buf = Format::<Nest>::decode(&mut self.compiler_version, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -314,10 +314,10 @@ impl binformat::Encodable for CodeGeneratorRequest {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Bytes>>::encode(&self.file_to_generate, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.parameter, 18u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.proto_file, 122u32, buf)?;
-        Decode::<Nest>::encode(&self.compiler_version, 26u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.file_to_generate, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.parameter, 18u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.proto_file, 122u32, buf)?;
+        Format::<Nest>::encode(&self.compiler_version, 26u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -421,16 +421,16 @@ impl binformat::Decodable for CodeGeneratorResponse {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.error, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.error, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.supported_features, buf)?;
+                buf = Format::<VInt>::decode(&mut self.supported_features, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.supported_features, buf)?;
+                buf = Format::<VInt>::decode(&mut self.supported_features, buf)?;
             }
             122u32 => {
-                buf = Decode::<Repeat::<Nest>>::decode(&mut self.file, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.file, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -443,9 +443,9 @@ impl binformat::Encodable for CodeGeneratorResponse {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.error, 10u32, buf)?;
-        Decode::<VInt>::encode(&self.supported_features, 16u32, buf)?;
-        Decode::<Repeat::<Nest>>::encode(&self.file, 122u32, buf)?;
+        Format::<Bytes>::encode(&self.error, 10u32, buf)?;
+        Format::<VInt>::encode(&self.supported_features, 16u32, buf)?;
+        Format::<Repeat::<Nest>>::encode(&self.file, 122u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -571,16 +571,16 @@ impl binformat::Decodable for CodeGeneratorResponseFile {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.name, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.insertion_point, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.insertion_point, buf)?;
             }
             122u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.content, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.content, buf)?;
             }
             130u32 => {
-                buf = Decode::<Nest>::decode(&mut self.generated_code_info, buf)?;
+                buf = Format::<Nest>::decode(&mut self.generated_code_info, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -593,10 +593,10 @@ impl binformat::Encodable for CodeGeneratorResponseFile {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.insertion_point, 18u32, buf)?;
-        Decode::<Bytes>::encode(&self.content, 122u32, buf)?;
-        Decode::<Nest>::encode(&self.generated_code_info, 130u32, buf)?;
+        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.insertion_point, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.content, 122u32, buf)?;
+        Format::<Nest>::encode(&self.generated_code_info, 130u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

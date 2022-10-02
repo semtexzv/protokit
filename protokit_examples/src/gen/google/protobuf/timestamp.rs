@@ -88,16 +88,16 @@ impl binformat::Decodable for Timestamp {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Decode::<VInt>::decode(&mut self.seconds, buf)?;
+                buf = Format::<VInt>::decode(&mut self.seconds, buf)?;
             }
             10u32 => {
-                buf = Decode::<VInt>::decode(&mut self.seconds, buf)?;
+                buf = Format::<VInt>::decode(&mut self.seconds, buf)?;
             }
             16u32 => {
-                buf = Decode::<VInt>::decode(&mut self.nanos, buf)?;
+                buf = Format::<VInt>::decode(&mut self.nanos, buf)?;
             }
             18u32 => {
-                buf = Decode::<VInt>::decode(&mut self.nanos, buf)?;
+                buf = Format::<VInt>::decode(&mut self.nanos, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -110,8 +110,8 @@ impl binformat::Encodable for Timestamp {
     }
     fn encode(&self, buf: &mut Vec<u8>) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<VInt>::encode(&self.seconds, 8u32, buf)?;
-        Decode::<VInt>::encode(&self.nanos, 16u32, buf)?;
+        Format::<VInt>::encode(&self.seconds, 8u32, buf)?;
+        Format::<VInt>::encode(&self.nanos, 16u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

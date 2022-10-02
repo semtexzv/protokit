@@ -264,9 +264,9 @@ impl FieldDef {
         (normal, second)
     }
 
-    pub fn default_wire_type(&self) -> WireType {
+    pub fn default_wire_type(&self, force_packed: bool) -> WireType {
         match self.wire_types() {
-            (_, Some(p)) if self.is_packed() => p,
+            (_, Some(p)) if self.is_repeated() && (self.is_packed() || force_packed) => p,
             (norm, _) => norm,
         }
     }
@@ -303,9 +303,19 @@ impl FieldDef {
             _ => false,
         }
     }
+
     #[cfg(feature = "descriptors")]
-    pub fn from_descriptor(set: &mut FileSetDef, _msg_desc: &DescriptorProto, desc: &FieldDescriptorProto) -> Self {
-        eprintln!("{:?}", desc);
+    pub fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, _msg_desc: &DescriptorProto, desc: &FieldDescriptorProto) -> Self {
+        // eprintln!("{:?}", desc);
+        // TODO: Fix the packed attr to be default true in proto3
+        let mut opts = desc.options.as_deref().map(|v| v.clone()).unwrap_or_default();
+
+        if file.syntax.as_deref() == Some("proto3") {
+            if opts.packed.is_none() {
+                opts.packed = Some(true);
+            }
+        }
+
         Self {
             name: set.cache(desc.name.as_ref().unwrap()),
             frequency: match &desc.label {
@@ -344,9 +354,10 @@ impl FieldDef {
                 FieldDescriptorProtoType::Unknown(_) => panic!(),
             },
             num: desc.number.unwrap(),
-            options: Default::default(),
+            options: opts,
         }
     }
+
     #[cfg(feature = "descriptors")]
     pub fn to_descriptor(&self, set: &FileSetDef, file: &FileDef, msg: &mut DescriptorProto) -> FieldDescriptorProto {
         let mut fout = FieldDescriptorProto {
@@ -522,6 +533,7 @@ impl MessageFields {
     #[cfg(feature = "descriptors")]
     pub fn from_descriptor(
         set: &mut FileSetDef,
+        file: &FileDescriptorProto,
         oneof: Option<i32>,
         desc: &DescriptorProto,
         fields: &[FieldDescriptorProto],
@@ -532,7 +544,7 @@ impl MessageFields {
                 this.by_name
                     .insert(set.cache(f.name.as_ref().unwrap()), f.number.unwrap());
                 this.by_number
-                    .insert(f.number.unwrap(), FieldDef::from_descriptor(set, desc, f));
+                    .insert(f.number.unwrap(), FieldDef::from_descriptor(set, file, desc, f));
             }
         }
         this
@@ -551,10 +563,10 @@ pub struct MessageDef {
 
 impl MessageDef {
     #[cfg(feature = "descriptors")]
-    fn from_descriptor(set: &mut FileSetDef, desc: &DescriptorProto) -> Self {
+    fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, desc: &DescriptorProto) -> Self {
         MessageDef {
             name: set.cache(desc.name.as_ref().unwrap()),
-            fields: MessageFields::from_descriptor(set, None, desc, &desc.field),
+            fields: MessageFields::from_descriptor(set, file, None, desc, &desc.field),
             options: Default::default(),
             oneofs: desc
                 .oneof_decl
@@ -566,7 +578,7 @@ impl MessageDef {
                         name.clone(),
                         OneOfDef {
                             name,
-                            fields: MessageFields::from_descriptor(set, Some(id as _), desc, &desc.field),
+                            fields: MessageFields::from_descriptor(set, file, Some(id as _), desc, &desc.field),
                             options: Default::default(),
                         },
                     )
@@ -832,7 +844,7 @@ impl FileDef {
             name: set.cache(desc.name.as_ref().unwrap()),
             imports: desc
                 .dependency
-                .into_iter()
+                .iter()
                 .map(|v| ImportDef {
                     name: set.cache(&v),
                     file_idx: set.files.get_index_of(v.as_str()).unwrap(),
@@ -840,7 +852,7 @@ impl FileDef {
                 .collect(),
             public_imports: vec![],
             syntax: Syntax::from_str(desc.syntax.as_ref().unwrap()).unwrap(),
-            package: set.cache(&desc.package.unwrap()),
+            package: set.cache(&desc.package.as_ref().unwrap()),
             messages: Default::default(),
             enums: Default::default(),
             services: Default::default(),
@@ -858,27 +870,27 @@ impl FileDef {
             this.enums.insert(name, EnumDef::from_descriptor(set, desc));
         }
 
-        fn parse_msg(set: &mut FileSetDef, this: &mut FileDef, parent: Option<&str>, desc: &DescriptorProto) {
+        fn parse_msg(set: &mut FileSetDef, file: &FileDescriptorProto, this: &mut FileDef, parent: Option<&str>, desc: &DescriptorProto) {
             let name = if let Some(parent) = parent {
                 set.cache(&format!("{}.{}", parent, desc.name.as_ref().unwrap()))
             } else {
                 set.cache(desc.name.as_ref().unwrap())
             };
             for desc in &desc.nested_type {
-                parse_msg(set, this, Some(name.as_str()), desc)
+                parse_msg(set,  file, this, Some(name.as_str()), desc)
             }
             for desc in &desc.enum_type {
                 parse_enum(set, this, Some(name.as_str()), desc);
             }
-            this.messages.insert(name, MessageDef::from_descriptor(set, desc));
+            this.messages.insert(name, MessageDef::from_descriptor(set, file, desc));
         }
 
         for desc in &desc.enum_type {
             parse_enum(set, &mut this, None, desc);
         }
 
-        for desc in &desc.message_type {
-            parse_msg(set, &mut this, None, desc);
+        for field_desc in &desc.message_type {
+            parse_msg(set, &desc, &mut this, None, field_desc);
         }
         this
     }

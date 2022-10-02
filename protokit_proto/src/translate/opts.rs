@@ -30,7 +30,7 @@ impl<E: protokit_textformat::Decodable> Visitor for InnerOptVisitor<'_, E> {
             Const::Float(f) => FieldValue::Scalar(Literal::Float(*f)),
             Const::Compound(c) => FieldValue::Message(c.to_vec()),
         };
-        // panic!("MERGING FIELD OPT {n:?} {v:?}");
+
         let _ = self.opts.merge_field(&ctx, &n, &v);
     }
 

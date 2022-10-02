@@ -67,7 +67,7 @@ impl binformat::Decodable for FieldMask {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Repeat::<Bytes>>::decode(&mut self.paths, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.paths, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -80,7 +80,7 @@ impl binformat::Encodable for FieldMask {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Repeat::<Bytes>>::encode(&self.paths, 10u32, buf)?;
+        Format::<Repeat::<Bytes>>::encode(&self.paths, 10u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

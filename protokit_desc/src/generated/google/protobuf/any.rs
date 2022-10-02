@@ -80,10 +80,10 @@ impl binformat::Decodable for Any {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.type_url, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.type_url, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.value, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.value, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -96,8 +96,8 @@ impl binformat::Encodable for Any {
     }
     fn encode(&self, buf: &mut Vec<u8>) -> binformat::Result<()> {
         use binformat::format::*;
-        Decode::<Bytes>::encode(&self.type_url, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.value, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.type_url, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.value, 18u32, buf)?;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

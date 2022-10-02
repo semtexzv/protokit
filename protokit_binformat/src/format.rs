@@ -1,5 +1,8 @@
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::marker::PhantomData;
+use std::net::Shutdown::Write;
+use anyhow::bail;
 
 use integer_encoding::VarInt;
 
@@ -88,22 +91,32 @@ impl ExtendFromBytes for Vec<u8> {
     }
 }
 
-pub trait Decode<M> {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()>;
+pub trait Format<M> {
+    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
+        Format::<RawVInt>::encode_val(&tag, buf)?;
+        Self::encode_val(self, buf)
+    }
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()>;
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>>;
 }
 
 pub struct Bytes;
-impl<B> Decode<Bytes> for B
+impl<B> Format<Bytes> for B
 where
     B: ExtendFromBytes,
 {
     fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
-        Decode::<RawVInt>::encode(&tag, 0, buf)?;
-        Decode::<RawVInt>::encode(&self.bytes_len(), 0, buf)?;
+        Format::<RawVInt>::encode(&tag, 0, buf)?;
+        // Self::encode_val(buf)
+        self.encode_val(buf)
+    }
+
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+        Format::<RawVInt>::encode(&self.bytes_len(), 0, buf)?;
         buf.extend_from_slice(self._as_bytes());
         Ok(())
     }
+
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let (dlen, len) = usize::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
@@ -114,15 +127,19 @@ where
 
 pub struct Repeat<D>(PhantomData<D>);
 
-impl<T, D> Decode<Repeat<D>> for Vec<T>
+impl<T, D> Format<Repeat<D>> for Vec<T>
 where
-    T: Decode<D> + Default,
+    T: Format<D> + Default,
 {
     fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
         for t in self {
             t.encode(tag, buf)?;
         }
         Ok(())
+    }
+
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+        panic!("Unexpected, can't encode value without tag for packed fields");
     }
 
     fn decode<'b>(&mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
@@ -135,20 +152,73 @@ where
 
 pub struct Map<K, V>(PhantomData<(K, V)>);
 
-impl<KF, VF, K: Decode<KF>, V: Decode<VF>> Decode<Map<KF, VF>> for HashMap<K, V> {
-    fn encode(&self, _tag: u32, _buf: &mut WriteBuffer) -> Result<()> {
-        todo!()
+impl<KF, VF, K: Format<KF> + Default + Hash + Eq, V: Format<VF> + Default> Format<Map<KF, VF>> for HashMap<K, V> {
+    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
+        for (k, v) in self {
+            let mut nest = WriteBuffer::new();
+            Format::<KF>::encode(k, 1, &mut nest)?;
+            Format::<VF>::encode(v, 2, &mut nest)?;
+
+            Format::<RawVInt>::encode_val(&tag, buf)?;
+            Format::<RawVInt>::encode_val(&nest.len(), buf)?;
+            buf.extend_from_slice(&nest);
+        }
+        Ok(())
     }
 
-    fn decode<'b>(&mut self, _buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-        todo!()
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+        panic!("Not applicable")
+    }
+
+    fn decode<'b>(&mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        let mut len = 0;
+
+        buf = Format::<RawVInt>::decode(&mut len, buf)?;
+        assert!(buf.len() >= len);
+        let (mut inner_buf, outer_buf) = buf.split_at(len);
+
+        while !inner_buf.is_empty() {
+            let mut k = K::default();
+            let mut v = V::default();
+            let mut tag = 0;
+            inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
+            match tag {
+                1 => {
+                    inner_buf = Format::<KF>::decode(&mut k, inner_buf)?;
+                    inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
+                    if tag != 2 {
+                        bail!("Invalid tag in map entry: {tag}");
+                    }
+                    inner_buf = Format::<VF>::decode(&mut v, inner_buf)?
+                },
+                2 => {
+                    inner_buf = Format::<VF>::decode(&mut v, inner_buf)?;
+                    inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
+                    if tag != 2 {
+                        bail!("Invalid tag in map entry: {tag}");
+                    }
+                    inner_buf = Format::<KF>::decode(&mut k, inner_buf)?
+                },
+                other => {
+                    bail!("Invalid tag in map entry: {other}");
+                }
+            }
+
+            self.insert(k, v);
+        }
+
+        Ok(outer_buf)
     }
 }
 
 pub struct RawVInt;
 
-impl Decode<RawVInt> for u64 {
-    fn encode(&self, _tag: u32, buf: &mut WriteBuffer) -> Result<()> {
+impl Format<RawVInt> for u64 {
+    fn encode(&self, _: u32, buf: &mut WriteBuffer) -> Result<()> {
+        Format::<RawVInt>::encode_val(self, buf)
+    }
+
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let len = self.required_space();
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
@@ -163,8 +233,12 @@ impl Decode<RawVInt> for u64 {
     }
 }
 
-impl Decode<RawVInt> for i64 {
-    fn encode(&self, _tag: u32, buf: &mut WriteBuffer) -> Result<()> {
+impl Format<RawVInt> for i64 {
+    fn encode(&self, _: u32, buf: &mut WriteBuffer) -> Result<()> {
+        Format::<RawVInt>::encode_val(self, buf)
+    }
+
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let target: &u64 = unsafe { std::mem::transmute(self) };
         let len = target.required_space();
         let olen = buf.len();
@@ -184,17 +258,22 @@ impl Decode<RawVInt> for i64 {
 
 macro_rules! impl_rawint {
     ($($t:ty:$d:ty),*) => {$(
-    impl Decode<RawVInt> for $t {
+    impl Format<RawVInt> for $t {
         fn decode<'b>(&mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
             let mut v : $d = 0;
-            buf = Decode::<RawVInt>::decode(&mut v, buf)?;
+            buf = Format::<RawVInt>::decode(&mut v, buf)?;
             *self = v as $t;
             Ok(buf)
         }
 
-        fn encode<'b>(&self ,_tag: u32, buf: &'b mut WriteBuffer) -> Result<()> {
+        fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
             let v = self.clone() as $d;
-            Decode::<RawVInt>::encode(&v, 0, buf)
+            Format::<RawVInt>::encode(&v, 0, buf)
+        }
+
+        fn encode<'b>(&self , _: u32, buf: &'b mut WriteBuffer) -> Result<()> {
+            let v = self.clone() as $d;
+            Format::<RawVInt>::encode(&v, 0, buf)
         }
     }
     )*};
@@ -207,17 +286,16 @@ impl_rawint! {
 
 pub struct VInt;
 
-impl<T> Decode<VInt> for T
+impl<T> Format<VInt> for T
 where
-    T: Decode<RawVInt>,
+    T: Format<RawVInt>,
 {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
-        Decode::<RawVInt>::encode(&tag, 0, buf)?;
-        Decode::<RawVInt>::encode(self, 0, buf)
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+        Format::<RawVInt>::encode(self, 0, buf)
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-        Decode::<RawVInt>::decode(self, buf)
+        Format::<RawVInt>::decode(self, buf)
     }
 }
 
@@ -225,22 +303,26 @@ macro_rules! defer_opt_impl_body {
     ($t:ty) => {
         fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
             match self {
-                Some(v) => Decode::<$t>::encode(v, tag, buf),
+                Some(v) => Format::<$t>::encode(v, tag, buf),
                 None => Ok(()),
             }
         }
 
+        fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+            panic!("unexpected encode_val for optional fields");
+        }
+
         fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-            Decode::<$t>::decode(self.get_or_insert_with(|| T::default()), buf)
+            Format::<$t>::decode(self.get_or_insert_with(|| T::default()), buf)
         }
     };
 }
 
 macro_rules! defer_opt_impl_complete {
     ($($t:ty),*) => {$(
-        impl<T> Decode<$t> for Option<T>
+        impl<T> Format<$t> for Option<T>
         where
-            T: Decode<$t> + Default,
+            T: Format<$t> + Default,
         {
             defer_opt_impl_body!{$t}
         }
@@ -253,25 +335,24 @@ pub struct Enum;
 
 pub trait ProtoEnum: From<u32> + Into<u32> {}
 
-impl<T> Decode<Enum> for T
+impl<T> Format<Enum> for T
 where
     T: Clone + ProtoEnum,
 {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let t: u32 = self.clone().into();
-        Decode::<RawVInt>::encode(&tag, 0, buf)?;
-        Decode::<RawVInt>::encode(&t, 0, buf)
+        Format::<RawVInt>::encode(&t, 0, buf)
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let mut v = 0;
-        let buf = Decode::<RawVInt>::decode(&mut v, buf)?;
+        let buf = Format::<RawVInt>::decode(&mut v, buf)?;
         *self = T::from(v);
         Ok(buf)
     }
 }
 
-impl<T> Decode<Enum> for Option<T>
+impl<T> Format<Enum> for Option<T>
 where
     T: Clone + ProtoEnum + Default,
 {
@@ -280,10 +361,9 @@ where
 
 pub struct SInt;
 
-impl Decode<SInt> for i32 {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
+impl Format<SInt> for i32 {
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let len = self.required_space();
-        Decode::<RawVInt>::encode(&tag, 0, buf)?;
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
         self.encode_var(&mut buf[olen ..]);
@@ -296,10 +376,10 @@ impl Decode<SInt> for i32 {
         Ok(&buf[len ..])
     }
 }
-impl Decode<SInt> for i64 {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
+
+impl Format<SInt> for i64 {
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let len = self.required_space();
-        Decode::<RawVInt>::encode(&tag, 0, buf)?;
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
         self.encode_var(&mut buf[olen ..]);
@@ -315,9 +395,9 @@ impl Decode<SInt> for i64 {
 
 pub struct Fix;
 
-impl Decode<Fix> for bool {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
-        Decode::<RawVInt>::encode(&tag, 0, buf)?;
+impl Format<Fix> for bool {
+
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         buf.push(if *self { 1 } else { 0 });
         Ok(())
     }
@@ -330,17 +410,19 @@ impl Decode<Fix> for bool {
 
 macro_rules! impl_fix {
     ($($t:ty),*) => {$(
-    impl<'a> Decode<Fix> for $t {
-        fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-            let v = <$t>::from_le_bytes(buf.try_into()?);
-            *self = v;
-            Ok(& buf[::std::mem::size_of::<$t>()..])
-        }
-        fn encode<'b>(&self, tag: u32, buf: &'b mut WriteBuffer) -> Result<()> {
-            Decode::<RawVInt>::encode(&tag, 0, buf)?;
+    impl<'a> Format<Fix> for $t {
+
+        fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
             buf.extend_from_slice(&self.to_le_bytes());
             Ok(())
         }
+
+        fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+            let v = <$t>::from_le_bytes(buf[0..std::mem::size_of::<$t>()].try_into()?);
+            *self = v;
+            Ok(& buf[::std::mem::size_of::<$t>()..])
+        }
+
     }
     )*};
 }
@@ -366,17 +448,14 @@ pub struct Nest;
 //     }
 // }
 
-impl<T> Decode<Nest> for T
+impl<T> Format<Nest> for T
 where
     T: Decodable + Encodable + Default,
 {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
-        Decode::<RawVInt>::encode(&tag, 0, buf)?;
-        // println!("Encoded tag: {:?}", buf);
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let mut nested = WriteBuffer::new();
         self.encode(&mut nested)?;
-        Decode::<RawVInt>::encode(&nested.len(), 0, buf)?;
-        // println!("Extending {:?} into {:?}", nested, buf);
+        Format::<RawVInt>::encode(&nested.len(), 0, buf)?;
         buf.extend_from_slice(&nested);
         Ok(())
     }
@@ -385,11 +464,11 @@ where
         let mut len = 0;
         let mut tag = 0xFF;
 
-        buf = Decode::<RawVInt>::decode(&mut len, buf)?;
+        buf = Format::<RawVInt>::decode(&mut len, buf)?;
         assert!(buf.len() >= len);
         let (mut inner_buf, outer_buf) = buf.split_at(len);
         while !inner_buf.is_empty() {
-            inner_buf = Decode::<RawVInt>::decode(&mut tag, inner_buf)?;
+            inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
             inner_buf = self.merge_field(tag, inner_buf)?;
         }
 
@@ -403,14 +482,14 @@ where
 // {
 //     fn encode(&self, tag: u32, buf: &mut Buffer) -> Result<()> {
 //         for t in self {
-//             Decode::<Nest<T>>::encode(t, tag, buf)?;
+//             Format::<Nest<T>>::encode(t, tag, buf)?;
 //         }
 //         Ok(())
 //     }
 //
 //     fn decode<'a, 'b>(&'a mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
 //         let mut next = T::default();
-//         buf = Decode::<Nest<T>>::decode(&mut next, buf)?;
+//         buf = Format::<Nest<T>>::decode(&mut next, buf)?;
 //         self.push(next);
 //         Ok(buf)
 //     }
@@ -471,57 +550,32 @@ where
 
 pub struct Pack<F>(F);
 
-impl<T, F> Decode<Pack<F>> for Vec<T>
+impl<T, F> Format<Pack<F>> for Vec<T>
 where
-    T: Decode<F>,
+    T: Format<F> + Default,
 {
-    fn encode(&self, _tag: u32, _buf: &mut WriteBuffer) -> Result<()> {
-        todo!()
+    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+        let mut nested = WriteBuffer::new();
+        for it in self {
+            Format::<F>::encode_val(it, &mut nested)?;
+        }
+        Format::<RawVInt>::encode(&nested.len(), 0, buf)?;
+        buf.extend_from_slice(&nested);
+        Ok(())
     }
 
-    fn decode<'b>(&mut self, _buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-        todo!()
+    fn decode<'b>(&mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        let mut len = 0;
+
+        buf = Format::<RawVInt>::decode(&mut len, buf)?;
+        assert!(buf.len() >= len);
+        let (mut inner_buf, outer_buf) = buf.split_at(len);
+        while !inner_buf.is_empty() {
+            let mut it = T::default();
+            inner_buf = T::decode(&mut it, inner_buf)?;
+            self.push(it);
+        }
+
+        Ok(outer_buf)
     }
 }
-//
-// impl<T: Default, F: Format<T>> Format<Vec<T>> for Pack<F> {
-//     fn decode<'b>(target: &mut Vec<T>, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-//         let mut len = 0;
-//         let mut buf = Decode::<RawVInt>::decode(&mut len, buf)?;
-//         assert!(buf.len() >= len);
-//         while !buf.is_empty() {
-//             let mut next = T::default();
-//             buf = F::decode(&mut next, buf)?;
-//             target.push(next);
-//         }
-//
-//         Ok(buf)
-//     }
-//     fn encode(target: &Vec<T>, tag: u32, buf: &mut Buffer) -> Result<()> {
-//         Decode::<RawVInt>::encode(&tag, 0, buf)?;
-//         let mut nested = Vec::new();
-//         for t in target {
-//             F::encode(t, 0, &mut nested)?;
-//         }
-//         Decode::<RawVInt>::encode(&nested.len(), 0, buf)?;
-//         buf.extend_from_slice(&nested);
-//         Ok(())
-//     }
-// }
-
-// pub struct Rep<F>(F);
-//
-// impl<T: Default, F: Format<T>> Format<Vec<T>> for Rep<F> {
-//     fn decode<'b>(target: &mut Vec<T>, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-//         let mut next = T::default();
-//         buf = F::decode(&mut next, buf)?;
-//         target.push(next);
-//         Ok(buf)
-//     }
-//     fn encode(target: &Vec<T>, tag: u32, buf: &mut Buffer) -> Result<()> {
-//         for t in target {
-//             F::encode(t, tag, buf)?;
-//         }
-//         Ok(())
-//     }
-// }

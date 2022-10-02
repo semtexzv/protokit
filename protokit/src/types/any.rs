@@ -56,10 +56,10 @@ impl binformat::Decodable for Any {
         use crate::binformat::format::*;
         match tag {
             10u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.type_url, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.type_url, buf)?;
             }
             18u32 => {
-                buf = Decode::<Bytes>::decode(&mut self.value, buf)?;
+                buf = Format::<Bytes>::decode(&mut self.value, buf)?;
             }
             tag => panic!("Unsupported tag: {tag}"),
         }
@@ -73,10 +73,10 @@ impl binformat::Encodable for Any {
         "google.protobuf.Any"
     }
 
-    fn encode(&self, buf: &mut Vec<u8>) -> Result<()> {
+    fn encode(&self, buf: &mut binformat::WriteBuffer) -> Result<()> {
         use crate::binformat::format::*;
-        Decode::<Bytes>::encode(&self.type_url, 10u32, buf)?;
-        Decode::<Bytes>::encode(&self.value, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.type_url, 10u32, buf)?;
+        Format::<Bytes>::encode(&self.value, 18u32, buf)?;
         Ok(())
     }
 }

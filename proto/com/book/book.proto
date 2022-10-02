@@ -24,6 +24,8 @@ message Book {
   string title = 3;
   optional string author = 4;
   optional int32 x = 231;
+  repeated int32 pack = 323 ;
+  repeated float pack2 = 3233 ;
   repeated Category category = 32;
   repeated Section sections = 80;
   map<string, string> test1 = 322;

@@ -11,7 +11,7 @@ use format::*;
 use integer_encoding::VarInt;
 use unk::*;
 
-use crate::format::{Decode, RawVInt};
+use crate::format::{Format, RawVInt};
 
 mod buffer;
 #[doc(hidden)]
@@ -108,12 +108,12 @@ impl Decodable for () {
             }
             FIX64 => {
                 let mut v = 0;
-                buf = Decode::<Fix>::decode(&mut v, buf)?;
+                buf = Format::<Fix>::decode(&mut v, buf)?;
                 Ok(buf)
             }
             FIX32 => {
                 let mut v = 0;
-                buf = Decode::<Fix>::decode(&mut v, buf)?;
+                buf = Format::<Fix>::decode(&mut v, buf)?;
                 Ok(buf)
             }
             //TODO: Implement optimistic parsing into nested messages
@@ -130,7 +130,7 @@ impl Decodable for () {
 pub fn decode_into<'a, T: Decodable + ?Sized>(mut buf: &'a [u8], obj: &mut T) -> Result<&'a [u8]> {
     let mut tag = 0xFF;
     while !buf.is_empty() {
-        buf = Decode::<RawVInt>::decode(&mut tag, buf)?;
+        buf = Format::<RawVInt>::decode(&mut tag, buf)?;
         buf = obj.merge_field(tag, buf)?;
     }
     Ok(buf)

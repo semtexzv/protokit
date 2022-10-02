@@ -14,6 +14,27 @@ fn main() {
 }
 
 #[test]
+fn test_roundtrip() {
+    let book = Book {
+        title: "Blabla".to_string(),
+        author: Some("Other".to_string()),
+        x: None,
+        pack: vec![0, 1, 2],
+        pack2: vec![1.0, 2.0, 3.0],
+        category: vec![],
+        sections: vec![],
+        test1: [("a".to_string(), "b".to_string())].into_iter().collect(),
+        other: None,
+        extfield: "".to_string(),
+        id: Default::default(),
+        _unknown: ()
+    };
+
+    let mut v = protokit::binformat::to_vec(&book).unwrap();
+    let mut dec = protokit::binformat::from_slice(&v).unwrap();
+    assert_eq!(book, dec);
+}
+#[test]
 fn test_textformat() {
     // use protokit::util::{Base, Bits};
     // let text = include_str!("../samples/book.textproto");
