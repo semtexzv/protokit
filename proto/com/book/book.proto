@@ -1,0 +1,39 @@
+syntax = "proto3";
+package com.book.test1;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+
+extend Book {
+  string extfield = 66;
+}
+
+enum Category {
+  ADULT = 0;
+  CHILDREN = 1;
+  OTHER = 2;
+}
+message Book {
+  message Section {
+    string contents = 1;
+  }
+  oneof id {
+    int32 local = 1;
+    string isbn = 2;
+  }
+  string title = 3;
+  optional string author = 4;
+  optional int32 x = 231;
+  repeated Category category = 32;
+  repeated Section sections = 80;
+  map<string, string> test1 = 322;
+  google.protobuf.Any other = 35;
+}
+
+
+service BookSvc {
+  rpc Put1(Book) returns(google.protobuf.Empty);
+  rpc Put2(stream Book) returns(google.protobuf.Empty);
+  rpc Put3(Book) returns(stream google.protobuf.Empty);
+  rpc Put4(stream Book) returns(stream google.protobuf.Empty);
+}

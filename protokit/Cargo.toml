@@ -1,0 +1,32 @@
+[package]
+name = "protokit"
+version = "0.0.1"
+edition = "2021"
+
+[features]
+default = ["grpc"]
+descriptors = ["desc/descriptors"]
+grpc = ["dep:grpc"]
+
+[dependencies.binformat]
+package = "protokit_binformat"
+path = "../protokit_binformat"
+
+[dependencies.textformat]
+package = "protokit_textformat"
+path = "../protokit_textformat"
+
+[dependencies.desc]
+package = "protokit_desc"
+path = "../protokit_desc"
+
+[dependencies.grpc]
+package = "protokit_grpc"
+path = "../protokit_grpc"
+optional = true
+
+[dependencies]
+anyhow = "1.0.57"
+
+[dev-dependencies]
+maplit = "1.0.2"

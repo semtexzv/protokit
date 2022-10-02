@@ -1,0 +1,25 @@
+[package]
+name = "protokit_proto"
+version = "0.0.1"
+edition = "2021"
+
+[features]
+default = []
+descriptors = []
+
+[dependencies.protokit_textformat]
+path = "../protokit_textformat"
+
+[dependencies.protokit_desc]
+path = "../protokit_desc"
+
+[dependencies]
+nom = "7.1.1"
+lex = { package = "lexical-core", version = "*" }
+lex_float = { package = "minimal-lexical", version = "*" }
+
+indexmap = "1.8.2"
+
+[dev-dependencies]
+tracing-subscriber = "0.3.11"
+glob = "0.3.0"

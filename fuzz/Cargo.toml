@@ -1,0 +1,13 @@
+[package]
+name = "fuzz"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.protokit]
+path = "../protokit"
+
+[dependencies.protokit_examples]
+path = "../protokit_examples"
+
+[dependencies]
+afl = "0.12.4"

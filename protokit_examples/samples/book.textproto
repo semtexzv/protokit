@@ -1,0 +1,8 @@
+# proto-file: com/boook/book.proto
+# proto-message: Book
+
+
+local: 1
+title: "Zen and the art of motorcycle maintenance"
+author: "John Pirsig"
+

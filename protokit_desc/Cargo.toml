@@ -1,0 +1,24 @@
+[package]
+name = "protokit_desc"
+version = "0.1.0"
+edition = "2021"
+
+
+[features]
+default = []
+descriptors = []
+
+[dependencies.binformat]
+package = "protokit_binformat"
+path = "../protokit_binformat"
+
+[dependencies.textformat]
+package = "protokit_textformat"
+path = "../protokit_textformat"
+
+[dependencies]
+arcstr = "1.1.4"
+indexmap = "1.9.1"
+
+[dev-dependencies]
+maplit = "1.0.2"

@@ -1,0 +1,5 @@
+/target
+/protokit_gen_descriptors/target
+/Cargo.lock
+vendor
+/.idea
