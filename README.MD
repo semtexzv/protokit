@@ -1,5 +1,2 @@
-## Protokit
-
-
-## TODO:
-1. Packed/unpacked serialization does not conform to standard.
+# Protokit
+Ground-up implementation of protocol buffers, including both [binary](protokit_binformat) and [textual](protokit_textformat) representations.
