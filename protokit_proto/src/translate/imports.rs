@@ -10,8 +10,8 @@ pub struct ResolveImports<'tcx> {
 
 impl Visitor for ResolveImports<'_> {
     fn visit_import(&mut self, item: &mut Import) {
-        let inner_path = Path::new(&item.path);
-        if self.ctx.def.files.get(item.path).is_none() {
+        let inner_path = Path::new(&*item.path);
+        if self.ctx.def.files.get(*item.path).is_none() {
             eprintln!("Compiling imported: {inner_path:?}");
             self.ctx.compile_file(inner_path).unwrap();
         }

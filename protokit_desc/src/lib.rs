@@ -808,13 +808,14 @@ impl FileDef {
     }
     pub fn resolve_extensions(&mut self, file_id: usize, prevs: &mut IndexMap<ArcStr, FileDef>) {
         for (i, m) in self.extensions.iter() {
+
             let name = resolve_name(
                 prevs,
                 &self.names,
                 &self.imports,
                 file_id,
                 self.package.as_str(),
-                "",
+                m.in_message.as_str(),
                 m.name.as_str(),
             );
             if let Some(defid) = name {
@@ -834,7 +835,7 @@ impl FileDef {
                     panic!("Wrong ID")
                 }
             } else {
-                panic!("Unresolved extension name: {:?}", name);
+                panic!("Unresolved extension name: {:#?}", self.names);
             }
         }
     }
@@ -1210,7 +1211,7 @@ impl FileSetDef {
     }
     #[cfg(feature = "descriptors")]
     pub fn from_bytes(data: &[u8]) -> FileSetDef {
-        let desc: FileDescriptorSet = crate::binformat::from_slice(data).unwrap();
+        let desc: FileDescriptorSet = crate::binformat::decode(data).unwrap();
         Self::from_descriptor(desc)
     }
     #[cfg(feature = "descriptors")]

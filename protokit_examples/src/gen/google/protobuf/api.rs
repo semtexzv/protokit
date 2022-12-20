@@ -7,8 +7,8 @@ use ::protokit::*;
 use ::protokit as root;
 use super::source_context::*;
 use super::r#type::*;
-use super::r#type::*;
 use super::source_context::*;
+use super::r#type::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Api::default());
     registry.register(&Method::default());

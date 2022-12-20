@@ -9,7 +9,7 @@ publish = false
 protokit = { path = "../protokit" }
 
 [build-dependencies]
-protokit_codegen = { path = "../protokit_codegen" }
+protokit_build = { path = "../protokit_build" }
 
 [dev-dependencies]
 include_dir = "0.7.2"

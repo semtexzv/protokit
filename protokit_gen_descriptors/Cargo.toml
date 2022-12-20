@@ -1,7 +1,0 @@
-[package]
-name = "protokit_gen_descriptors"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-protokit_codegen = { path = "../protokit_codegen" , default-features = false}

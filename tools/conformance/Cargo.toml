@@ -1,0 +1,14 @@
+[package]
+name = "conformance"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+anyhow = "1.0.66"
+byteorder = "1.4.3"
+protokit = { path = "../../protokit" }
+
+[build-dependencies]
+bindgen = "0.63.0"
+protokit_build = { path = "../../protokit_build" }

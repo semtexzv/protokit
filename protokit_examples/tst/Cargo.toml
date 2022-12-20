@@ -1,9 +1,0 @@
-[package]
-name = "tst"
-version = "0.1.0"
-edition = "2021"
-publish = false
-
-[dependencies]
-protokit = { path = "../../protokit" }
-protokit_codegen = { path = "../../protokit_codegen" }

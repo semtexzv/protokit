@@ -1,14 +1,14 @@
 [workspace]
 members = [
+    "tools/conformance",
     "protokit",
-    "protokit_codegen",
+    "protokit_build",
     "protokit_proto",
     "protokit_grpc",
     "protokit_desc",
     "protokit_textformat",
     "protokit_binformat",
     "protokit_examples",
-    "protokit_examples/tst"
 ]
 
-exclude = ["protokit_gen_descriptors"]
+exclude = ["tools/gendesc", "tools/fuzz"]

@@ -13,7 +13,7 @@ pub enum Literal<'i> {
 pub enum FieldName<'i> {
     Normal(Span<'i>),
     Extended(Span<'i>),
-    AnyShorthand(Span<'i>, Span<'i>),
+    Any(Span<'i>, Span<'i>),
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -14,6 +14,7 @@ pub mod parser;
 pub mod reflect;
 
 pub const INDENT: usize = 2;
+
 pub trait Indent {
     fn indent(&mut self, level: usize);
 }
@@ -190,8 +191,8 @@ impl Field for bool {
 }
 
 impl Field for f64 {
-    fn format(&self, _ctx: &Context, _pad: usize, _out: &mut String) -> fmt::Result {
-        todo!()
+    fn format(&self, _ctx: &Context, _pad: usize, out: &mut String) -> fmt::Result {
+        write!(out, "{self}")
     }
 
     fn merge_scalar(&mut self, _ctx: &Context, value: &Literal) -> Result<()> {
@@ -250,6 +251,10 @@ where
                 target.merge(ctx, val)?;
                 self.push(target);
             }
+
+            #[cfg(feature = "map_syntax")]
+            val @ FieldValue::Map(_) => target.merge(ctx, val)?,
+
             FieldValue::ScalarList(sl) => {
                 for lit in sl {
                     target.merge_scalar(ctx, lit)?;
@@ -263,9 +268,12 @@ where
                 }
             }
             #[cfg(feature = "map_syntax")]
-            FieldValue::Map(_) => panic!("Map syntax not expected here"),
-            #[cfg(feature = "map_syntax")]
-            FieldValue::MapList(_) => panic!("Map syntax not expected here"),
+            FieldValue::MapList(ml) => {
+                for map in ml {
+                    target.merge_map(ctx, map)?;
+                    self.push(std::mem::take(&mut target));
+                }
+            }
         }
         Ok(())
     }
@@ -299,8 +307,52 @@ where
     K: Field + Default + Hash + Eq,
     V: Field + Default,
 {
+    #[cfg(feature = "map_syntax")]
+    fn format(&self, ctx: &Context, pad: usize, out: &mut String) -> fmt::Result {
+        out.indent(pad);
+        out.push_str("}\n");
+
+        for (key, val) in self.iter() {
+            out.indent(pad);
+            Field::format(key, ctx, pad, out)?;
+            out.push_str(": ");
+            Field::format(key, ctx, pad, out)?;
+            out.push('\n');
+        }
+
+        out.indent(pad);
+        out.push_str("}\n");
+        Ok(())
+    }
+
+    #[cfg(not(feature = "map_syntax"))]
     fn format(&self, _ctx: &Context, _pad: usize, _out: &mut String) -> fmt::Result {
-        todo!()
+        if self.len() != 1 {
+            out.indent(pad);
+            out.push_str("[\n");
+        }
+        for (key, val) in self.iter() {
+            out.indent(pad);
+            out.push_str("{\n");
+
+            out.indent(pad);
+            out.push_str("key: ");
+            Field::format(key, ctx, pad, out)?;
+            out.push('\n');
+
+            out.indent(pad);
+            out.push_str("value: ");
+            Field::format(key, ctx, pad, out)?;
+            out.push('\n');
+
+            out.indent(pad);
+            out.push_str("}\n");
+        }
+        if self.len() != 1 {
+            out.indent(pad);
+            out.push(']');
+        }
+        Ok(())
     }
 
     fn merge(&mut self, ctx: &Context, value: &FieldValue) -> Result<()> {
@@ -311,11 +363,37 @@ where
                     self.merge_message(ctx, m)?
                 }
             }
+            #[cfg(feature = "map_syntax")]
+            FieldValue::Map(map) => self.merge_map(ctx, map)?,
+            #[cfg(feature = "map_syntax")]
+            FieldValue::MapList(ml) => {
+                for it in ml {
+                    self.merge_map(ctx, it)?;
+                }
+            }
 
             other => bail!("HashMap can't deserialize {other:?} "),
         }
         Ok(())
     }
+    #[cfg(feature = "map_syntax")]
+    fn merge_map(&mut self, ctx: &Context, value: &[ast::MapField]) -> Result<()> {
+        for field in value {
+            if value.len() > 2 {
+                bail!("Unknown fields found in map")
+            }
+
+            let mut key = K::default();
+            let mut val = V::default();
+
+            key.merge_scalar(ctx, &field.key)?;
+            val.merge(ctx, &field.value)?;
+
+            self.insert(key, val);
+        }
+        Ok(())
+    }
+
     fn merge_message(&mut self, ctx: &Context, value: &[ast::Field]) -> Result<()> {
         let kf = value.iter().rfind(|f| f.name == FieldName::Normal("key")).unwrap();
         let vf = value.iter().rfind(|f| f.name == FieldName::Normal("value")).unwrap();
@@ -352,10 +430,38 @@ where
                 }
             }
 
+            #[cfg(feature = "map_syntax")]
+            FieldValue::Map(map) => self.merge_map(ctx, map)?,
+            #[cfg(feature = "map_syntax")]
+            FieldValue::MapList(ml) => {
+                for it in ml {
+                    self.merge_map(ctx, it)?;
+                }
+            }
+
             other => bail!("HashMap can't deserialize {other:?} "),
         }
         Ok(())
     }
+
+    #[cfg(feature = "map_syntax")]
+    fn merge_map(&mut self, ctx: &Context, value: &[ast::MapField]) -> Result<()> {
+        for field in value {
+            if value.len() > 2 {
+                bail!("Unknown fields found in map")
+            }
+
+            let mut key = K::default();
+            let mut val = V::default();
+
+            key.merge_scalar(ctx, &field.key)?;
+            val.merge(ctx, &field.value)?;
+
+            self.insert(key, val);
+        }
+        Ok(())
+    }
+
     fn merge_message(&mut self, ctx: &Context, value: &[ast::Field]) -> Result<()> {
         let kf = value.iter().rfind(|f| f.name == FieldName::Normal("key")).unwrap();
         let vf = value.iter().rfind(|f| f.name == FieldName::Normal("value")).unwrap();
@@ -408,6 +514,13 @@ pub fn decode_into(i: &str, registry: &crate::reflect::Registry, o: &mut impl De
 
     Ok(())
 }
+#[inline(never)]
+pub fn decode<D: Default + Decodable>(i: &str, registry: &crate::reflect::Registry) -> Result<D> {
+    let mut out = D::default();
+    decode_into(i, registry, &mut out)?;
+    Ok(out)
+}
+
 
 pub fn encode_into(o: &impl Encodable, reg: crate::reflect::Registry, out: &mut String) -> Result<()> {
     o.encode(&Context { registry: Some(&reg) }, 0, out)?;

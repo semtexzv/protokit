@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::marker::PhantomData;
-use std::net::Shutdown::Write;
 use anyhow::bail;
 
 use integer_encoding::VarInt;
@@ -119,7 +118,11 @@ where
 
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-        let (dlen, len) = usize::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
+        let (dlen, len) = usize::decode_var(buf)
+            .ok_or_else(|| anyhow::Error::msg("Missing data"))?;
+        if buf.len() < dlen + len {
+            return Err(anyhow::Error::msg("Mising data"));
+        }
         self.extend_from_bytes(&buf[len .. dlen + len])?;
         Ok(&buf[len + dlen ..])
     }
@@ -174,7 +177,9 @@ impl<KF, VF, K: Format<KF> + Default + Hash + Eq, V: Format<VF> + Default> Forma
         let mut len = 0;
 
         buf = Format::<RawVInt>::decode(&mut len, buf)?;
-        assert!(buf.len() >= len);
+        if buf.len() < len {
+            bail!("Not enough data")
+        }
         let (mut inner_buf, outer_buf) = buf.split_at(len);
 
         while !inner_buf.is_empty() {
@@ -418,6 +423,9 @@ macro_rules! impl_fix {
         }
 
         fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+            if buf.len() < std::mem::size_of::<$t>() {
+                bail!("Not enough bytes");
+            }
             let v = <$t>::from_le_bytes(buf[0..std::mem::size_of::<$t>()].try_into()?);
             *self = v;
             Ok(& buf[::std::mem::size_of::<$t>()..])
@@ -434,19 +442,6 @@ impl_fix! {
 }
 
 pub struct Nest;
-
-// impl<T: Decodable + Encodable + Default> Format<Option<T>> for Nest<T> {
-//     fn decode<'b>(target: &mut Option<T>, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-//         Nest::decode(target.get_or_insert_with(|| Default::default()), buf)
-//     }
-//
-//     fn encode(target: &Option<T>, tag: u32, buf: &mut Buffer) -> Result<()> {
-//         match target {
-//             None => Ok(()),
-//             Some(v) => Nest::encode(v, tag, buf),
-//         }
-//     }
-// }
 
 impl<T> Format<Nest> for T
 where
@@ -465,7 +460,9 @@ where
         let mut tag = 0xFF;
 
         buf = Format::<RawVInt>::decode(&mut len, buf)?;
-        assert!(buf.len() >= len);
+        if buf.len() < len {
+            bail!("Not enough data")
+        }
         let (mut inner_buf, outer_buf) = buf.split_at(len);
         while !inner_buf.is_empty() {
             inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
@@ -475,78 +472,6 @@ where
         Ok(outer_buf)
     }
 }
-
-// impl<T> Decode<Repeat<T>> for Vec<T>
-// where
-//     T: Decode<Nest<T>> + Default,
-// {
-//     fn encode(&self, tag: u32, buf: &mut Buffer) -> Result<()> {
-//         for t in self {
-//             Format::<Nest<T>>::encode(t, tag, buf)?;
-//         }
-//         Ok(())
-//     }
-//
-//     fn decode<'a, 'b>(&'a mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-//         let mut next = T::default();
-//         buf = Format::<Nest<T>>::decode(&mut next, buf)?;
-//         self.push(next);
-//         Ok(buf)
-//     }
-// }
-
-// pub fn nest_decode<'b, T: Decodable + Default>(target: &mut T, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-//     let mut len = 0;
-//     let mut tag = 0xFF;
-//
-//     buf = RawVInt::decode(&mut len, buf)?;
-//     assert!(buf.len() >= len);
-//     let (mut inner_buf, outer_buf) = buf.split_at(len);
-//     while !inner_buf.is_empty() {
-//         inner_buf = RawVInt::decode(&mut tag, inner_buf)?;
-//         inner_buf = target.merge_field(tag, inner_buf)?;
-//     }
-//
-//     Ok(outer_buf)
-// }
-//
-// impl<T: Decodable + Encodable + Default> Format<T> for Nest<T> {
-//     fn decode<'b>(target: &mut T, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-//         let mut len = 0;
-//         let mut tag = 0xFF;
-//
-//         buf = RawVInt::decode(&mut len, buf)?;
-//         assert!(buf.len() >= len);
-//         let (mut inner_buf, outer_buf) = buf.split_at(len);
-//         while !inner_buf.is_empty() {
-//             inner_buf = RawVInt::decode(&mut tag, inner_buf)?;
-//             inner_buf = target.merge_field(tag, inner_buf)?;
-//         }
-//
-//         Ok(outer_buf)
-//     }
-//     fn encode(target: &T, tag: u32, buf: &mut Buffer) -> Result<()> {
-//         RawVInt::encode(&tag, 0, buf)?;
-//         // println!("Encoded tag: {:?}", buf);
-//         let mut nested = Vec::new();
-//         target.encode(&mut nested)?;
-//         RawVInt::encode(&nested.len(), 0, buf)?;
-//         // println!("Extending {:?} into {:?}", nested, buf);
-//         buf.extend_from_slice(&nested);
-//         Ok(())
-//     }
-// }
-
-// pub struct Map<K, V>(K, V);
-
-// impl<K: Default, KF: Format<K>, V: Default, VF: Format<V>> Format<HashMap<K, V>> for Map<KF, VF> {
-//     fn decode<'b>(_target: &mut HashMap<K, V>, _buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-//         todo!()
-//     }
-//     fn encode(_target: &HashMap<K, V>, _tag: u32, _buf: &mut Buffer) -> Result<()> {
-//         unimplemented!()
-//     }
-// }
 
 pub struct Pack<F>(F);
 
@@ -568,7 +493,9 @@ where
         let mut len = 0;
 
         buf = Format::<RawVInt>::decode(&mut len, buf)?;
-        assert!(buf.len() >= len);
+        if buf.len() < len {
+            bail!("Not enough data")
+        }
         let (mut inner_buf, outer_buf) = buf.split_at(len);
         while !inner_buf.is_empty() {
             let mut it = T::default();

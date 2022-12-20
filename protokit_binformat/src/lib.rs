@@ -4,9 +4,8 @@
 
 use std::ops::{Deref, DerefMut};
 
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 pub use anyhow::Result;
-use bytes::BytesMut;
 use format::*;
 use integer_encoding::VarInt;
 use unk::*;
@@ -82,7 +81,7 @@ where
     }
 }
 
-pub trait Message {}
+pub trait Message: Encodable + Decodable + Default {}
 
 impl<T> Message for T where T: Decodable + Encodable + Default {}
 
@@ -103,7 +102,7 @@ impl Decodable for () {
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         match (tag & 0b111) as u8 {
             VINT => {
-                let (_vint, len) = u64::decode_var(buf).unwrap();
+                let (_vint, len) = u64::decode_var(buf).ok_or_else(|| anyhow!("reading uint"))?;
                 Ok(&buf[len ..])
             }
             FIX64 => {
@@ -118,7 +117,10 @@ impl Decodable for () {
             }
             //TODO: Implement optimistic parsing into nested messages
             LENDELIM => {
-                let (datalen, vlen) = u64::decode_var(buf).unwrap();
+                let (datalen, vlen) = u64::decode_var(buf).ok_or_else(|| anyhow!("reading uint"))?;
+                if buf.len() < (datalen as usize + vlen) {
+                    return Err(anyhow::Error::msg("Mising data"));
+                }
                 Ok(&buf[(datalen as usize) + vlen ..])
             }
             other => bail!("Unknown wire type {other}"),
@@ -137,7 +139,7 @@ pub fn decode_into<'a, T: Decodable + ?Sized>(mut buf: &'a [u8], obj: &mut T) ->
 }
 
 #[inline(never)]
-pub fn from_slice<T: Decodable + Default>(buf: &[u8]) -> Result<T> {
+pub fn decode<T: Decodable + Default>(buf: &[u8]) -> Result<T> {
     let mut obj = T::default();
     let left = decode_into(buf, &mut obj)?;
     assert_eq!(left.len(), 0);
@@ -145,7 +147,7 @@ pub fn from_slice<T: Decodable + Default>(buf: &[u8]) -> Result<T> {
 }
 
 #[inline(never)]
-pub fn to_vec<T: Encodable>(v: &T) -> Result<WriteBuffer> {
+pub fn encode<T: Encodable>(v: &T) -> Result<WriteBuffer> {
     let mut buf = WriteBuffer::new();
     v.encode(&mut buf)?;
     Ok(buf)

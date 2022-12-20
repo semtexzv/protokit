@@ -1,22 +1,42 @@
 #![allow(dead_code)]
 
+use std::cell::RefCell;
+use std::ops::Range;
 use protokit_desc::BuiltinType;
 pub use protokit_desc::{FieldNum, Frequency, ImportType, Syntax};
 
-pub type Span<'i> = &'i str;
+pub type Span<'a> = nom_locate::LocatedSpan<&'a str>;
+
+/// Error containing a text span and an error message to display.
+#[derive(Debug)]
+pub struct Error(Range<usize>, String);
+
+/// Carried around in the `LocatedSpan::extra` field in
+/// between `nom` parsers.
+#[derive(Clone, Debug)]
+pub(crate) struct State<'a>(pub &'a RefCell<Vec<Error>>);
+
+impl<'a> State<'a> {
+    /// Pushes an error onto the errors stack from within a `nom`
+    /// parser combinator while still allowing parsing to continue.
+    pub fn report_error(&self, error: Error) {
+        self.0.borrow_mut().push(error);
+    }
+}
+// pub type Span<'i> = &'i str;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Type<'i> {
     Builtin(BuiltinType),
-    Map(BuiltinType, Span<'i>),
-    Unresolved(Span<'i>),
+    Map(BuiltinType, &'i str),
+    Unresolved(&'i str),
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Const<'i> {
     Bool(bool),
-    Ident(Span<'i>),
-    Str(Span<'i>),
+    Ident(&'i str),
+    Str(&'i str),
     Int(i128),
     Float(f64),
     Compound(Vec<protokit_textformat::ast::Field<'i>>),
@@ -503,9 +523,9 @@ pub trait Visitor: Sized {
     /// Reference to a type
     fn visit_type(&mut self, typ: &mut Type) {}
     /// An idenditier, that is being declared
-    fn visit_ident(&mut self, ident: &mut Span) {}
+    fn visit_ident(&mut self, ident: &str) {}
     /// Reference to existing identifier
-    fn visit_ident_ref(&mut self, item: &mut Span) {}
+    fn visit_ident_ref(&mut self, item: &str) {}
     fn visit_const(&mut self, value: &mut Const) {
         value.accept(self)
     }

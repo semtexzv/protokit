@@ -29,12 +29,12 @@ impl FillDefinitions<'_> {
 impl Visitor for FillDefinitions<'_> {
     // TODO: Add package prefix to all symbols, or work with packages on other level ?
     fn visit_package(&mut self, item: &mut Package) {
-        self.unit.package = self.ctx.def.cache(item.path);
+        self.unit.package = self.ctx.def.cache(*item.path);
     }
     fn visit_import(&mut self, item: &mut Import) {
         let i = ImportDef {
-            name: self.ctx.def.cache(item.path),
-            file_idx: self.ctx.def.files.get_index_of(item.path).unwrap_or(666),
+            name: self.ctx.def.cache(*item.path),
+            file_idx: self.ctx.def.files.get_index_of(*item.path).unwrap_or(666),
         };
         if let ImportType::Public = item.typ {
             self.unit.public_imports.push(i.clone());
@@ -43,7 +43,7 @@ impl Visitor for FillDefinitions<'_> {
     }
     fn visit_message(&mut self, item: &mut Message) {
         let before = self.path.clone();
-        let (_name, qualified_name) = self.qualify(item.name);
+        let (_name, qualified_name) = self.qualify(*item.name);
 
         let name = self.ctx.def.cache(&qualified_name);
         self.unit.messages.insert(
@@ -62,7 +62,7 @@ impl Visitor for FillDefinitions<'_> {
         self.path = before;
     }
     fn visit_extend(&mut self, item: &mut Extension) {
-        let name = self.ctx.def.cache(item.name);
+        let name = self.ctx.def.cache(*item.name);
         self.unit.extensions.insert(
             name.clone(),
             ExtendDef {
@@ -73,7 +73,7 @@ impl Visitor for FillDefinitions<'_> {
         );
     }
     fn visit_enum(&mut self, item: &mut Enum) {
-        let (_name, qualified_name) = self.qualify(item.name);
+        let (_name, qualified_name) = self.qualify(*item.name);
 
         let name = self.ctx.def.cache(&qualified_name);
         // TODO: Insert enum variant names into appropriate search place
@@ -89,7 +89,7 @@ impl Visitor for FillDefinitions<'_> {
     }
 
     fn visit_service(&mut self, item: &mut Service) {
-        let (_name, qualified_name) = self.qualify(item.name);
+        let (_name, qualified_name) = self.qualify(*item.name);
         let name = self.ctx.def.cache(&qualified_name);
         let svc = ServiceDef {
             name: name.clone(),
@@ -109,7 +109,7 @@ pub struct GatherOneOfs<'tcx> {
 
 impl Visitor for GatherOneOfs<'_> {
     fn visit_oneof(&mut self, item: &mut OneOf) {
-        let name = self.ctx.def.cache(item.name);
+        let name = self.ctx.def.cache(*item.name);
         self.message.insert(
             name.clone(),
             OneOfDef {
@@ -138,7 +138,7 @@ pub struct GatherRpcs<'tcx> {
 
 impl Visitor for GatherRpcs<'_> {
     fn visit_rpc(&mut self, rpc: &mut Rpc) {
-        let name = self.ctx.def.cache(rpc.name);
+        let name = self.ctx.def.cache(*rpc.name);
         self.rpcs.insert(
             name.clone(),
             RpcDef {

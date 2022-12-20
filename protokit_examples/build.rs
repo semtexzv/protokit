@@ -1,5 +1,5 @@
 fn main() {
-    protokit_codegen::Codegen::new()
+    protokit_build::Build::new()
         .include("../proto")
         // .include("../vendor/protobuf/src")
         .out_dir("src/gen")

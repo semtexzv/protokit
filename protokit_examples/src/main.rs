@@ -9,7 +9,7 @@ pub mod gen;
 fn main() {
     let mut stdin = stdin().lock();
     let b = stdin.fill_buf().unwrap();
-    let book: Book = protokit::binformat::from_slice(b).unwrap();
+    let book: Book = protokit::binformat::decode(b).unwrap();
     println!("{book:?}");
 }
 
@@ -27,11 +27,12 @@ fn test_roundtrip() {
         other: None,
         extfield: "".to_string(),
         id: Default::default(),
+        book: None,
         _unknown: ()
     };
 
-    let mut v = protokit::binformat::to_vec(&book).unwrap();
-    let mut dec = protokit::binformat::from_slice(&v).unwrap();
+    let mut v = protokit::binformat::encode(&book).unwrap();
+    let mut dec = protokit::binformat::decode(&v).unwrap();
     assert_eq!(book, dec);
 }
 #[test]

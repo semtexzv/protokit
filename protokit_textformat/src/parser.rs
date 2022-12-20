@@ -5,7 +5,9 @@ use nom::character::complete::{alpha1, alphanumeric1, char, multispace0, multisp
 use nom::combinator::{cut, map, map_res, opt, recognize, value};
 use nom::multi::{many0, many1, separated_list0};
 use nom::sequence::{delimited, preceded, separated_pair, tuple};
-use nom::{AsChar, IResult, Offset, Slice};
+use nom::{AsChar, Offset, Slice};
+
+pub type IResult<I, O> = nom::IResult<I, O, nom::error::VerboseError<I>>;
 
 use super::ast::*;
 
@@ -193,7 +195,7 @@ fn any_name(i: Span) -> IResult<Span, (Span, Span)> {
 fn field_name(i: Span) -> IResult<Span, FieldName> {
     alt((
         map(ext_name, FieldName::Extended),
-        map(any_name, |n| FieldName::AnyShorthand(n.0, n.1)),
+        map(any_name, |n| FieldName::Any(n.0, n.1)),
         map(ident, FieldName::Normal),
     ))(i)
 }
@@ -401,7 +403,7 @@ fn test_field() {
         Ok((
             "",
             Field {
-                name: FieldName::AnyShorthand("type.googleapis.com", "com.example.SomeType"),
+                name: FieldName::Any("type.googleapis.com", "com.example.SomeType"),
                 value: FieldValue::Message(vec![Field {
                     name: FieldName::Normal("typ"),
                     value: FieldValue::Scalar(Literal::Identifier("FORKING")),

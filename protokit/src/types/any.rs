@@ -14,16 +14,14 @@ use crate::{binformat, textformat};
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Any {
-    pub _unknown: binformat::unk::UnknownFields,
     pub type_url: String,
     pub value: Vec<u8>,
 }
 
 impl Any {
     pub fn pack<O: binformat::Encodable>(obj: &O) -> Result<Self> {
-        let value = binformat::to_vec(obj)?;
+        let value = binformat::encode(obj)?;
         Ok(Self {
-            _unknown: Default::default(),
             type_url: obj.qualified_name().to_string(),
             value,
         })
@@ -44,7 +42,6 @@ impl Any {
 
     pub fn set(type_url: String, value: Vec<u8>) -> Self {
         Self {
-            _unknown: Default::default(),
             type_url,
             value,
         }
@@ -61,7 +58,7 @@ impl binformat::Decodable for Any {
             18u32 => {
                 buf = Format::<Bytes>::decode(&mut self.value, buf)?;
             }
-            tag => panic!("Unsupported tag: {tag}"),
+            tag => bail!("Unsupported tag: {tag}"),
         }
 
         Ok(buf)
@@ -90,7 +87,7 @@ impl textformat::Decodable for Any {
             FieldName::Normal("value") => {
                 Field::merge(&mut self.value, ctx, value)?;
             }
-            FieldName::AnyShorthand(_domain, msg_name) => {
+            FieldName::Any(_domain, msg_name) => {
                 if let Some(msg) = ctx.find_message(msg_name) {
                     let mut newmsg = msg.new();
                     self.type_url = format!("type.googleapis.com/{}", newmsg.qualified_name());

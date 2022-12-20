@@ -22,14 +22,14 @@ impl Visitor for FieldVisitor<'_> {
     fn visit_map_field(&mut self, item: &mut MapField) {
         let val_type = match &item.val_type {
             Type::Builtin(b) => DataType::Builtin(*b),
-            Type::Unresolved(u) => DataType::Unresolved(self.ctx.def.cache(*u)),
+            Type::Unresolved(u) => DataType::Unresolved(self.ctx.def.cache(&**u)),
             Type::Map(_, _) => {
                 self.ctx.error("Nested maps are not supported".to_string());
                 DataType::Builtin(BuiltinType::Bool)
             }
         };
         self.fields.insert(FieldDef {
-            name: self.ctx.def.cache(item.name),
+            name: self.ctx.def.cache(*item.name),
             frequency: Frequency::Singular,
             typ: DataType::Map(Box::new((item.key_type, val_type))),
             num: item.number,
@@ -40,11 +40,11 @@ impl Visitor for FieldVisitor<'_> {
     fn visit_field(&mut self, item: &mut Field) {
         let dtyp = match &item.typ {
             Type::Builtin(b) => DataType::Builtin(*b),
-            Type::Unresolved(e) => DataType::Unresolved(self.ctx.def.cache(*e)),
-            Type::Map(k, v) => DataType::Map(Box::new((*k, DataType::Unresolved(self.ctx.def.cache(*v))))),
+            Type::Unresolved(e) => DataType::Unresolved(self.ctx.def.cache(&**e)),
+            Type::Map(k, v) => DataType::Map(Box::new((*k, DataType::Unresolved(self.ctx.def.cache(&**v))))),
         };
         let def = FieldDef {
-            name: self.ctx.def.cache(item.name),
+            name: self.ctx.def.cache(*item.name),
             frequency: item.frequency,
             typ: dtyp,
             num: item.number,
@@ -70,7 +70,7 @@ pub struct EnumFieldVisitor<'tcx> {
 impl Visitor for EnumFieldVisitor<'_> {
     fn visit_enum_field(&mut self, item: &mut EnumField) {
         // let name = self.ctx.syms.intern(item.name);
-        let name = self.ctx.def.cache(item.name);
+        let name = self.ctx.def.cache(*item.name);
         let def = VariantDef {
             name: name.clone(),
             num: item.value,

@@ -8,3 +8,8 @@ mod deps;
 pub mod parser;
 pub mod translate;
 pub mod validate;
+
+
+pub enum ErrorKind {
+
+}
