@@ -11,15 +11,15 @@ use root::types::field_mask::*;
 use super::super::super::google::protobuf::r#struct::*;
 use root::types::timestamp::*;
 use super::super::super::google::protobuf::wrappers::*;
-use super::super::super::google::protobuf::wrappers::*;
-use super::super::super::google::protobuf::duration::*;
 use root::types::timestamp::*;
+use super::super::super::google::protobuf::wrappers::*;
 use root::types::any::*;
-use root::types::field_mask::*;
+use super::super::super::google::protobuf::duration::*;
 use super::super::super::google::protobuf::r#struct::*;
+use root::types::field_mask::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&TestAllTypesProto3::default());
-    registry.register(&TestAllTypesProto3_NestedMessage::default());
+    registry.register(&TestAllTypesProto3NestedMessage::default());
     registry.register(&ForeignMessage::default());
     registry.register(&NullHypothesisProto3::default());
     registry.register(&EnumOnlyProto3::default());
@@ -42,11 +42,11 @@ pub struct TestAllTypesProto3 {
     pub optional_bool: bool,
     pub optional_string: String,
     pub optional_bytes: Vec<u8>,
-    pub optional_nested_message: Option<Box<TestAllTypesProto3_NestedMessage>>,
+    pub optional_nested_message: Option<Box<TestAllTypesProto3NestedMessage>>,
     pub optional_foreign_message: Option<Box<ForeignMessage>>,
-    pub optional_nested_enum: TestAllTypesProto3_NestedEnum,
+    pub optional_nested_enum: TestAllTypesProto3NestedEnum,
     pub optional_foreign_enum: ForeignEnum,
-    pub optional_aliased_enum: TestAllTypesProto3_AliasedEnum,
+    pub optional_aliased_enum: TestAllTypesProto3AliasedEnum,
     pub optional_string_piece: String,
     pub optional_cord: String,
     pub recursive_message: Option<Box<TestAllTypesProto3>>,
@@ -65,9 +65,9 @@ pub struct TestAllTypesProto3 {
     pub repeated_bool: Vec<bool>,
     pub repeated_string: Vec<String>,
     pub repeated_bytes: Vec<Vec<u8>>,
-    pub repeated_nested_message: Vec<TestAllTypesProto3_NestedMessage>,
+    pub repeated_nested_message: Vec<TestAllTypesProto3NestedMessage>,
     pub repeated_foreign_message: Vec<ForeignMessage>,
-    pub repeated_nested_enum: Vec<TestAllTypesProto3_NestedEnum>,
+    pub repeated_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
     pub repeated_foreign_enum: Vec<ForeignEnum>,
     pub repeated_string_piece: Vec<String>,
     pub repeated_cord: Vec<String>,
@@ -84,7 +84,7 @@ pub struct TestAllTypesProto3 {
     pub packed_float: Vec<f32>,
     pub packed_double: Vec<f64>,
     pub packed_bool: Vec<bool>,
-    pub packed_nested_enum: Vec<TestAllTypesProto3_NestedEnum>,
+    pub packed_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
     pub unpacked_int32: Vec<i32>,
     pub unpacked_int64: Vec<i64>,
     pub unpacked_uint32: Vec<u32>,
@@ -98,7 +98,7 @@ pub struct TestAllTypesProto3 {
     pub unpacked_float: Vec<f32>,
     pub unpacked_double: Vec<f64>,
     pub unpacked_bool: Vec<bool>,
-    pub unpacked_nested_enum: Vec<TestAllTypesProto3_NestedEnum>,
+    pub unpacked_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
     pub map_int32_int32: ::std::collections::HashMap<i32, i32>,
     pub map_int64_int64: ::std::collections::HashMap<i64, i64>,
     pub map_uint32_uint32: ::std::collections::HashMap<u32, u32>,
@@ -116,12 +116,12 @@ pub struct TestAllTypesProto3 {
     pub map_string_bytes: ::std::collections::HashMap<String, Vec<u8>>,
     pub map_string_nested_message: ::std::collections::HashMap<
         String,
-        TestAllTypesProto3_NestedMessage,
+        TestAllTypesProto3NestedMessage,
     >,
     pub map_string_foreign_message: ::std::collections::HashMap<String, ForeignMessage>,
     pub map_string_nested_enum: ::std::collections::HashMap<
         String,
-        TestAllTypesProto3_NestedEnum,
+        TestAllTypesProto3NestedEnum,
     >,
     pub map_string_foreign_enum: ::std::collections::HashMap<String, ForeignEnum>,
     pub optional_bool_wrapper: Option<Box<BoolValue>>,
@@ -331,7 +331,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_optional_nested_message(
         mut self,
-        it: TestAllTypesProto3_NestedMessage,
+        it: TestAllTypesProto3NestedMessage,
     ) -> Self {
         self.r#set_optional_nested_message(it);
         self
@@ -339,7 +339,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#set_optional_nested_message(
         &mut self,
-        it: TestAllTypesProto3_NestedMessage,
+        it: TestAllTypesProto3NestedMessage,
     ) -> &mut Self {
         self.optional_nested_message = Box::new(it).into();
         self
@@ -357,7 +357,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_optional_nested_enum(
         mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> Self {
         self.r#set_optional_nested_enum(it);
         self
@@ -365,7 +365,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#set_optional_nested_enum(
         &mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> &mut Self {
         self.optional_nested_enum = it.into();
         self
@@ -383,7 +383,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_optional_aliased_enum(
         mut self,
-        it: TestAllTypesProto3_AliasedEnum,
+        it: TestAllTypesProto3AliasedEnum,
     ) -> Self {
         self.r#set_optional_aliased_enum(it);
         self
@@ -391,7 +391,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#set_optional_aliased_enum(
         &mut self,
-        it: TestAllTypesProto3_AliasedEnum,
+        it: TestAllTypesProto3AliasedEnum,
     ) -> &mut Self {
         self.optional_aliased_enum = it.into();
         self
@@ -579,7 +579,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_repeated_nested_message(
         mut self,
-        it: TestAllTypesProto3_NestedMessage,
+        it: TestAllTypesProto3NestedMessage,
     ) -> Self {
         self.r#add_repeated_nested_message(it);
         self
@@ -587,7 +587,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#add_repeated_nested_message(
         &mut self,
-        it: TestAllTypesProto3_NestedMessage,
+        it: TestAllTypesProto3NestedMessage,
     ) -> &mut Self {
         self.repeated_nested_message.push(it);
         self
@@ -605,7 +605,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_repeated_nested_enum(
         mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> Self {
         self.r#add_repeated_nested_enum(it);
         self
@@ -613,7 +613,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#add_repeated_nested_enum(
         &mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> &mut Self {
         self.repeated_nested_enum.push(it);
         self
@@ -781,7 +781,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_packed_nested_enum(
         mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> Self {
         self.r#add_packed_nested_enum(it);
         self
@@ -789,7 +789,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#add_packed_nested_enum(
         &mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> &mut Self {
         self.packed_nested_enum.push(it);
         self
@@ -927,7 +927,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_unpacked_nested_enum(
         mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> Self {
         self.r#add_unpacked_nested_enum(it);
         self
@@ -935,7 +935,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#add_unpacked_nested_enum(
         &mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> &mut Self {
         self.unpacked_nested_enum.push(it);
         self
@@ -1094,7 +1094,7 @@ impl TestAllTypesProto3 {
     pub fn r#with_map_string_nested_message(
         mut self,
         k: String,
-        v: TestAllTypesProto3_NestedMessage,
+        v: TestAllTypesProto3NestedMessage,
     ) -> Self {
         self.r#add_map_string_nested_message(k, v);
         self
@@ -1103,7 +1103,7 @@ impl TestAllTypesProto3 {
     pub fn r#add_map_string_nested_message(
         &mut self,
         k: String,
-        v: TestAllTypesProto3_NestedMessage,
+        v: TestAllTypesProto3NestedMessage,
     ) -> &mut Self {
         let _ = self.map_string_nested_message.insert(k, v);
         self
@@ -1130,7 +1130,7 @@ impl TestAllTypesProto3 {
     pub fn r#with_map_string_nested_enum(
         mut self,
         k: String,
-        v: TestAllTypesProto3_NestedEnum,
+        v: TestAllTypesProto3NestedEnum,
     ) -> Self {
         self.r#add_map_string_nested_enum(k, v);
         self
@@ -1139,7 +1139,7 @@ impl TestAllTypesProto3 {
     pub fn r#add_map_string_nested_enum(
         &mut self,
         k: String,
-        v: TestAllTypesProto3_NestedEnum,
+        v: TestAllTypesProto3NestedEnum,
     ) -> &mut Self {
         let _ = self.map_string_nested_enum.insert(k, v);
         self
@@ -1671,7 +1671,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_oneof_field_oneof_nested_message(
         mut self,
-        it: TestAllTypesProto3_NestedMessage,
+        it: TestAllTypesProto3NestedMessage,
     ) -> Self {
         self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofNestedMessage(it);
         self
@@ -1679,7 +1679,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#set_oneof_field_oneof_nested_message(
         &mut self,
-        it: TestAllTypesProto3_NestedMessage,
+        it: TestAllTypesProto3NestedMessage,
     ) -> &mut Self {
         self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofNestedMessage(it);
         self
@@ -1747,7 +1747,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#with_oneof_field_oneof_enum(
         mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> Self {
         self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofEnum(it);
         self
@@ -1755,7 +1755,7 @@ impl TestAllTypesProto3 {
     #[inline(always)]
     pub fn r#set_oneof_field_oneof_enum(
         &mut self,
-        it: TestAllTypesProto3_NestedEnum,
+        it: TestAllTypesProto3NestedEnum,
     ) -> &mut Self {
         self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofEnum(it);
         self
@@ -2389,7 +2389,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
             out.push('\n');
         }
         if self.optional_nested_message
-            != <Option<Box<TestAllTypesProto3_NestedMessage>> as Default>::default()
+            != <Option<Box<TestAllTypesProto3NestedMessage>> as Default>::default()
         {
             out.indent(pad);
             out.push_str("optional_nested_message ");
@@ -2405,7 +2405,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
             out.push('\n');
         }
         if self.optional_nested_enum
-            != <TestAllTypesProto3_NestedEnum as Default>::default()
+            != <TestAllTypesProto3NestedEnum as Default>::default()
         {
             out.indent(pad);
             out.push_str("optional_nested_enum: ");
@@ -2419,7 +2419,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
             out.push('\n');
         }
         if self.optional_aliased_enum
-            != <TestAllTypesProto3_AliasedEnum as Default>::default()
+            != <TestAllTypesProto3AliasedEnum as Default>::default()
         {
             out.indent(pad);
             out.push_str("optional_aliased_enum: ");
@@ -2537,7 +2537,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
             out.push('\n');
         }
         if self.repeated_nested_message
-            != <Vec<TestAllTypesProto3_NestedMessage> as Default>::default()
+            != <Vec<TestAllTypesProto3NestedMessage> as Default>::default()
         {
             out.indent(pad);
             out.push_str("repeated_nested_message ");
@@ -2551,7 +2551,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
             out.push('\n');
         }
         if self.repeated_nested_enum
-            != <Vec<TestAllTypesProto3_NestedEnum> as Default>::default()
+            != <Vec<TestAllTypesProto3NestedEnum> as Default>::default()
         {
             out.indent(pad);
             out.push_str("repeated_nested_enum: ");
@@ -2655,7 +2655,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
             out.push('\n');
         }
         if self.packed_nested_enum
-            != <Vec<TestAllTypesProto3_NestedEnum> as Default>::default()
+            != <Vec<TestAllTypesProto3NestedEnum> as Default>::default()
         {
             out.indent(pad);
             out.push_str("packed_nested_enum: ");
@@ -2741,7 +2741,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
             out.push('\n');
         }
         if self.unpacked_nested_enum
-            != <Vec<TestAllTypesProto3_NestedEnum> as Default>::default()
+            != <Vec<TestAllTypesProto3NestedEnum> as Default>::default()
         {
             out.indent(pad);
             out.push_str("unpacked_nested_enum: ");
@@ -2871,7 +2871,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
         if self.map_string_nested_message
             != <::std::collections::HashMap<
                 String,
-                TestAllTypesProto3_NestedMessage,
+                TestAllTypesProto3NestedMessage,
             > as Default>::default()
         {
             out.indent(pad);
@@ -2893,7 +2893,7 @@ impl textformat::Encodable for TestAllTypesProto3 {
         if self.map_string_nested_enum
             != <::std::collections::HashMap<
                 String,
-                TestAllTypesProto3_NestedEnum,
+                TestAllTypesProto3NestedEnum,
             > as Default>::default()
         {
             out.indent(pad);
@@ -4329,14 +4329,14 @@ impl binformat::Encodable for TestAllTypesProto3 {
 #[derive(Debug, Clone, PartialEq)]
 pub enum TestAllTypesProto3OneOfOneofField {
     OneofUint32(u32),
-    OneofNestedMessage(TestAllTypesProto3_NestedMessage),
+    OneofNestedMessage(TestAllTypesProto3NestedMessage),
     OneofString(String),
     OneofBytes(Vec<u8>),
     OneofBool(bool),
     OneofUint64(u64),
     OneofFloat(f32),
     OneofDouble(f64),
-    OneofEnum(TestAllTypesProto3_NestedEnum),
+    OneofEnum(TestAllTypesProto3NestedEnum),
     OneofNullValue(NullValue),
     Unknown(::core::marker::PhantomData<()>),
 }
@@ -4347,12 +4347,12 @@ impl Default for TestAllTypesProto3OneOfOneofField {
 }
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct TestAllTypesProto3_NestedMessage {
+pub struct TestAllTypesProto3NestedMessage {
     pub a: i32,
     pub corecursive: Option<Box<TestAllTypesProto3>>,
     pub _unknown: (),
 }
-impl TestAllTypesProto3_NestedMessage {
+impl TestAllTypesProto3NestedMessage {
     #[inline(always)]
     pub fn r#with_a(mut self, it: i32) -> Self {
         self.r#set_a(it);
@@ -4374,7 +4374,7 @@ impl TestAllTypesProto3_NestedMessage {
         self
     }
 }
-impl textformat::Decodable for TestAllTypesProto3_NestedMessage {
+impl textformat::Decodable for TestAllTypesProto3NestedMessage {
     fn merge_field(
         &mut self,
         ctx: &textformat::Context,
@@ -4393,7 +4393,7 @@ impl textformat::Decodable for TestAllTypesProto3_NestedMessage {
         Ok(())
     }
 }
-impl textformat::Encodable for TestAllTypesProto3_NestedMessage {
+impl textformat::Encodable for TestAllTypesProto3NestedMessage {
     fn encode(
         &self,
         ctx: &textformat::Context,
@@ -4415,7 +4415,7 @@ impl textformat::Encodable for TestAllTypesProto3_NestedMessage {
         Ok(())
     }
 }
-impl binformat::Decodable for TestAllTypesProto3_NestedMessage {
+impl binformat::Decodable for TestAllTypesProto3NestedMessage {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
@@ -4437,7 +4437,7 @@ impl binformat::Decodable for TestAllTypesProto3_NestedMessage {
         Ok(buf)
     }
 }
-impl binformat::Encodable for TestAllTypesProto3_NestedMessage {
+impl binformat::Encodable for TestAllTypesProto3NestedMessage {
     fn qualified_name(&self) -> &'static str {
         "protobuf_test_messages.proto3.TestAllTypesProto3.NestedMessage"
     }
@@ -4634,42 +4634,42 @@ impl binformat::Encodable for EnumOnlyProto3 {
     }
 }
 #[derive(Debug, Clone, PartialEq)]
-pub enum TestAllTypesProto3_NestedEnum {
+pub enum TestAllTypesProto3NestedEnum {
     FOO,
     BAR,
     BAZ,
     NEG,
     Unknown(u32),
 }
-impl Default for TestAllTypesProto3_NestedEnum {
-    fn default() -> TestAllTypesProto3_NestedEnum {
+impl Default for TestAllTypesProto3NestedEnum {
+    fn default() -> TestAllTypesProto3NestedEnum {
         Self::from(0)
     }
 }
-impl binformat::format::ProtoEnum for TestAllTypesProto3_NestedEnum {}
-impl From<u32> for TestAllTypesProto3_NestedEnum {
-    fn from(v: u32) -> TestAllTypesProto3_NestedEnum {
+impl binformat::format::ProtoEnum for TestAllTypesProto3NestedEnum {}
+impl From<u32> for TestAllTypesProto3NestedEnum {
+    fn from(v: u32) -> TestAllTypesProto3NestedEnum {
         match v {
-            0u32 => TestAllTypesProto3_NestedEnum::FOO,
-            1u32 => TestAllTypesProto3_NestedEnum::BAR,
-            2u32 => TestAllTypesProto3_NestedEnum::BAZ,
-            4294967295u32 => TestAllTypesProto3_NestedEnum::NEG,
-            other => TestAllTypesProto3_NestedEnum::Unknown(other),
+            0u32 => TestAllTypesProto3NestedEnum::FOO,
+            1u32 => TestAllTypesProto3NestedEnum::BAR,
+            2u32 => TestAllTypesProto3NestedEnum::BAZ,
+            4294967295u32 => TestAllTypesProto3NestedEnum::NEG,
+            other => TestAllTypesProto3NestedEnum::Unknown(other),
         }
     }
 }
-impl From<TestAllTypesProto3_NestedEnum> for u32 {
-    fn from(v: TestAllTypesProto3_NestedEnum) -> u32 {
+impl From<TestAllTypesProto3NestedEnum> for u32 {
+    fn from(v: TestAllTypesProto3NestedEnum) -> u32 {
         match v {
-            TestAllTypesProto3_NestedEnum::FOO => 0u32,
-            TestAllTypesProto3_NestedEnum::BAR => 1u32,
-            TestAllTypesProto3_NestedEnum::BAZ => 2u32,
-            TestAllTypesProto3_NestedEnum::NEG => 4294967295u32,
-            TestAllTypesProto3_NestedEnum::Unknown(other) => other,
+            TestAllTypesProto3NestedEnum::FOO => 0u32,
+            TestAllTypesProto3NestedEnum::BAR => 1u32,
+            TestAllTypesProto3NestedEnum::BAZ => 2u32,
+            TestAllTypesProto3NestedEnum::NEG => 4294967295u32,
+            TestAllTypesProto3NestedEnum::Unknown(other) => other,
         }
     }
 }
-impl textformat::Field for TestAllTypesProto3_NestedEnum {
+impl textformat::Field for TestAllTypesProto3NestedEnum {
     fn format(
         &self,
         ctx: &textformat::Context,
@@ -4677,11 +4677,11 @@ impl textformat::Field for TestAllTypesProto3_NestedEnum {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            TestAllTypesProto3_NestedEnum::FOO => "FOO",
-            TestAllTypesProto3_NestedEnum::BAR => "BAR",
-            TestAllTypesProto3_NestedEnum::BAZ => "BAZ",
-            TestAllTypesProto3_NestedEnum::NEG => "NEG",
-            TestAllTypesProto3_NestedEnum::Unknown(n) => {
+            TestAllTypesProto3NestedEnum::FOO => "FOO",
+            TestAllTypesProto3NestedEnum::BAR => "BAR",
+            TestAllTypesProto3NestedEnum::BAZ => "BAZ",
+            TestAllTypesProto3NestedEnum::NEG => "NEG",
+            TestAllTypesProto3NestedEnum::Unknown(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -4696,16 +4696,16 @@ impl textformat::Field for TestAllTypesProto3_NestedEnum {
     ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("FOO") => {
-                *self = TestAllTypesProto3_NestedEnum::FOO;
+                *self = TestAllTypesProto3NestedEnum::FOO;
             }
             textformat::ast::Literal::Identifier("BAR") => {
-                *self = TestAllTypesProto3_NestedEnum::BAR;
+                *self = TestAllTypesProto3NestedEnum::BAR;
             }
             textformat::ast::Literal::Identifier("BAZ") => {
-                *self = TestAllTypesProto3_NestedEnum::BAZ;
+                *self = TestAllTypesProto3NestedEnum::BAZ;
             }
             textformat::ast::Literal::Identifier("NEG") => {
-                *self = TestAllTypesProto3_NestedEnum::NEG;
+                *self = TestAllTypesProto3NestedEnum::NEG;
             }
             textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
@@ -4714,7 +4714,7 @@ impl textformat::Field for TestAllTypesProto3_NestedEnum {
     }
 }
 #[derive(Debug, Clone, PartialEq)]
-pub enum TestAllTypesProto3_AliasedEnum {
+pub enum TestAllTypesProto3AliasedEnum {
     ALIAS_FOO,
     ALIAS_BAR,
     ALIAS_BAZ,
@@ -4723,39 +4723,39 @@ pub enum TestAllTypesProto3_AliasedEnum {
     bAz,
     Unknown(u32),
 }
-impl Default for TestAllTypesProto3_AliasedEnum {
-    fn default() -> TestAllTypesProto3_AliasedEnum {
+impl Default for TestAllTypesProto3AliasedEnum {
+    fn default() -> TestAllTypesProto3AliasedEnum {
         Self::from(0)
     }
 }
-impl binformat::format::ProtoEnum for TestAllTypesProto3_AliasedEnum {}
-impl From<u32> for TestAllTypesProto3_AliasedEnum {
-    fn from(v: u32) -> TestAllTypesProto3_AliasedEnum {
+impl binformat::format::ProtoEnum for TestAllTypesProto3AliasedEnum {}
+impl From<u32> for TestAllTypesProto3AliasedEnum {
+    fn from(v: u32) -> TestAllTypesProto3AliasedEnum {
         match v {
-            0u32 => TestAllTypesProto3_AliasedEnum::ALIAS_FOO,
-            1u32 => TestAllTypesProto3_AliasedEnum::ALIAS_BAR,
-            2u32 => TestAllTypesProto3_AliasedEnum::ALIAS_BAZ,
-            2u32 => TestAllTypesProto3_AliasedEnum::MOO,
-            2u32 => TestAllTypesProto3_AliasedEnum::moo,
-            2u32 => TestAllTypesProto3_AliasedEnum::bAz,
-            other => TestAllTypesProto3_AliasedEnum::Unknown(other),
+            0u32 => TestAllTypesProto3AliasedEnum::ALIAS_FOO,
+            1u32 => TestAllTypesProto3AliasedEnum::ALIAS_BAR,
+            2u32 => TestAllTypesProto3AliasedEnum::ALIAS_BAZ,
+            2u32 => TestAllTypesProto3AliasedEnum::MOO,
+            2u32 => TestAllTypesProto3AliasedEnum::moo,
+            2u32 => TestAllTypesProto3AliasedEnum::bAz,
+            other => TestAllTypesProto3AliasedEnum::Unknown(other),
         }
     }
 }
-impl From<TestAllTypesProto3_AliasedEnum> for u32 {
-    fn from(v: TestAllTypesProto3_AliasedEnum) -> u32 {
+impl From<TestAllTypesProto3AliasedEnum> for u32 {
+    fn from(v: TestAllTypesProto3AliasedEnum) -> u32 {
         match v {
-            TestAllTypesProto3_AliasedEnum::ALIAS_FOO => 0u32,
-            TestAllTypesProto3_AliasedEnum::ALIAS_BAR => 1u32,
-            TestAllTypesProto3_AliasedEnum::ALIAS_BAZ => 2u32,
-            TestAllTypesProto3_AliasedEnum::MOO => 2u32,
-            TestAllTypesProto3_AliasedEnum::moo => 2u32,
-            TestAllTypesProto3_AliasedEnum::bAz => 2u32,
-            TestAllTypesProto3_AliasedEnum::Unknown(other) => other,
+            TestAllTypesProto3AliasedEnum::ALIAS_FOO => 0u32,
+            TestAllTypesProto3AliasedEnum::ALIAS_BAR => 1u32,
+            TestAllTypesProto3AliasedEnum::ALIAS_BAZ => 2u32,
+            TestAllTypesProto3AliasedEnum::MOO => 2u32,
+            TestAllTypesProto3AliasedEnum::moo => 2u32,
+            TestAllTypesProto3AliasedEnum::bAz => 2u32,
+            TestAllTypesProto3AliasedEnum::Unknown(other) => other,
         }
     }
 }
-impl textformat::Field for TestAllTypesProto3_AliasedEnum {
+impl textformat::Field for TestAllTypesProto3AliasedEnum {
     fn format(
         &self,
         ctx: &textformat::Context,
@@ -4763,13 +4763,13 @@ impl textformat::Field for TestAllTypesProto3_AliasedEnum {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            TestAllTypesProto3_AliasedEnum::ALIAS_FOO => "ALIAS_FOO",
-            TestAllTypesProto3_AliasedEnum::ALIAS_BAR => "ALIAS_BAR",
-            TestAllTypesProto3_AliasedEnum::ALIAS_BAZ => "ALIAS_BAZ",
-            TestAllTypesProto3_AliasedEnum::MOO => "MOO",
-            TestAllTypesProto3_AliasedEnum::moo => "moo",
-            TestAllTypesProto3_AliasedEnum::bAz => "bAz",
-            TestAllTypesProto3_AliasedEnum::Unknown(n) => {
+            TestAllTypesProto3AliasedEnum::ALIAS_FOO => "ALIAS_FOO",
+            TestAllTypesProto3AliasedEnum::ALIAS_BAR => "ALIAS_BAR",
+            TestAllTypesProto3AliasedEnum::ALIAS_BAZ => "ALIAS_BAZ",
+            TestAllTypesProto3AliasedEnum::MOO => "MOO",
+            TestAllTypesProto3AliasedEnum::moo => "moo",
+            TestAllTypesProto3AliasedEnum::bAz => "bAz",
+            TestAllTypesProto3AliasedEnum::Unknown(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -4784,22 +4784,22 @@ impl textformat::Field for TestAllTypesProto3_AliasedEnum {
     ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("ALIAS_FOO") => {
-                *self = TestAllTypesProto3_AliasedEnum::ALIAS_FOO;
+                *self = TestAllTypesProto3AliasedEnum::ALIAS_FOO;
             }
             textformat::ast::Literal::Identifier("ALIAS_BAR") => {
-                *self = TestAllTypesProto3_AliasedEnum::ALIAS_BAR;
+                *self = TestAllTypesProto3AliasedEnum::ALIAS_BAR;
             }
             textformat::ast::Literal::Identifier("ALIAS_BAZ") => {
-                *self = TestAllTypesProto3_AliasedEnum::ALIAS_BAZ;
+                *self = TestAllTypesProto3AliasedEnum::ALIAS_BAZ;
             }
             textformat::ast::Literal::Identifier("MOO") => {
-                *self = TestAllTypesProto3_AliasedEnum::MOO;
+                *self = TestAllTypesProto3AliasedEnum::MOO;
             }
             textformat::ast::Literal::Identifier("moo") => {
-                *self = TestAllTypesProto3_AliasedEnum::moo;
+                *self = TestAllTypesProto3AliasedEnum::moo;
             }
             textformat::ast::Literal::Identifier("bAz") => {
-                *self = TestAllTypesProto3_AliasedEnum::bAz;
+                *self = TestAllTypesProto3AliasedEnum::bAz;
             }
             textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
@@ -4881,36 +4881,36 @@ impl textformat::Field for ForeignEnum {
     }
 }
 #[derive(Debug, Clone, PartialEq)]
-pub enum EnumOnlyProto3_Bool {
+pub enum EnumOnlyProto3Bool {
     kFalse,
     kTrue,
     Unknown(u32),
 }
-impl Default for EnumOnlyProto3_Bool {
-    fn default() -> EnumOnlyProto3_Bool {
+impl Default for EnumOnlyProto3Bool {
+    fn default() -> EnumOnlyProto3Bool {
         Self::from(0)
     }
 }
-impl binformat::format::ProtoEnum for EnumOnlyProto3_Bool {}
-impl From<u32> for EnumOnlyProto3_Bool {
-    fn from(v: u32) -> EnumOnlyProto3_Bool {
+impl binformat::format::ProtoEnum for EnumOnlyProto3Bool {}
+impl From<u32> for EnumOnlyProto3Bool {
+    fn from(v: u32) -> EnumOnlyProto3Bool {
         match v {
-            0u32 => EnumOnlyProto3_Bool::kFalse,
-            1u32 => EnumOnlyProto3_Bool::kTrue,
-            other => EnumOnlyProto3_Bool::Unknown(other),
+            0u32 => EnumOnlyProto3Bool::kFalse,
+            1u32 => EnumOnlyProto3Bool::kTrue,
+            other => EnumOnlyProto3Bool::Unknown(other),
         }
     }
 }
-impl From<EnumOnlyProto3_Bool> for u32 {
-    fn from(v: EnumOnlyProto3_Bool) -> u32 {
+impl From<EnumOnlyProto3Bool> for u32 {
+    fn from(v: EnumOnlyProto3Bool) -> u32 {
         match v {
-            EnumOnlyProto3_Bool::kFalse => 0u32,
-            EnumOnlyProto3_Bool::kTrue => 1u32,
-            EnumOnlyProto3_Bool::Unknown(other) => other,
+            EnumOnlyProto3Bool::kFalse => 0u32,
+            EnumOnlyProto3Bool::kTrue => 1u32,
+            EnumOnlyProto3Bool::Unknown(other) => other,
         }
     }
 }
-impl textformat::Field for EnumOnlyProto3_Bool {
+impl textformat::Field for EnumOnlyProto3Bool {
     fn format(
         &self,
         ctx: &textformat::Context,
@@ -4918,9 +4918,9 @@ impl textformat::Field for EnumOnlyProto3_Bool {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            EnumOnlyProto3_Bool::kFalse => "kFalse",
-            EnumOnlyProto3_Bool::kTrue => "kTrue",
-            EnumOnlyProto3_Bool::Unknown(n) => {
+            EnumOnlyProto3Bool::kFalse => "kFalse",
+            EnumOnlyProto3Bool::kTrue => "kTrue",
+            EnumOnlyProto3Bool::Unknown(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -4935,10 +4935,10 @@ impl textformat::Field for EnumOnlyProto3_Bool {
     ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("kFalse") => {
-                *self = EnumOnlyProto3_Bool::kFalse;
+                *self = EnumOnlyProto3Bool::kFalse;
             }
             textformat::ast::Literal::Identifier("kTrue") => {
-                *self = EnumOnlyProto3_Bool::kTrue;
+                *self = EnumOnlyProto3Bool::kTrue;
             }
             textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
             other => textformat::bail!("Invalid enum value: {other:?}"),

@@ -11,7 +11,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Version::default());
     registry.register(&CodeGeneratorRequest::default());
     registry.register(&CodeGeneratorResponse::default());
-    registry.register(&CodeGeneratorResponse_File::default());
+    registry.register(&CodeGeneratorResponseFile::default());
 }
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -327,7 +327,7 @@ impl binformat::Encodable for CodeGeneratorRequest {
 pub struct CodeGeneratorResponse {
     pub error: Option<String>,
     pub supported_features: Option<u64>,
-    pub file: Vec<CodeGeneratorResponse_File>,
+    pub file: Vec<CodeGeneratorResponseFile>,
     pub _unknown: (),
 }
 impl CodeGeneratorResponse {
@@ -352,12 +352,12 @@ impl CodeGeneratorResponse {
         self
     }
     #[inline(always)]
-    pub fn r#with_file(mut self, it: CodeGeneratorResponse_File) -> Self {
+    pub fn r#with_file(mut self, it: CodeGeneratorResponseFile) -> Self {
         self.r#add_file(it);
         self
     }
     #[inline(always)]
-    pub fn r#add_file(&mut self, it: CodeGeneratorResponse_File) -> &mut Self {
+    pub fn r#add_file(&mut self, it: CodeGeneratorResponseFile) -> &mut Self {
         self.file.push(it);
         self
     }
@@ -403,7 +403,7 @@ impl textformat::Encodable for CodeGeneratorResponse {
             textformat::Field::format(&self.supported_features, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.file != <Vec<CodeGeneratorResponse_File> as Default>::default() {
+        if self.file != <Vec<CodeGeneratorResponseFile> as Default>::default() {
             out.indent(pad);
             out.push_str("file ");
             textformat::Field::format(&self.file, ctx, pad, out)?;
@@ -452,14 +452,14 @@ impl binformat::Encodable for CodeGeneratorResponse {
 }
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct CodeGeneratorResponse_File {
+pub struct CodeGeneratorResponseFile {
     pub name: Option<String>,
     pub insertion_point: Option<String>,
     pub content: Option<String>,
     pub generated_code_info: Option<Box<GeneratedCodeInfo>>,
     pub _unknown: (),
 }
-impl CodeGeneratorResponse_File {
+impl CodeGeneratorResponseFile {
     #[inline(always)]
     pub fn r#with_name(mut self, it: String) -> Self {
         self.r#set_name(it);
@@ -501,7 +501,7 @@ impl CodeGeneratorResponse_File {
         self
     }
 }
-impl textformat::Decodable for CodeGeneratorResponse_File {
+impl textformat::Decodable for CodeGeneratorResponseFile {
     fn merge_field(
         &mut self,
         ctx: &textformat::Context,
@@ -526,7 +526,7 @@ impl textformat::Decodable for CodeGeneratorResponse_File {
         Ok(())
     }
 }
-impl textformat::Encodable for CodeGeneratorResponse_File {
+impl textformat::Encodable for CodeGeneratorResponseFile {
     fn encode(
         &self,
         ctx: &textformat::Context,
@@ -562,7 +562,7 @@ impl textformat::Encodable for CodeGeneratorResponse_File {
         Ok(())
     }
 }
-impl binformat::Decodable for CodeGeneratorResponse_File {
+impl binformat::Decodable for CodeGeneratorResponseFile {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
@@ -587,7 +587,7 @@ impl binformat::Decodable for CodeGeneratorResponse_File {
         Ok(buf)
     }
 }
-impl binformat::Encodable for CodeGeneratorResponse_File {
+impl binformat::Encodable for CodeGeneratorResponseFile {
     fn qualified_name(&self) -> &'static str {
         "google.protobuf.compiler.CodeGeneratorResponse.File"
     }
@@ -602,36 +602,36 @@ impl binformat::Encodable for CodeGeneratorResponse_File {
     }
 }
 #[derive(Debug, Clone, PartialEq)]
-pub enum CodeGeneratorResponse_Feature {
+pub enum CodeGeneratorResponseFeature {
     FEATURE_NONE,
     FEATURE_PROTO3_OPTIONAL,
     Unknown(u32),
 }
-impl Default for CodeGeneratorResponse_Feature {
-    fn default() -> CodeGeneratorResponse_Feature {
+impl Default for CodeGeneratorResponseFeature {
+    fn default() -> CodeGeneratorResponseFeature {
         Self::from(0)
     }
 }
-impl binformat::format::ProtoEnum for CodeGeneratorResponse_Feature {}
-impl From<u32> for CodeGeneratorResponse_Feature {
-    fn from(v: u32) -> CodeGeneratorResponse_Feature {
+impl binformat::format::ProtoEnum for CodeGeneratorResponseFeature {}
+impl From<u32> for CodeGeneratorResponseFeature {
+    fn from(v: u32) -> CodeGeneratorResponseFeature {
         match v {
-            0u32 => CodeGeneratorResponse_Feature::FEATURE_NONE,
-            1u32 => CodeGeneratorResponse_Feature::FEATURE_PROTO3_OPTIONAL,
-            other => CodeGeneratorResponse_Feature::Unknown(other),
+            0u32 => CodeGeneratorResponseFeature::FEATURE_NONE,
+            1u32 => CodeGeneratorResponseFeature::FEATURE_PROTO3_OPTIONAL,
+            other => CodeGeneratorResponseFeature::Unknown(other),
         }
     }
 }
-impl From<CodeGeneratorResponse_Feature> for u32 {
-    fn from(v: CodeGeneratorResponse_Feature) -> u32 {
+impl From<CodeGeneratorResponseFeature> for u32 {
+    fn from(v: CodeGeneratorResponseFeature) -> u32 {
         match v {
-            CodeGeneratorResponse_Feature::FEATURE_NONE => 0u32,
-            CodeGeneratorResponse_Feature::FEATURE_PROTO3_OPTIONAL => 1u32,
-            CodeGeneratorResponse_Feature::Unknown(other) => other,
+            CodeGeneratorResponseFeature::FEATURE_NONE => 0u32,
+            CodeGeneratorResponseFeature::FEATURE_PROTO3_OPTIONAL => 1u32,
+            CodeGeneratorResponseFeature::Unknown(other) => other,
         }
     }
 }
-impl textformat::Field for CodeGeneratorResponse_Feature {
+impl textformat::Field for CodeGeneratorResponseFeature {
     fn format(
         &self,
         ctx: &textformat::Context,
@@ -639,11 +639,11 @@ impl textformat::Field for CodeGeneratorResponse_Feature {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            CodeGeneratorResponse_Feature::FEATURE_NONE => "FEATURE_NONE",
-            CodeGeneratorResponse_Feature::FEATURE_PROTO3_OPTIONAL => {
+            CodeGeneratorResponseFeature::FEATURE_NONE => "FEATURE_NONE",
+            CodeGeneratorResponseFeature::FEATURE_PROTO3_OPTIONAL => {
                 "FEATURE_PROTO3_OPTIONAL"
             }
-            CodeGeneratorResponse_Feature::Unknown(n) => {
+            CodeGeneratorResponseFeature::Unknown(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -658,10 +658,10 @@ impl textformat::Field for CodeGeneratorResponse_Feature {
     ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("FEATURE_NONE") => {
-                *self = CodeGeneratorResponse_Feature::FEATURE_NONE;
+                *self = CodeGeneratorResponseFeature::FEATURE_NONE;
             }
             textformat::ast::Literal::Identifier("FEATURE_PROTO3_OPTIONAL") => {
-                *self = CodeGeneratorResponse_Feature::FEATURE_PROTO3_OPTIONAL;
+                *self = CodeGeneratorResponseFeature::FEATURE_PROTO3_OPTIONAL;
             }
             textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
             other => textformat::bail!("Invalid enum value: {other:?}"),

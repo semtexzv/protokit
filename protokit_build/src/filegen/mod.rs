@@ -65,7 +65,7 @@ pub fn rustify_name(n: &str) -> String {
             return format!("Proto{}", n);
         }
     }
-    n.replace('.', "_")
+    n.replace('.', "")
 }
 
 pub fn type_marker(typ: BuiltinType) -> &'static str {

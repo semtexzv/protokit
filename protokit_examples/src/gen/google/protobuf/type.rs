@@ -7,8 +7,8 @@ use ::protokit::*;
 use ::protokit as root;
 use root::types::any::*;
 use super::source_context::*;
-use super::source_context::*;
 use root::types::any::*;
+use super::source_context::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Type::default());
     registry.register(&Field::default());
@@ -219,8 +219,8 @@ impl binformat::Encodable for Type {
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Field {
-    pub kind: Field_Kind,
-    pub cardinality: Field_Cardinality,
+    pub kind: FieldKind,
+    pub cardinality: FieldCardinality,
     pub number: i32,
     pub name: String,
     pub type_url: String,
@@ -233,22 +233,22 @@ pub struct Field {
 }
 impl Field {
     #[inline(always)]
-    pub fn r#with_kind(mut self, it: Field_Kind) -> Self {
+    pub fn r#with_kind(mut self, it: FieldKind) -> Self {
         self.r#set_kind(it);
         self
     }
     #[inline(always)]
-    pub fn r#set_kind(&mut self, it: Field_Kind) -> &mut Self {
+    pub fn r#set_kind(&mut self, it: FieldKind) -> &mut Self {
         self.kind = it.into();
         self
     }
     #[inline(always)]
-    pub fn r#with_cardinality(mut self, it: Field_Cardinality) -> Self {
+    pub fn r#with_cardinality(mut self, it: FieldCardinality) -> Self {
         self.r#set_cardinality(it);
         self
     }
     #[inline(always)]
-    pub fn r#set_cardinality(&mut self, it: Field_Cardinality) -> &mut Self {
+    pub fn r#set_cardinality(&mut self, it: FieldCardinality) -> &mut Self {
         self.cardinality = it.into();
         self
     }
@@ -383,13 +383,13 @@ impl textformat::Encodable for Field {
         pad: usize,
         out: &mut std::string::String,
     ) -> textformat::Result<()> {
-        if self.kind != <Field_Kind as Default>::default() {
+        if self.kind != <FieldKind as Default>::default() {
             out.indent(pad);
             out.push_str("kind: ");
             textformat::Field::format(&self.kind, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.cardinality != <Field_Cardinality as Default>::default() {
+        if self.cardinality != <FieldCardinality as Default>::default() {
             out.indent(pad);
             out.push_str("cardinality: ");
             textformat::Field::format(&self.cardinality, ctx, pad, out)?;
@@ -930,7 +930,7 @@ impl binformat::Encodable for ProtoOption {
     }
 }
 #[derive(Debug, Clone, PartialEq)]
-pub enum Field_Kind {
+pub enum FieldKind {
     TYPE_UNKNOWN,
     TYPE_DOUBLE,
     TYPE_FLOAT,
@@ -952,65 +952,65 @@ pub enum Field_Kind {
     TYPE_SINT64,
     Unknown(u32),
 }
-impl Default for Field_Kind {
-    fn default() -> Field_Kind {
+impl Default for FieldKind {
+    fn default() -> FieldKind {
         Self::from(0)
     }
 }
-impl binformat::format::ProtoEnum for Field_Kind {}
-impl From<u32> for Field_Kind {
-    fn from(v: u32) -> Field_Kind {
+impl binformat::format::ProtoEnum for FieldKind {}
+impl From<u32> for FieldKind {
+    fn from(v: u32) -> FieldKind {
         match v {
-            0u32 => Field_Kind::TYPE_UNKNOWN,
-            1u32 => Field_Kind::TYPE_DOUBLE,
-            2u32 => Field_Kind::TYPE_FLOAT,
-            3u32 => Field_Kind::TYPE_INT64,
-            4u32 => Field_Kind::TYPE_UINT64,
-            5u32 => Field_Kind::TYPE_INT32,
-            6u32 => Field_Kind::TYPE_FIXED64,
-            7u32 => Field_Kind::TYPE_FIXED32,
-            8u32 => Field_Kind::TYPE_BOOL,
-            9u32 => Field_Kind::TYPE_STRING,
-            10u32 => Field_Kind::TYPE_GROUP,
-            11u32 => Field_Kind::TYPE_MESSAGE,
-            12u32 => Field_Kind::TYPE_BYTES,
-            13u32 => Field_Kind::TYPE_UINT32,
-            14u32 => Field_Kind::TYPE_ENUM,
-            15u32 => Field_Kind::TYPE_SFIXED32,
-            16u32 => Field_Kind::TYPE_SFIXED64,
-            17u32 => Field_Kind::TYPE_SINT32,
-            18u32 => Field_Kind::TYPE_SINT64,
-            other => Field_Kind::Unknown(other),
+            0u32 => FieldKind::TYPE_UNKNOWN,
+            1u32 => FieldKind::TYPE_DOUBLE,
+            2u32 => FieldKind::TYPE_FLOAT,
+            3u32 => FieldKind::TYPE_INT64,
+            4u32 => FieldKind::TYPE_UINT64,
+            5u32 => FieldKind::TYPE_INT32,
+            6u32 => FieldKind::TYPE_FIXED64,
+            7u32 => FieldKind::TYPE_FIXED32,
+            8u32 => FieldKind::TYPE_BOOL,
+            9u32 => FieldKind::TYPE_STRING,
+            10u32 => FieldKind::TYPE_GROUP,
+            11u32 => FieldKind::TYPE_MESSAGE,
+            12u32 => FieldKind::TYPE_BYTES,
+            13u32 => FieldKind::TYPE_UINT32,
+            14u32 => FieldKind::TYPE_ENUM,
+            15u32 => FieldKind::TYPE_SFIXED32,
+            16u32 => FieldKind::TYPE_SFIXED64,
+            17u32 => FieldKind::TYPE_SINT32,
+            18u32 => FieldKind::TYPE_SINT64,
+            other => FieldKind::Unknown(other),
         }
     }
 }
-impl From<Field_Kind> for u32 {
-    fn from(v: Field_Kind) -> u32 {
+impl From<FieldKind> for u32 {
+    fn from(v: FieldKind) -> u32 {
         match v {
-            Field_Kind::TYPE_UNKNOWN => 0u32,
-            Field_Kind::TYPE_DOUBLE => 1u32,
-            Field_Kind::TYPE_FLOAT => 2u32,
-            Field_Kind::TYPE_INT64 => 3u32,
-            Field_Kind::TYPE_UINT64 => 4u32,
-            Field_Kind::TYPE_INT32 => 5u32,
-            Field_Kind::TYPE_FIXED64 => 6u32,
-            Field_Kind::TYPE_FIXED32 => 7u32,
-            Field_Kind::TYPE_BOOL => 8u32,
-            Field_Kind::TYPE_STRING => 9u32,
-            Field_Kind::TYPE_GROUP => 10u32,
-            Field_Kind::TYPE_MESSAGE => 11u32,
-            Field_Kind::TYPE_BYTES => 12u32,
-            Field_Kind::TYPE_UINT32 => 13u32,
-            Field_Kind::TYPE_ENUM => 14u32,
-            Field_Kind::TYPE_SFIXED32 => 15u32,
-            Field_Kind::TYPE_SFIXED64 => 16u32,
-            Field_Kind::TYPE_SINT32 => 17u32,
-            Field_Kind::TYPE_SINT64 => 18u32,
-            Field_Kind::Unknown(other) => other,
+            FieldKind::TYPE_UNKNOWN => 0u32,
+            FieldKind::TYPE_DOUBLE => 1u32,
+            FieldKind::TYPE_FLOAT => 2u32,
+            FieldKind::TYPE_INT64 => 3u32,
+            FieldKind::TYPE_UINT64 => 4u32,
+            FieldKind::TYPE_INT32 => 5u32,
+            FieldKind::TYPE_FIXED64 => 6u32,
+            FieldKind::TYPE_FIXED32 => 7u32,
+            FieldKind::TYPE_BOOL => 8u32,
+            FieldKind::TYPE_STRING => 9u32,
+            FieldKind::TYPE_GROUP => 10u32,
+            FieldKind::TYPE_MESSAGE => 11u32,
+            FieldKind::TYPE_BYTES => 12u32,
+            FieldKind::TYPE_UINT32 => 13u32,
+            FieldKind::TYPE_ENUM => 14u32,
+            FieldKind::TYPE_SFIXED32 => 15u32,
+            FieldKind::TYPE_SFIXED64 => 16u32,
+            FieldKind::TYPE_SINT32 => 17u32,
+            FieldKind::TYPE_SINT64 => 18u32,
+            FieldKind::Unknown(other) => other,
         }
     }
 }
-impl textformat::Field for Field_Kind {
+impl textformat::Field for FieldKind {
     fn format(
         &self,
         ctx: &textformat::Context,
@@ -1018,26 +1018,26 @@ impl textformat::Field for Field_Kind {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            Field_Kind::TYPE_UNKNOWN => "TYPE_UNKNOWN",
-            Field_Kind::TYPE_DOUBLE => "TYPE_DOUBLE",
-            Field_Kind::TYPE_FLOAT => "TYPE_FLOAT",
-            Field_Kind::TYPE_INT64 => "TYPE_INT64",
-            Field_Kind::TYPE_UINT64 => "TYPE_UINT64",
-            Field_Kind::TYPE_INT32 => "TYPE_INT32",
-            Field_Kind::TYPE_FIXED64 => "TYPE_FIXED64",
-            Field_Kind::TYPE_FIXED32 => "TYPE_FIXED32",
-            Field_Kind::TYPE_BOOL => "TYPE_BOOL",
-            Field_Kind::TYPE_STRING => "TYPE_STRING",
-            Field_Kind::TYPE_GROUP => "TYPE_GROUP",
-            Field_Kind::TYPE_MESSAGE => "TYPE_MESSAGE",
-            Field_Kind::TYPE_BYTES => "TYPE_BYTES",
-            Field_Kind::TYPE_UINT32 => "TYPE_UINT32",
-            Field_Kind::TYPE_ENUM => "TYPE_ENUM",
-            Field_Kind::TYPE_SFIXED32 => "TYPE_SFIXED32",
-            Field_Kind::TYPE_SFIXED64 => "TYPE_SFIXED64",
-            Field_Kind::TYPE_SINT32 => "TYPE_SINT32",
-            Field_Kind::TYPE_SINT64 => "TYPE_SINT64",
-            Field_Kind::Unknown(n) => {
+            FieldKind::TYPE_UNKNOWN => "TYPE_UNKNOWN",
+            FieldKind::TYPE_DOUBLE => "TYPE_DOUBLE",
+            FieldKind::TYPE_FLOAT => "TYPE_FLOAT",
+            FieldKind::TYPE_INT64 => "TYPE_INT64",
+            FieldKind::TYPE_UINT64 => "TYPE_UINT64",
+            FieldKind::TYPE_INT32 => "TYPE_INT32",
+            FieldKind::TYPE_FIXED64 => "TYPE_FIXED64",
+            FieldKind::TYPE_FIXED32 => "TYPE_FIXED32",
+            FieldKind::TYPE_BOOL => "TYPE_BOOL",
+            FieldKind::TYPE_STRING => "TYPE_STRING",
+            FieldKind::TYPE_GROUP => "TYPE_GROUP",
+            FieldKind::TYPE_MESSAGE => "TYPE_MESSAGE",
+            FieldKind::TYPE_BYTES => "TYPE_BYTES",
+            FieldKind::TYPE_UINT32 => "TYPE_UINT32",
+            FieldKind::TYPE_ENUM => "TYPE_ENUM",
+            FieldKind::TYPE_SFIXED32 => "TYPE_SFIXED32",
+            FieldKind::TYPE_SFIXED64 => "TYPE_SFIXED64",
+            FieldKind::TYPE_SINT32 => "TYPE_SINT32",
+            FieldKind::TYPE_SINT64 => "TYPE_SINT64",
+            FieldKind::Unknown(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -1052,61 +1052,61 @@ impl textformat::Field for Field_Kind {
     ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("TYPE_UNKNOWN") => {
-                *self = Field_Kind::TYPE_UNKNOWN;
+                *self = FieldKind::TYPE_UNKNOWN;
             }
             textformat::ast::Literal::Identifier("TYPE_DOUBLE") => {
-                *self = Field_Kind::TYPE_DOUBLE;
+                *self = FieldKind::TYPE_DOUBLE;
             }
             textformat::ast::Literal::Identifier("TYPE_FLOAT") => {
-                *self = Field_Kind::TYPE_FLOAT;
+                *self = FieldKind::TYPE_FLOAT;
             }
             textformat::ast::Literal::Identifier("TYPE_INT64") => {
-                *self = Field_Kind::TYPE_INT64;
+                *self = FieldKind::TYPE_INT64;
             }
             textformat::ast::Literal::Identifier("TYPE_UINT64") => {
-                *self = Field_Kind::TYPE_UINT64;
+                *self = FieldKind::TYPE_UINT64;
             }
             textformat::ast::Literal::Identifier("TYPE_INT32") => {
-                *self = Field_Kind::TYPE_INT32;
+                *self = FieldKind::TYPE_INT32;
             }
             textformat::ast::Literal::Identifier("TYPE_FIXED64") => {
-                *self = Field_Kind::TYPE_FIXED64;
+                *self = FieldKind::TYPE_FIXED64;
             }
             textformat::ast::Literal::Identifier("TYPE_FIXED32") => {
-                *self = Field_Kind::TYPE_FIXED32;
+                *self = FieldKind::TYPE_FIXED32;
             }
             textformat::ast::Literal::Identifier("TYPE_BOOL") => {
-                *self = Field_Kind::TYPE_BOOL;
+                *self = FieldKind::TYPE_BOOL;
             }
             textformat::ast::Literal::Identifier("TYPE_STRING") => {
-                *self = Field_Kind::TYPE_STRING;
+                *self = FieldKind::TYPE_STRING;
             }
             textformat::ast::Literal::Identifier("TYPE_GROUP") => {
-                *self = Field_Kind::TYPE_GROUP;
+                *self = FieldKind::TYPE_GROUP;
             }
             textformat::ast::Literal::Identifier("TYPE_MESSAGE") => {
-                *self = Field_Kind::TYPE_MESSAGE;
+                *self = FieldKind::TYPE_MESSAGE;
             }
             textformat::ast::Literal::Identifier("TYPE_BYTES") => {
-                *self = Field_Kind::TYPE_BYTES;
+                *self = FieldKind::TYPE_BYTES;
             }
             textformat::ast::Literal::Identifier("TYPE_UINT32") => {
-                *self = Field_Kind::TYPE_UINT32;
+                *self = FieldKind::TYPE_UINT32;
             }
             textformat::ast::Literal::Identifier("TYPE_ENUM") => {
-                *self = Field_Kind::TYPE_ENUM;
+                *self = FieldKind::TYPE_ENUM;
             }
             textformat::ast::Literal::Identifier("TYPE_SFIXED32") => {
-                *self = Field_Kind::TYPE_SFIXED32;
+                *self = FieldKind::TYPE_SFIXED32;
             }
             textformat::ast::Literal::Identifier("TYPE_SFIXED64") => {
-                *self = Field_Kind::TYPE_SFIXED64;
+                *self = FieldKind::TYPE_SFIXED64;
             }
             textformat::ast::Literal::Identifier("TYPE_SINT32") => {
-                *self = Field_Kind::TYPE_SINT32;
+                *self = FieldKind::TYPE_SINT32;
             }
             textformat::ast::Literal::Identifier("TYPE_SINT64") => {
-                *self = Field_Kind::TYPE_SINT64;
+                *self = FieldKind::TYPE_SINT64;
             }
             textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
@@ -1115,42 +1115,42 @@ impl textformat::Field for Field_Kind {
     }
 }
 #[derive(Debug, Clone, PartialEq)]
-pub enum Field_Cardinality {
+pub enum FieldCardinality {
     CARDINALITY_UNKNOWN,
     CARDINALITY_OPTIONAL,
     CARDINALITY_REQUIRED,
     CARDINALITY_REPEATED,
     Unknown(u32),
 }
-impl Default for Field_Cardinality {
-    fn default() -> Field_Cardinality {
+impl Default for FieldCardinality {
+    fn default() -> FieldCardinality {
         Self::from(0)
     }
 }
-impl binformat::format::ProtoEnum for Field_Cardinality {}
-impl From<u32> for Field_Cardinality {
-    fn from(v: u32) -> Field_Cardinality {
+impl binformat::format::ProtoEnum for FieldCardinality {}
+impl From<u32> for FieldCardinality {
+    fn from(v: u32) -> FieldCardinality {
         match v {
-            0u32 => Field_Cardinality::CARDINALITY_UNKNOWN,
-            1u32 => Field_Cardinality::CARDINALITY_OPTIONAL,
-            2u32 => Field_Cardinality::CARDINALITY_REQUIRED,
-            3u32 => Field_Cardinality::CARDINALITY_REPEATED,
-            other => Field_Cardinality::Unknown(other),
+            0u32 => FieldCardinality::CARDINALITY_UNKNOWN,
+            1u32 => FieldCardinality::CARDINALITY_OPTIONAL,
+            2u32 => FieldCardinality::CARDINALITY_REQUIRED,
+            3u32 => FieldCardinality::CARDINALITY_REPEATED,
+            other => FieldCardinality::Unknown(other),
         }
     }
 }
-impl From<Field_Cardinality> for u32 {
-    fn from(v: Field_Cardinality) -> u32 {
+impl From<FieldCardinality> for u32 {
+    fn from(v: FieldCardinality) -> u32 {
         match v {
-            Field_Cardinality::CARDINALITY_UNKNOWN => 0u32,
-            Field_Cardinality::CARDINALITY_OPTIONAL => 1u32,
-            Field_Cardinality::CARDINALITY_REQUIRED => 2u32,
-            Field_Cardinality::CARDINALITY_REPEATED => 3u32,
-            Field_Cardinality::Unknown(other) => other,
+            FieldCardinality::CARDINALITY_UNKNOWN => 0u32,
+            FieldCardinality::CARDINALITY_OPTIONAL => 1u32,
+            FieldCardinality::CARDINALITY_REQUIRED => 2u32,
+            FieldCardinality::CARDINALITY_REPEATED => 3u32,
+            FieldCardinality::Unknown(other) => other,
         }
     }
 }
-impl textformat::Field for Field_Cardinality {
+impl textformat::Field for FieldCardinality {
     fn format(
         &self,
         ctx: &textformat::Context,
@@ -1158,11 +1158,11 @@ impl textformat::Field for Field_Cardinality {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            Field_Cardinality::CARDINALITY_UNKNOWN => "CARDINALITY_UNKNOWN",
-            Field_Cardinality::CARDINALITY_OPTIONAL => "CARDINALITY_OPTIONAL",
-            Field_Cardinality::CARDINALITY_REQUIRED => "CARDINALITY_REQUIRED",
-            Field_Cardinality::CARDINALITY_REPEATED => "CARDINALITY_REPEATED",
-            Field_Cardinality::Unknown(n) => {
+            FieldCardinality::CARDINALITY_UNKNOWN => "CARDINALITY_UNKNOWN",
+            FieldCardinality::CARDINALITY_OPTIONAL => "CARDINALITY_OPTIONAL",
+            FieldCardinality::CARDINALITY_REQUIRED => "CARDINALITY_REQUIRED",
+            FieldCardinality::CARDINALITY_REPEATED => "CARDINALITY_REPEATED",
+            FieldCardinality::Unknown(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -1177,16 +1177,16 @@ impl textformat::Field for Field_Cardinality {
     ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("CARDINALITY_UNKNOWN") => {
-                *self = Field_Cardinality::CARDINALITY_UNKNOWN;
+                *self = FieldCardinality::CARDINALITY_UNKNOWN;
             }
             textformat::ast::Literal::Identifier("CARDINALITY_OPTIONAL") => {
-                *self = Field_Cardinality::CARDINALITY_OPTIONAL;
+                *self = FieldCardinality::CARDINALITY_OPTIONAL;
             }
             textformat::ast::Literal::Identifier("CARDINALITY_REQUIRED") => {
-                *self = Field_Cardinality::CARDINALITY_REQUIRED;
+                *self = FieldCardinality::CARDINALITY_REQUIRED;
             }
             textformat::ast::Literal::Identifier("CARDINALITY_REPEATED") => {
-                *self = Field_Cardinality::CARDINALITY_REPEATED;
+                *self = FieldCardinality::CARDINALITY_REPEATED;
             }
             textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
             other => textformat::bail!("Invalid enum value: {other:?}"),

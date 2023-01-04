@@ -10,7 +10,7 @@ use root::types::empty::*;
 use root::types::any::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Book::default());
-    registry.register(&Book_Section::default());
+    registry.register(&BookSection::default());
 }
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -21,7 +21,7 @@ pub struct Book {
     pub pack: Vec<i32>,
     pub pack2: Vec<f32>,
     pub category: Vec<Category>,
-    pub sections: Vec<Book_Section>,
+    pub sections: Vec<BookSection>,
     pub test1: ::std::collections::HashMap<String, String>,
     pub other: Option<Box<Any>>,
     pub book: Option<Box<Book>>,
@@ -91,12 +91,12 @@ impl Book {
         self
     }
     #[inline(always)]
-    pub fn r#with_sections(mut self, it: Book_Section) -> Self {
+    pub fn r#with_sections(mut self, it: BookSection) -> Self {
         self.r#add_sections(it);
         self
     }
     #[inline(always)]
-    pub fn r#add_sections(&mut self, it: Book_Section) -> &mut Self {
+    pub fn r#add_sections(&mut self, it: BookSection) -> &mut Self {
         self.sections.push(it);
         self
     }
@@ -260,7 +260,7 @@ impl textformat::Encodable for Book {
             textformat::Field::format(&self.category, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.sections != <Vec<Book_Section> as Default>::default() {
+        if self.sections != <Vec<BookSection> as Default>::default() {
             out.indent(pad);
             out.push_str("sections ");
             textformat::Field::format(&self.sections, ctx, pad, out)?;
@@ -427,11 +427,11 @@ impl Default for BookOneOfId {
 }
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct Book_Section {
+pub struct BookSection {
     pub contents: String,
     pub _unknown: (),
 }
-impl Book_Section {
+impl BookSection {
     #[inline(always)]
     pub fn r#with_contents(mut self, it: String) -> Self {
         self.r#set_contents(it);
@@ -443,7 +443,7 @@ impl Book_Section {
         self
     }
 }
-impl textformat::Decodable for Book_Section {
+impl textformat::Decodable for BookSection {
     fn merge_field(
         &mut self,
         ctx: &textformat::Context,
@@ -459,7 +459,7 @@ impl textformat::Decodable for Book_Section {
         Ok(())
     }
 }
-impl textformat::Encodable for Book_Section {
+impl textformat::Encodable for BookSection {
     fn encode(
         &self,
         ctx: &textformat::Context,
@@ -475,7 +475,7 @@ impl textformat::Encodable for Book_Section {
         Ok(())
     }
 }
-impl binformat::Decodable for Book_Section {
+impl binformat::Decodable for BookSection {
     fn merge_field<'i, 'b>(
         &'i mut self,
         tag: u32,
@@ -491,7 +491,7 @@ impl binformat::Decodable for Book_Section {
         Ok(buf)
     }
 }
-impl binformat::Encodable for Book_Section {
+impl binformat::Encodable for BookSection {
     fn qualified_name(&self) -> &'static str {
         "com.book.test1.Book.Section"
     }
