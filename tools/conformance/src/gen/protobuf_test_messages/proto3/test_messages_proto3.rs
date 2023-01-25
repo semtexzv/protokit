@@ -11,12 +11,12 @@ use root::types::field_mask::*;
 use super::super::super::google::protobuf::r#struct::*;
 use root::types::timestamp::*;
 use super::super::super::google::protobuf::wrappers::*;
-use root::types::timestamp::*;
-use super::super::super::google::protobuf::wrappers::*;
-use root::types::any::*;
-use super::super::super::google::protobuf::duration::*;
-use super::super::super::google::protobuf::r#struct::*;
 use root::types::field_mask::*;
+use super::super::super::google::protobuf::wrappers::*;
+use root::types::timestamp::*;
+use root::types::any::*;
+use super::super::super::google::protobuf::r#struct::*;
+use super::super::super::google::protobuf::duration::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&TestAllTypesProto3::default());
     registry.register(&TestAllTypesProto3NestedMessage::default());

@@ -9,6 +9,7 @@ use protokit_desc::arcstr::ArcStr;
 use protokit_desc::{FileDef, FileSetDef};
 
 use crate::ast::*;
+use crate::Parse;
 
 pub mod defs;
 pub mod fields;
@@ -107,8 +108,7 @@ impl TranslateCtx {
         let contents = read_to_string(&path)?;
         self.current_stack.push(path);
 
-        let input = LocatedSpan::new(contents.deref());
-        let (_, mut parsed) = crate::parser::proto_file(input).unwrap();
+        let mut parsed = crate::ast::Proto::parse_format_error(contents.deref()).unwrap();
         let translated = self.run_passes(&name, &mut parsed);
 
         self.def.files.insert(name.clone(), translated);

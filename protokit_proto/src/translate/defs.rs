@@ -145,13 +145,13 @@ impl Visitor for GatherRpcs<'_> {
                 name,
                 req_typ: match &rpc.msg_type {
                     Type::Builtin(b) => DataType::Builtin(*b),
-                    Type::Unresolved(u) => DataType::Unresolved(self.ctx.def.cache(u)),
+                    Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u)),
                     other => panic!("{other:?} Not supported as rpc type"),
                 },
                 req_stream: rpc.msg_stream,
                 res_typ: match &rpc.ret_type {
                     Type::Builtin(b) => DataType::Builtin(*b),
-                    Type::Unresolved(u) => DataType::Unresolved(self.ctx.def.cache(u)),
+                    Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u)),
                     other => panic!("{other:?} Not supported as rpc type"),
                 },
                 res_stream: rpc.ret_stream,

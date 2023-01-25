@@ -1,36 +1,35 @@
-use std::cell::RefCell;
-use std::ops::Range;
-use lex_core::{NumberFormatBuilder, parse_with_options};
+
+use lex_core::{parse_with_options, NumberFormatBuilder};
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, tag, tag_no_case, take_until, take_while};
+use nom::bytes::complete::{escaped, tag, tag_no_case, take_until, take_while, take_while1};
 use nom::character::complete::{alpha1, alphanumeric1, char, multispace1, none_of, one_of};
-use nom::combinator::{all_consuming, cut, eof, map, map_res, opt, recognize, value};
-use nom::error::{ErrorKind, ParseError};
-use nom::multi::{many0, many1, separated_list1};
-use nom::sequence::{delimited, preceded, tuple};
-use nom::Slice;
+use nom::combinator::{cut, eof, map, map_res, opt, peek, recognize, value};
+use nom::error::{context, ErrorKind, FromExternalError, ParseError};
+use nom::multi::{many0, many0_count, many1, separated_list1};
+use nom::sequence::{delimited, pair, preceded, tuple};
+use nom::{Parser, Slice};
+use nom::character::{is_alphabetic, is_alphanumeric};
+use nom_supreme::error::GenericErrorTree;
+use nom_supreme::ParserExt;
+use nom_supreme::tag::TagError;
 use protokit_desc::{BuiltinType, FieldNum, Frequency, ImportType};
 use protokit_textformat;
 
 use crate::ast::*;
 use crate::deps::*;
+use crate::{IResult, MyParseError, Parse};
 
 pub const TAG_MAX: FieldNum = 536_870_911;
 
-pub type IResult<'a, O> = nom::IResult<Span<'a>, O>;
-
-// pub fn parse<'a, T>(source: &'a str, parser: impl Fn(Span<'a>) -> IResult<'a, T>) -> (T, Vec<Error>) {
-//     /// Store our error stack external to our `nom` parser here. It
-//     /// is wrapped in a `RefCell` so parser functions down the line
-//     /// can remotely push errors onto it as they run.
-//     let errors = RefCell::new(Vec::new());
-//     let input = Span::new(source);
-//     let (_, expr) = all_consuming(parser)(input).expect("parser cannot fail");
-//     (expr, errors.into_inner())
-// }
-
 fn is_eol(c: char) -> bool {
     c == '\r' || c == '\n'
+}
+
+fn semicolon(i: Span) -> IResult<()> {
+    match ws(tag(";"))(i) {
+        Ok((i, _)) => Ok((i, ())),
+        Err(e) =>  IResult::Err(nom::Err::Failure(MyParseError::from_tag(i, "Trailing semicolon"))),
+    }
 }
 
 pub fn eol_comment(i: Span) -> IResult<Span> {
@@ -70,7 +69,7 @@ pub fn strhex(i: Span) -> Result<i128, lex_core::Error> {
 
 fn ws<'a, F: 'a, O>(mut inner: F) -> impl FnMut(Span<'a>) -> IResult<O>
 where
-    F: FnMut(Span<'a, >) -> IResult<O>,
+    F: FnMut(Span<'a>) -> IResult<O>,
 {
     move |i: Span| {
         let (i, _) = many0(alt((eol_comment, inline_comment, multispace1)))(i)?;
@@ -97,13 +96,16 @@ fn prefixed<'i, P, R>(s: &'static str, parser: P) -> impl FnMut(Span<'i>) -> IRe
 where
     P: FnMut(Span<'i>) -> IResult<R>,
 {
-    determined(ws(tag(s)), parser)
+    determined(ws(tag(s)), context(s, parser))
 }
 
 fn ident(i: Span) -> IResult<Span> {
-    let simple = tuple((alpha1, many0(alt((alphanumeric1, tag("_"))))));
-    let under = tuple((alt((alpha1, tag("_"))), many1(alt((alphanumeric1, tag("_"))))));
-    recognize(alt((simple, under)))(i)
+    recognize(
+        pair(
+            alt((alpha1, tag("_"))),
+            many0_count(alt((alphanumeric1, tag("_"))))
+        )
+    )(i)
 }
 
 fn full_ident(i: Span) -> IResult<Span> {
@@ -111,7 +113,7 @@ fn full_ident(i: Span) -> IResult<Span> {
 }
 
 fn msg_or_enum_type(i: Span) -> IResult<Type> {
-    map(recognize(tuple((opt(char('.')), full_ident))), |v|Type::Unresolved(*v))(i)
+    map(recognize(tuple((opt(char('.')), full_ident))), |v| Type::Named(*v))(i)
 }
 
 fn oct_digit(i: Span) -> IResult<char> {
@@ -218,7 +220,7 @@ fn constant(i: Span) -> IResult<Const<'_>> {
     );
 
     alt((
-        map(str_lit, |v|Const::Str(*v)),
+        map(str_lit, |v| Const::Str(*v)),
         map(bool_lit, Const::Bool),
         map(recognize(full_ident), |v| Const::Ident(*v)),
         map(flit, Const::Float),
@@ -253,7 +255,7 @@ fn import(i: Span) -> IResult<Import<'_>> {
     prefixed("import", |i| {
         let (i, typ) = ws(import_type)(i)?;
         let (i, path) = ws(str_lit)(i)?;
-        let (i, _) = ws(tag(";"))(i)?;
+        let (i, _) = semicolon(i)?;
         Ok((i, Import { typ, path }))
     })(i)
 }
@@ -261,7 +263,7 @@ fn import(i: Span) -> IResult<Import<'_>> {
 fn package(i: Span) -> IResult<Package<'_>> {
     prefixed("package", |i| {
         let (i, path) = ws(recognize(full_ident))(i)?;
-        let (i, _) = ws(tag(";"))(i)?;
+        let (i, _) = semicolon(i)?;
 
         Ok((i, Package { path }))
     })(i)
@@ -289,25 +291,35 @@ fn option(i: Span) -> IResult<super::ast::Opt<'_>> {
     let (i, name) = ws(option_name)(i)?;
     let (i, _) = ws(tag("="))(i)?;
     let (i, value) = ws(constant)(i)?;
-    let (i, _) = ws(tag(";"))(i)?;
+    let (i, _) = semicolon(i)?;
 
     Ok((i, super::ast::Opt { name, value }))
 }
 
 fn builtin(i: Span) -> IResult<BuiltinType> {
     let types = [
-        "double", "float", "int32", "int64", "uint32", "uint64", "sint32", "sint64", "fixed32", "fixed64", "sfixed32",
-        "sfixed64", "bool", "string", "bytes",
+        "double",
+        "float",
+        "int32",
+        "int64",
+        "uint32",
+        "uint64",
+        "sint32",
+        "sint64",
+        "fixed32",
+        "fixed64",
+        "sfixed32",
+        "sfixed64",
+        "bool",
+        "string",
+        "bytes",
     ];
     for t in types {
         if i.len() >= t.len() && i.starts_with(t) {
-            return Ok((i.slice(t.len() ..  ),  BuiltinType::from_str(&i[.. t.len()]).unwrap()));
+            return Ok((i.slice(t.len() ..), BuiltinType::from_str(&i[.. t.len()]).unwrap()));
         }
     }
-    Err(nom::Err::Error(nom::error::Error::from_error_kind(
-        i,
-        ErrorKind::OneOf,
-    )))
+    Err(nom::Err::Error(GenericErrorTree::from_external_error(i,  nom::error::ErrorKind::Alpha, "builtin type")))
 }
 
 fn ftype(i: Span) -> IResult<Type> {
@@ -339,6 +351,7 @@ fn frequency(i: Span) -> IResult<Frequency> {
     Ok((i, freq))
 }
 
+
 fn field(i: Span) -> IResult<Field<'_>> {
     let (i, frequency) = ws(frequency)(i)?;
     let (i, ftype) = ws(ftype)(i)?;
@@ -346,7 +359,9 @@ fn field(i: Span) -> IResult<Field<'_>> {
     let (i, _) = ws(tag("="))(i)?;
     let (i, num) = ws(field_num)(i)?;
     let (i, options) = ws(opt(field_options_brackets))(i)?;
-    let (i, _) = ws(tag(";"))(i)?;
+
+    let (i, _) = semicolon(i)?;
+
     Ok((
         i,
         Field {
@@ -365,7 +380,7 @@ fn oneof_field(i: Span) -> IResult<Field<'_>> {
     let (i, _) = ws(tag("="))(i)?;
     let (i, num) = ws(field_num)(i)?;
     let (i, options) = ws(opt(field_options_brackets))(i)?;
-    let (i, _) = ws(tag(";"))(i)?;
+    let (i, _) = semicolon(i)?;
     Ok((
         i,
         Field {
@@ -414,7 +429,7 @@ fn map_field(i: Span) -> IResult<MapField<'_>> {
         let (i, _) = ws(tag("="))(i)?;
         let (i, number) = ws(field_num)(i)?;
         let (i, options) = ws(opt(field_options_brackets))(i)?;
-        let (i, _) = ws(tag(";"))(i)?;
+        let (i, _) = semicolon(i)?;
 
         Ok((
             i,
@@ -659,19 +674,19 @@ fn file_item(i: Span) -> IResult<ProtoItem> {
         map(package, ProtoItem::Package),
         map(option, ProtoItem::Option),
         map(def, ProtoItem::Def),
-        // ws(tag(";"))
     ))(i)
 }
 
-pub fn proto_file<'i>(i: Span<'i>) -> IResult<Proto<'i>> {
-    let (i, syntax) = syntax(i)?;
-    let (i, items) = many0(file_item)(i)?;
-    // Eat unused whitespace
-    let (i, _) = ws(tag(""))(i)?;
-    let (i, _) = eof(i)?;
-    Ok((i, Proto { syntax, items }))
-}
+impl<'i> Parse<'i> for Proto<'i> {
+    fn parse(i: Span<'i>) -> IResult<'i, Self> {
+        let (i, syntax) = syntax(i)?;
+        let (i, items) = many0(file_item)(i)?;
 
+        // Eat unused whitespace
+        // let (i, _) = ws(tag(""))(i)?;
+        Ok((i, Proto { syntax, items }))
+    }
+}
 // #[cfg(test)]
 // mod tests {
 //     use protokit_desc::BuiltinType::{Int32, Int64, String_};
@@ -1250,123 +1265,22 @@ pub fn proto_file<'i>(i: Span<'i>) -> IResult<Proto<'i>> {
 //         );
 //     }
 //
-//     #[test]
-//     fn test_proto_file() {
-//         let input = r#"
-//     syntax = "proto3";
-// import public "other.proto";
-// option java_package = "com.example.foo";
-// enum EnumAllowingAlias {
-//   option allow_alias = true;
-//   UNKNOWN = 0;
-//   STARTED = 1;
-//   RUNNING = 2 [(custom_option) = "hello world"];
-// }
-// message Outer {
-//     /* adsa */
-//   option (my_option).a = true;
-//   message Inner { // Inner
-//     int64 ival = 1;
-//   }
-//   repeated Inner inner_message = 2;
-//   EnumAllowingAlias enum_field =3;
-//   map<int32, string> my_map = 4;
-// }"#;
-//         let out = proto_file(input).unwrap();
-//         assert_eq!(
-//             out.1,
-//             Proto {
-//                 syntax: Syntax::Proto3,
-//                 items: vec![
-//                     ProtoItem::Import(Import {
-//                         typ: ImportType::Public,
-//                         path: "other.proto",
-//                     }),
-//                     ProtoItem::Option(Opt {
-//                         name: OptName {
-//                             name: "java_package",
-//                             field_name: None,
-//                         },
-//                         value: Const::Str("com.example.foo"),
-//                     }),
-//                     ProtoItem::Def(Def::Enum(Enum {
-//                         name: "EnumAllowingAlias",
-//                         items: vec![
-//                             EnumItem::Option(Opt {
-//                                 name: OptName {
-//                                     name: "allow_alias",
-//                                     field_name: None,
-//                                 },
-//                                 value: Const::Bool(true),
-//                             }),
-//                             EnumItem::Field(EnumField {
-//                                 name: "UNKNOWN",
-//                                 value: 0,
-//                                 opts: vec![],
-//                             }),
-//                             EnumItem::Field(EnumField {
-//                                 name: "STARTED",
-//                                 value: 1,
-//                                 opts: vec![],
-//                             }),
-//                             EnumItem::Field(EnumField {
-//                                 name: "RUNNING",
-//                                 value: 2,
-//                                 opts: vec![Opt {
-//                                     name: OptName {
-//                                         name: "custom_option",
-//                                         field_name: None,
-//                                     },
-//                                     value: Const::Str("hello world"),
-//                                 }],
-//                             }),
-//                         ],
-//                     })),
-//                     ProtoItem::Def(Def::Message(Message {
-//                         name: "Outer",
-//                         items: vec![
-//                             MessageItem::Option(Opt {
-//                                 name: OptName {
-//                                     name: "my_option",
-//                                     field_name: Some("a"),
-//                                 },
-//                                 value: Const::Bool(true),
-//                             }),
-//                             MessageItem::Message(Message {
-//                                 name: "Inner",
-//                                 items: vec![MessageItem::Field(Field {
-//                                     frequency: Frequency::Singular,
-//                                     typ: Type::Builtin(Int64),
-//                                     name: "ival",
-//                                     number: 1,
-//                                     opts: vec![],
-//                                 })],
-//                             }),
-//                             MessageItem::Field(Field {
-//                                 frequency: Frequency::Repeated,
-//                                 typ: Type::Unresolved("Inner"),
-//                                 name: "inner_message",
-//                                 number: 2,
-//                                 opts: vec![],
-//                             }),
-//                             MessageItem::Field(Field {
-//                                 frequency: Frequency::Singular,
-//                                 typ: Type::Unresolved("EnumAllowingAlias"),
-//                                 name: "enum_field",
-//                                 number: 3,
-//                                 opts: vec![],
-//                             }),
-//                             MessageItem::MapField(MapField {
-//                                 key_type: Int32,
-//                                 val_type: Type::Builtin(String_),
-//                                 name: "my_map",
-//                                 number: 4,
-//                                 options: vec![],
-//                             }),
-//                         ],
-//                     })),
-//                 ],
-//             }
-//         )
-//     }
-// }
+    #[test]
+    fn test_proto_file() {
+        let input = r#"
+syntax = "proto3";
+message Outer {
+Strict ival = 11;
+}"#;
+        match Proto::parse_format_error(input) {
+            Ok(_) => {},
+            Err(e) => {
+                let mut s = String::new();
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .unwrap();
+                println!("{s}");
+            }
+        };
+    }
+
