@@ -31,8 +31,8 @@ fn test_roundtrip() {
         _unknown: ()
     };
 
-    let mut v = protokit::binformat::encode(&book).unwrap();
-    let mut dec = protokit::binformat::decode(&v).unwrap();
+    let v = protokit::binformat::encode(&book).unwrap();
+    let dec = protokit::binformat::decode(&v).unwrap();
     assert_eq!(book, dec);
 }
 #[test]

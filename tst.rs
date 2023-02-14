@@ -2,20 +2,24 @@
 #![allow(unused)]
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
+
 use std::fmt::Write;
 use ::protokit::*;
 use ::protokit as root;
+
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Struct::default());
     registry.register(&Value::default());
     registry.register(&ListValue::default());
 }
+
 #[repr(C)]
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, )]
 pub struct Struct {
     pub fields: ::std::collections::HashMap<String, Value>,
     pub _unknown: (),
 }
+
 impl Struct {
     #[inline(always)]
     pub fn r#with_fields(mut self, k: String, v: Value) -> Self {
@@ -28,32 +32,20 @@ impl Struct {
         self
     }
 }
+
 impl textformat::Decodable for Struct {
-    fn merge_field(
-        &mut self,
-        ctx: &textformat::Context,
-        name: &textformat::ast::FieldName,
-        value: &textformat::ast::FieldValue,
-    ) -> textformat::Result<()> {
+    fn merge_field(&mut self, ctx: &textformat::Context, name: &textformat::ast::FieldName, value: &textformat::ast::FieldValue) -> textformat::Result<()> {
         match name {
-            textformat::ast::FieldName::Normal("fields") => {
-                textformat::Field::merge(&mut self.fields, ctx, value)?;
-            }
+            textformat::ast::FieldName::Normal("fields") => { textformat::Field::merge(&mut self.fields, ctx, value)?; }
             other => textformat::bail!("{other:?} was not recognized"),
         }
         Ok(())
     }
 }
+
 impl textformat::Encodable for Struct {
-    fn encode(
-        &self,
-        ctx: &textformat::Context,
-        pad: usize,
-        out: &mut std::string::String,
-    ) -> textformat::Result<()> {
-        if self.fields
-            != <::std::collections::HashMap<String, Value> as Default>::default()
-        {
+    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+        if self.fields != <::std::collections::HashMap<String, Value> as Default>::default() {
             out.indent(pad);
             out.push_str("fields ");
             textformat::Field::format(&self.fields, ctx, pad, out)?;
@@ -62,43 +54,35 @@ impl textformat::Encodable for Struct {
         Ok(())
     }
 }
+
 impl binformat::Decodable for Struct {
-    fn merge_field<'i, 'b>(
-        &'i mut self,
-        tag: u32,
-        mut buf: binformat::ReadBuffer<'b>,
-    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: binformat::ReadBuffer<'b>) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
-            10u32 => {
-                buf = Format::<Map::<Bytes, Nest>>::decode(&mut self.fields, buf)?;
-            }
+            10u32 => { buf = Format::<Map::<Bytes, Nest>>::decode(&mut self.fields, buf)?; }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
         Ok(buf)
     }
 }
+
 impl binformat::Encodable for Struct {
-    fn qualified_name(&self) -> &'static str {
-        "google.protobuf.Struct"
-    }
+    fn qualified_name(&self) -> &'static str { "google.protobuf.Struct" }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<
-            ::std::collections::HashMap<String, Value>,
-        >::eq(&self.fields, &Default::default()) {
-            Format::<Map::<Bytes, Nest>>::encode(&self.fields, 1u32, buf)?;
-        }
+        if self.fields == { ::std::collections::HashMap < String, Value > ::default() } { Format::<Map::<Bytes, Nest>>::encode(&self.fields, 10u32, buf)?; }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
 }
+
 #[repr(C)]
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, )]
 pub struct Value {
     pub kind: ValueOneOfKind,
     pub _unknown: (),
 }
+
 impl Value {
     #[inline(always)]
     pub fn r#with_kind_null_value(mut self, it: NullValue) -> Self {
@@ -161,13 +145,9 @@ impl Value {
         self
     }
 }
+
 impl textformat::Decodable for Value {
-    fn merge_field(
-        &mut self,
-        ctx: &textformat::Context,
-        name: &textformat::ast::FieldName,
-        value: &textformat::ast::FieldValue,
-    ) -> textformat::Result<()> {
+    fn merge_field(&mut self, ctx: &textformat::Context, name: &textformat::ast::FieldName, value: &textformat::ast::FieldValue) -> textformat::Result<()> {
         match name {
             textformat::ast::FieldName::Normal("null_value") => {
                 let mut target = Default::default();
@@ -204,13 +184,9 @@ impl textformat::Decodable for Value {
         Ok(())
     }
 }
+
 impl textformat::Encodable for Value {
-    fn encode(
-        &self,
-        ctx: &textformat::Context,
-        pad: usize,
-        out: &mut std::string::String,
-    ) -> textformat::Result<()> {
+    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
         match &self.kind {
             ValueOneOfKind::NullValue(value) => {
                 out.indent(pad);
@@ -253,12 +229,9 @@ impl textformat::Encodable for Value {
         Ok(())
     }
 }
+
 impl binformat::Decodable for Value {
-    fn merge_field<'i, 'b>(
-        &'i mut self,
-        tag: u32,
-        mut buf: binformat::ReadBuffer<'b>,
-    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: binformat::ReadBuffer<'b>) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
             8u32 => {
@@ -311,59 +284,38 @@ impl binformat::Decodable for Value {
         Ok(buf)
     }
 }
+
 impl binformat::Encodable for Value {
-    fn qualified_name(&self) -> &'static str {
-        "google.protobuf.Value"
-    }
+    fn qualified_name(&self) -> &'static str { "google.protobuf.Value" }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
         match &self.kind {
-            ValueOneOfKind::NullValue(value) => {
-                Format::<Enum>::encode(value, 1u32, buf)?;
-            }
-            ValueOneOfKind::NumberValue(value) => {
-                Format::<Fix>::encode(value, 2u32, buf)?;
-            }
-            ValueOneOfKind::StringValue(value) => {
-                Format::<Bytes>::encode(value, 3u32, buf)?;
-            }
-            ValueOneOfKind::BoolValue(value) => {
-                Format::<Fix>::encode(value, 4u32, buf)?;
-            }
-            ValueOneOfKind::StructValue(value) => {
-                Format::<Nest>::encode(value, 5u32, buf)?;
-            }
-            ValueOneOfKind::ListValue(value) => {
-                Format::<Nest>::encode(value, 6u32, buf)?;
-            }
+            ValueOneOfKind::NullValue(value) => { Format::<Enum>::encode(value, 8u32, buf)?; }
+            ValueOneOfKind::NumberValue(value) => { Format::<Fix>::encode(value, 17u32, buf)?; }
+            ValueOneOfKind::StringValue(value) => { Format::<Bytes>::encode(value, 26u32, buf)?; }
+            ValueOneOfKind::BoolValue(value) => { Format::<Fix>::encode(value, 32u32, buf)?; }
+            ValueOneOfKind::StructValue(value) => { Format::<Nest>::encode(value, 42u32, buf)?; }
+            ValueOneOfKind::ListValue(value) => { Format::<Nest>::encode(value, 50u32, buf)?; }
             ValueOneOfKind::Unknown(..) => {}
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
 }
+
 #[repr(C, u32)]
 #[derive(Debug, Clone, PartialEq)]
-pub enum ValueOneOfKind {
-    NullValue(NullValue),
-    NumberValue(f64),
-    StringValue(String),
-    BoolValue(bool),
-    StructValue(Struct),
-    ListValue(ListValue),
-    Unknown(::core::marker::PhantomData<()>),
-}
-impl Default for ValueOneOfKind {
-    fn default() -> Self {
-        ValueOneOfKind::Unknown(::core::marker::PhantomData)
-    }
-}
+pub enum ValueOneOfKind { NullValue(NullValue), NumberValue(f64), StringValue(String), BoolValue(bool), StructValue(Struct), ListValue(ListValue), Unknown(::core::marker::PhantomData<()>) }
+
+impl Default for ValueOneOfKind { fn default() -> Self { ValueOneOfKind::Unknown(::core::marker::PhantomData) } }
+
 #[repr(C)]
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, )]
 pub struct ListValue {
     pub values: Vec<Value>,
     pub _unknown: (),
 }
+
 impl ListValue {
     #[inline(always)]
     pub fn r#with_values(mut self, it: Value) -> Self {
@@ -376,29 +328,19 @@ impl ListValue {
         self
     }
 }
+
 impl textformat::Decodable for ListValue {
-    fn merge_field(
-        &mut self,
-        ctx: &textformat::Context,
-        name: &textformat::ast::FieldName,
-        value: &textformat::ast::FieldValue,
-    ) -> textformat::Result<()> {
+    fn merge_field(&mut self, ctx: &textformat::Context, name: &textformat::ast::FieldName, value: &textformat::ast::FieldValue) -> textformat::Result<()> {
         match name {
-            textformat::ast::FieldName::Normal("values") => {
-                textformat::Field::merge(&mut self.values, ctx, value)?;
-            }
+            textformat::ast::FieldName::Normal("values") => { textformat::Field::merge(&mut self.values, ctx, value)?; }
             other => textformat::bail!("{other:?} was not recognized"),
         }
         Ok(())
     }
 }
+
 impl textformat::Encodable for ListValue {
-    fn encode(
-        &self,
-        ctx: &textformat::Context,
-        pad: usize,
-        out: &mut std::string::String,
-    ) -> textformat::Result<()> {
+    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
         if self.values != <Vec<Value> as Default>::default() {
             out.indent(pad);
             out.push_str("values ");
@@ -408,46 +350,35 @@ impl textformat::Encodable for ListValue {
         Ok(())
     }
 }
+
 impl binformat::Decodable for ListValue {
-    fn merge_field<'i, 'b>(
-        &'i mut self,
-        tag: u32,
-        mut buf: binformat::ReadBuffer<'b>,
-    ) -> binformat::Result<binformat::ReadBuffer<'b>> {
+    fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: binformat::ReadBuffer<'b>) -> binformat::Result<binformat::ReadBuffer<'b>> {
         use binformat::format::*;
         match tag {
-            10u32 => {
-                buf = Format::<Repeat::<Nest>>::decode(&mut self.values, buf)?;
-            }
+            10u32 => { buf = Format::<Repeat::<Nest>>::decode(&mut self.values, buf)?; }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
         Ok(buf)
     }
 }
+
 impl binformat::Encodable for ListValue {
-    fn qualified_name(&self) -> &'static str {
-        "google.protobuf.ListValue"
-    }
+    fn qualified_name(&self) -> &'static str { "google.protobuf.ListValue" }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Vec<Value>>::eq(&self.values, &Default::default()) {
-            Format::<Repeat::<Nest>>::encode(&self.values, 1u32, buf)?;
-        }
+        if self.values == { Value::default() } { Format::<Repeat::<Nest>>::encode(&self.values, 10u32, buf)?; }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
 }
+
 #[derive(Debug, Clone, PartialEq)]
-pub enum NullValue {
-    NULL_VALUE,
-    Unknown(u32),
-}
-impl Default for NullValue {
-    fn default() -> NullValue {
-        Self::from(0)
-    }
-}
+pub enum NullValue { NULL_VALUE, Unknown(u32) }
+
+impl Default for NullValue { fn default() -> NullValue { Self::from(0) } }
+
 impl binformat::format::ProtoEnum for NullValue {}
+
 impl From<u32> for NullValue {
     fn from(v: u32) -> NullValue {
         match v {
@@ -456,6 +387,7 @@ impl From<u32> for NullValue {
         }
     }
 }
+
 impl From<NullValue> for u32 {
     fn from(v: NullValue) -> u32 {
         match v {
@@ -464,13 +396,9 @@ impl From<NullValue> for u32 {
         }
     }
 }
+
 impl textformat::Field for NullValue {
-    fn format(
-        &self,
-        ctx: &textformat::Context,
-        pad: usize,
-        out: &mut String,
-    ) -> ::std::fmt::Result {
+    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
         let str = match self {
             NullValue::NULL_VALUE => "NULL_VALUE",
             NullValue::Unknown(n) => {
@@ -481,17 +409,11 @@ impl textformat::Field for NullValue {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(
-        &mut self,
-        _ctx: &textformat::Context,
-        v: &textformat::ast::Literal,
-    ) -> textformat::Result<()> {
+    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
         match v {
-            textformat::ast::Literal::Identifier("NULL_VALUE") => {
-                *self = NullValue::NULL_VALUE;
-            }
+            textformat::ast::Literal::Identifier("NULL_VALUE") => *self = NullValue::NULL_VALUE,
             textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
-            other => textformat::bail!("Invalid enum value: {other:?}"),
+            other => textformat::bail!("Invalid enum value: {other:?}")
         }
         Ok(())
     }

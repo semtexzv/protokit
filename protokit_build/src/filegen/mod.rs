@@ -57,12 +57,12 @@ pub const TYPES: &[&str] = &["Option", "Result"];
 pub fn rustify_name(n: &str) -> String {
     for s in STRICT.iter().chain(RESERVED) {
         if *s == n {
-            return format!("r#{}", n);
+            return format!("r#{n}");
         }
     }
     for s in TYPES {
         if *s == n {
-            return format!("Proto{}", n);
+            return format!("Proto{n}");
         }
     }
     n.replace('.', "")
@@ -149,7 +149,7 @@ impl CodeGenerator<'_> {
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
         Ok(match typ {
             DataType::Unresolved(path) => {
-                panic!("Name {} was not resolved to actual type", path)
+                panic!("Name {path} was not resolved to actual type")
             }
             DataType::Builtin(bt) => return Ok(self.builtin_rusttype(*bt)),
             DataType::Message(id) => TokenStream::from_str(&self.resolve_name(*id)?).unwrap(),
@@ -161,6 +161,21 @@ impl CodeGenerator<'_> {
                 return Ok(quote! { #mt<#kt,#vt> });
             }
         })
+    }
+    pub fn field_type(&self, typ: &FieldDef) -> Result<TokenStream> {
+        let mut base = self.base_type(&typ.typ)?;
+            let is_msg = match typ.typ {
+                DataType::Message(_) => true,
+                _ => false,
+            };
+            match (typ.frequency, is_msg) {
+                (Frequency::Singular | Frequency::Required, false) => Ok(base),
+                (Frequency::Singular | Frequency::Required, true) => Ok(quote!(Option<Box<#base>>)),
+                (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
+                (Frequency::Optional, true) => Ok(quote!(Option<Box<#base>>)),
+                (Frequency::Repeated, _) => Ok(quote!(Vec<#base>)),
+            }
+
     }
 
     pub fn type_to_binformat(&self, f: &FieldDef, force_packed: bool) -> Result<TokenStream> {
@@ -217,7 +232,7 @@ impl CodeGenerator<'_> {
     }
     pub fn type_to_encoder(&self, f: &FieldDef, force_packed: bool) -> Result<TokenStream> {
         let format = self.type_to_binformat(f, force_packed)?;
-        Ok(quote! { Format::<#format>::encode })
+        Ok(quote! { Format::<#format>  })
     }
     pub fn type_to_decoder(&self, f: &FieldDef) -> Result<TokenStream> {
         let format = self.type_to_binformat(f, false)?;
@@ -236,18 +251,21 @@ impl CodeGenerator<'_> {
         let mut field: FieldDef = field.clone();
         let field_num = field.num as u32;
 
-        let encode_tag = field.default_wire_type(file.syntax == Syntax::Proto3);
-        let encode_tag = (field_num << 3 | encode_tag as u32) as u32;
+        let typ = self.field_type(&field).unwrap();
         let encode_fn = self.type_to_encoder(&field, file.syntax == Syntax::Proto3).unwrap();
 
+        let force_include = file.syntax == Proto3 && field.frequency == Frequency::Optional && field.is_message();
+
         out.bin_encoders.push(quote! {
-            #encode_fn(&self.#name, #encode_tag, buf)?;
+            if !PartialEq::<#typ>::eq(&self.#name, &Default::default()) {
+                #encode_fn(&self.#name, #field_num, buf)?;
+            }
         });
 
         let (normal, packed) = field.wire_types();
 
         field.set_packed(false);
-        let normal_tag = (field_num << 3 | normal as u32) as u32;
+        let normal_tag = field_num << 3 | normal as u32;
         let decode_fn = self.type_to_decoder(&field).unwrap();
         out.bin_decoders.push(quote! {
             #normal_tag => {
@@ -280,8 +298,8 @@ impl CodeGenerator<'_> {
         ext_pkg: Option<&ArcStr>,
     ) {
         let (field_textformat_key, sep) = match &field.typ {
-            DataType::Builtin(_) | DataType::Enum(_) => (format!("{}: ", field_proto_name), ":"),
-            _ => (format!("{} ", field_proto_name), ""),
+            DataType::Builtin(_) | DataType::Enum(_) => (format!("{field_proto_name}: "), ":"),
+            _ => (format!("{field_proto_name} "), ""),
         };
 
         if let Some(pkg) = ext_pkg {
@@ -450,10 +468,10 @@ impl CodeGenerator<'_> {
         let variant_name = format_ident!("{}", variant_proto_name.to_case(Case::Pascal));
         let variant_textformat_key = match variant.typ {
             DataType::Builtin(_) | DataType::Enum(_) => {
-                format!("{}: ", variant_proto_name)
+                format!("{variant_proto_name}: ")
             }
             _ => {
-                format!("{} ", variant_proto_name)
+                format!("{variant_proto_name} ")
             }
         };
 
@@ -473,13 +491,13 @@ impl CodeGenerator<'_> {
         let (normal, packed) = variant.wire_types();
         let encode_fn = self.type_to_encoder(variant, file.syntax == Proto3).unwrap();
         let decode_fn = self.type_to_decoder(variant).unwrap();
-        let id = variant.num as u32;
+        let field_num = variant.num as u32;
 
-        let normal_tag = (id << 3 | normal as u32) as u32;
+        let normal_tag = field_num << 3 | normal as u32;
 
         variant_encoders.push(quote! {
             #oneof_type::#variant_name(value) => {
-                #encode_fn(value, #normal_tag, buf)?;
+                #encode_fn(value, #field_num, buf)?;
             }
         });
 
@@ -492,7 +510,7 @@ impl CodeGenerator<'_> {
         });
 
         if let Some(packed) = packed {
-            let packed_tag = id << 3 | packed as u32;
+            let packed_tag = field_num << 3 | packed as u32;
             let mut variant = variant.clone();
             variant.set_packed(true);
             let parse_fn = self.type_to_decoder(&variant).unwrap();
@@ -639,7 +657,7 @@ impl CodeGenerator<'_> {
                     .map(|(idx, (num, def))| TmpField {
                         field_idx: idx,
                         tag_num: *num,
-                        def: &def,
+                        def,
                         pkg: Some(ext_file.package.clone()),
                         file: ext_file
                     })
@@ -649,7 +667,7 @@ impl CodeGenerator<'_> {
         let mut normal_field_count = 0;
         for TmpField {
             field_idx,
-            tag_num,
+            tag_num: _,
             def,
             pkg,
             file: field_file,
@@ -700,7 +718,7 @@ impl CodeGenerator<'_> {
         };
 
         if self.options.track_unknowns {
-            fields.push(quote! { pub _unknown: util::UnknownFields })
+            fields.push(quote! { pub _unknown: binformat::UnknownFields })
         } else {
             fields.push(quote! { pub _unknown: () })
         }
@@ -749,12 +767,12 @@ impl CodeGenerator<'_> {
     pub fn generate_oneof(&self, _msg_name: &Ident, unit: &OneOfDef, oneof_type: &Ident) -> TokenStream {
         let mut fields = vec![];
 
-        for (num, field) in unit.fields.by_number.iter() {
+        for (_num, field) in unit.fields.by_number.iter() {
             let field: &FieldDef = field;
             let name = format_ident!("{}", field.name.as_str().to_case(Case::Pascal));
             let typ = self
                 .base_type(&field.typ)
-                .with_context(|| format!("{}", name))
+                .with_context(|| format!("{name}"))
                 .expect("Resolving name");
             if field.frequency != Frequency::Singular {
                 panic!("Oneof fields can't have frequency");
@@ -977,9 +995,9 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, unit_id:
         #(#enums)*
         #(#services)*
     };
-    let output = syn::parse2(output).unwrap();
+    let output = syn::parse2(output.clone()).with_context(||output.to_string()).unwrap();
     let output = prettyplease::unparse(&output);
-    println!("Creating file: {:?}", name);
+    println!("Creating file: {name:?}");
     let mut f = File::options()
         .write(true)
         .create(true)
@@ -1039,7 +1057,7 @@ pub fn make_file(path: impl AsRef<Path>) -> std::fs::File {
         .create(true)
         .truncate(true)
         .open(path)
-        .unwrap_or_else(|_| panic!("Creating mod.rs in, {:?}", path));
+        .unwrap_or_else(|_| panic!("Creating mod.rs in, {path:?}"));
 
     f
 }

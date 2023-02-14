@@ -12,11 +12,11 @@ use super::super::super::google::protobuf::r#struct::*;
 use root::types::timestamp::*;
 use super::super::super::google::protobuf::wrappers::*;
 use root::types::field_mask::*;
+use super::super::super::google::protobuf::duration::*;
 use super::super::super::google::protobuf::wrappers::*;
+use super::super::super::google::protobuf::r#struct::*;
 use root::types::timestamp::*;
 use root::types::any::*;
-use super::super::super::google::protobuf::r#struct::*;
-use super::super::super::google::protobuf::duration::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&TestAllTypesProto3::default());
     registry.register(&TestAllTypesProto3NestedMessage::default());
@@ -4141,183 +4141,595 @@ impl binformat::Encodable for TestAllTypesProto3 {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.optional_int32, 8u32, buf)?;
-        Format::<VInt>::encode(&self.optional_int64, 16u32, buf)?;
-        Format::<VInt>::encode(&self.optional_uint32, 24u32, buf)?;
-        Format::<VInt>::encode(&self.optional_uint64, 32u32, buf)?;
-        Format::<SInt>::encode(&self.optional_sint32, 40u32, buf)?;
-        Format::<SInt>::encode(&self.optional_sint64, 48u32, buf)?;
-        Format::<Fix>::encode(&self.optional_fixed32, 61u32, buf)?;
-        Format::<Fix>::encode(&self.optional_fixed64, 65u32, buf)?;
-        Format::<Fix>::encode(&self.optional_sfixed32, 77u32, buf)?;
-        Format::<Fix>::encode(&self.optional_sfixed64, 81u32, buf)?;
-        Format::<Fix>::encode(&self.optional_float, 93u32, buf)?;
-        Format::<Fix>::encode(&self.optional_double, 97u32, buf)?;
-        Format::<Fix>::encode(&self.optional_bool, 104u32, buf)?;
-        Format::<Bytes>::encode(&self.optional_string, 114u32, buf)?;
-        Format::<Bytes>::encode(&self.optional_bytes, 122u32, buf)?;
-        Format::<Nest>::encode(&self.optional_nested_message, 146u32, buf)?;
-        Format::<Nest>::encode(&self.optional_foreign_message, 154u32, buf)?;
-        Format::<Enum>::encode(&self.optional_nested_enum, 168u32, buf)?;
-        Format::<Enum>::encode(&self.optional_foreign_enum, 176u32, buf)?;
-        Format::<Enum>::encode(&self.optional_aliased_enum, 184u32, buf)?;
-        Format::<Bytes>::encode(&self.optional_string_piece, 194u32, buf)?;
-        Format::<Bytes>::encode(&self.optional_cord, 202u32, buf)?;
-        Format::<Nest>::encode(&self.recursive_message, 218u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.repeated_int32, 250u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.repeated_int64, 258u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.repeated_uint32, 266u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.repeated_uint64, 274u32, buf)?;
-        Format::<Pack::<SInt>>::encode(&self.repeated_sint32, 282u32, buf)?;
-        Format::<Pack::<SInt>>::encode(&self.repeated_sint64, 290u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.repeated_fixed32, 298u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.repeated_fixed64, 306u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.repeated_sfixed32, 314u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.repeated_sfixed64, 322u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.repeated_float, 330u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.repeated_double, 338u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.repeated_bool, 346u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.repeated_string, 354u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.repeated_bytes, 362u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_nested_message, 386u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_foreign_message, 394u32, buf)?;
-        Format::<Repeat::<Enum>>::encode(&self.repeated_nested_enum, 410u32, buf)?;
-        Format::<Repeat::<Enum>>::encode(&self.repeated_foreign_enum, 418u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.repeated_string_piece, 434u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.repeated_cord, 442u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.packed_int32, 602u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.packed_int64, 610u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.packed_uint32, 618u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.packed_uint64, 626u32, buf)?;
-        Format::<Pack::<SInt>>::encode(&self.packed_sint32, 634u32, buf)?;
-        Format::<Pack::<SInt>>::encode(&self.packed_sint64, 642u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.packed_fixed32, 650u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.packed_fixed64, 658u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.packed_sfixed32, 666u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.packed_sfixed64, 674u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.packed_float, 682u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.packed_double, 690u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.packed_bool, 698u32, buf)?;
-        Format::<Repeat::<Enum>>::encode(&self.packed_nested_enum, 706u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.unpacked_int32, 714u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.unpacked_int64, 722u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.unpacked_uint32, 730u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.unpacked_uint64, 738u32, buf)?;
-        Format::<Pack::<SInt>>::encode(&self.unpacked_sint32, 746u32, buf)?;
-        Format::<Pack::<SInt>>::encode(&self.unpacked_sint64, 754u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.unpacked_fixed32, 762u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.unpacked_fixed64, 770u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.unpacked_sfixed32, 778u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.unpacked_sfixed64, 786u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.unpacked_float, 794u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.unpacked_double, 802u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.unpacked_bool, 810u32, buf)?;
-        Format::<Repeat::<Enum>>::encode(&self.unpacked_nested_enum, 818u32, buf)?;
-        Format::<Map::<VInt, VInt>>::encode(&self.map_int32_int32, 450u32, buf)?;
-        Format::<Map::<VInt, VInt>>::encode(&self.map_int64_int64, 458u32, buf)?;
-        Format::<Map::<VInt, VInt>>::encode(&self.map_uint32_uint32, 466u32, buf)?;
-        Format::<Map::<VInt, VInt>>::encode(&self.map_uint64_uint64, 474u32, buf)?;
-        Format::<Map::<SInt, SInt>>::encode(&self.map_sint32_sint32, 482u32, buf)?;
-        Format::<Map::<SInt, SInt>>::encode(&self.map_sint64_sint64, 490u32, buf)?;
-        Format::<Map::<Fix, Fix>>::encode(&self.map_fixed32_fixed32, 498u32, buf)?;
-        Format::<Map::<Fix, Fix>>::encode(&self.map_fixed64_fixed64, 506u32, buf)?;
-        Format::<Map::<Fix, Fix>>::encode(&self.map_sfixed32_sfixed32, 514u32, buf)?;
-        Format::<Map::<Fix, Fix>>::encode(&self.map_sfixed64_sfixed64, 522u32, buf)?;
-        Format::<Map::<VInt, Fix>>::encode(&self.map_int32_float, 530u32, buf)?;
-        Format::<Map::<VInt, Fix>>::encode(&self.map_int32_double, 538u32, buf)?;
-        Format::<Map::<Fix, Fix>>::encode(&self.map_bool_bool, 546u32, buf)?;
-        Format::<Map::<Bytes, Bytes>>::encode(&self.map_string_string, 554u32, buf)?;
-        Format::<Map::<Bytes, Bytes>>::encode(&self.map_string_bytes, 562u32, buf)?;
-        Format::<
-            Map::<Bytes, Nest>,
-        >::encode(&self.map_string_nested_message, 570u32, buf)?;
-        Format::<
-            Map::<Bytes, Nest>,
-        >::encode(&self.map_string_foreign_message, 578u32, buf)?;
-        Format::<Map::<Bytes, Enum>>::encode(&self.map_string_nested_enum, 586u32, buf)?;
-        Format::<
-            Map::<Bytes, Enum>,
-        >::encode(&self.map_string_foreign_enum, 594u32, buf)?;
-        Format::<Nest>::encode(&self.optional_bool_wrapper, 1610u32, buf)?;
-        Format::<Nest>::encode(&self.optional_int32_wrapper, 1618u32, buf)?;
-        Format::<Nest>::encode(&self.optional_int64_wrapper, 1626u32, buf)?;
-        Format::<Nest>::encode(&self.optional_uint32_wrapper, 1634u32, buf)?;
-        Format::<Nest>::encode(&self.optional_uint64_wrapper, 1642u32, buf)?;
-        Format::<Nest>::encode(&self.optional_float_wrapper, 1650u32, buf)?;
-        Format::<Nest>::encode(&self.optional_double_wrapper, 1658u32, buf)?;
-        Format::<Nest>::encode(&self.optional_string_wrapper, 1666u32, buf)?;
-        Format::<Nest>::encode(&self.optional_bytes_wrapper, 1674u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_bool_wrapper, 1690u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_int32_wrapper, 1698u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_int64_wrapper, 1706u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_uint32_wrapper, 1714u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_uint64_wrapper, 1722u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_float_wrapper, 1730u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_double_wrapper, 1738u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_string_wrapper, 1746u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_bytes_wrapper, 1754u32, buf)?;
-        Format::<Nest>::encode(&self.optional_duration, 2410u32, buf)?;
-        Format::<Nest>::encode(&self.optional_timestamp, 2418u32, buf)?;
-        Format::<Nest>::encode(&self.optional_field_mask, 2426u32, buf)?;
-        Format::<Nest>::encode(&self.optional_struct, 2434u32, buf)?;
-        Format::<Nest>::encode(&self.optional_any, 2442u32, buf)?;
-        Format::<Nest>::encode(&self.optional_value, 2450u32, buf)?;
-        Format::<Enum>::encode(&self.optional_null_value, 2456u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_duration, 2490u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_timestamp, 2498u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_fieldmask, 2506u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_struct, 2594u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_any, 2522u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_value, 2530u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.repeated_list_value, 2538u32, buf)?;
-        Format::<VInt>::encode(&self.fieldname1, 3208u32, buf)?;
-        Format::<VInt>::encode(&self.field_name2, 3216u32, buf)?;
-        Format::<VInt>::encode(&self._field_name3, 3224u32, buf)?;
-        Format::<VInt>::encode(&self.field__name4_, 3232u32, buf)?;
-        Format::<VInt>::encode(&self.field0name5, 3240u32, buf)?;
-        Format::<VInt>::encode(&self.field_0_name6, 3248u32, buf)?;
-        Format::<VInt>::encode(&self.fieldName7, 3256u32, buf)?;
-        Format::<VInt>::encode(&self.FieldName8, 3264u32, buf)?;
-        Format::<VInt>::encode(&self.field_Name9, 3272u32, buf)?;
-        Format::<VInt>::encode(&self.Field_Name10, 3280u32, buf)?;
-        Format::<VInt>::encode(&self.FIELD_NAME11, 3288u32, buf)?;
-        Format::<VInt>::encode(&self.FIELD_name12, 3296u32, buf)?;
-        Format::<VInt>::encode(&self.__field_name13, 3304u32, buf)?;
-        Format::<VInt>::encode(&self.__Field_name14, 3312u32, buf)?;
-        Format::<VInt>::encode(&self.field__name15, 3320u32, buf)?;
-        Format::<VInt>::encode(&self.field__Name16, 3328u32, buf)?;
-        Format::<VInt>::encode(&self.field_name17__, 3336u32, buf)?;
-        Format::<VInt>::encode(&self.Field_name18__, 3344u32, buf)?;
+        if !PartialEq::<i32>::eq(&self.optional_int32, &Default::default()) {
+            Format::<VInt>::encode(&self.optional_int32, 1u32, buf)?;
+        }
+        if !PartialEq::<i64>::eq(&self.optional_int64, &Default::default()) {
+            Format::<VInt>::encode(&self.optional_int64, 2u32, buf)?;
+        }
+        if !PartialEq::<u32>::eq(&self.optional_uint32, &Default::default()) {
+            Format::<VInt>::encode(&self.optional_uint32, 3u32, buf)?;
+        }
+        if !PartialEq::<u64>::eq(&self.optional_uint64, &Default::default()) {
+            Format::<VInt>::encode(&self.optional_uint64, 4u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.optional_sint32, &Default::default()) {
+            Format::<SInt>::encode(&self.optional_sint32, 5u32, buf)?;
+        }
+        if !PartialEq::<i64>::eq(&self.optional_sint64, &Default::default()) {
+            Format::<SInt>::encode(&self.optional_sint64, 6u32, buf)?;
+        }
+        if !PartialEq::<u32>::eq(&self.optional_fixed32, &Default::default()) {
+            Format::<Fix>::encode(&self.optional_fixed32, 7u32, buf)?;
+        }
+        if !PartialEq::<u64>::eq(&self.optional_fixed64, &Default::default()) {
+            Format::<Fix>::encode(&self.optional_fixed64, 8u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.optional_sfixed32, &Default::default()) {
+            Format::<Fix>::encode(&self.optional_sfixed32, 9u32, buf)?;
+        }
+        if !PartialEq::<i64>::eq(&self.optional_sfixed64, &Default::default()) {
+            Format::<Fix>::encode(&self.optional_sfixed64, 10u32, buf)?;
+        }
+        if !PartialEq::<f32>::eq(&self.optional_float, &Default::default()) {
+            Format::<Fix>::encode(&self.optional_float, 11u32, buf)?;
+        }
+        if !PartialEq::<f64>::eq(&self.optional_double, &Default::default()) {
+            Format::<Fix>::encode(&self.optional_double, 12u32, buf)?;
+        }
+        if !PartialEq::<bool>::eq(&self.optional_bool, &Default::default()) {
+            Format::<Fix>::encode(&self.optional_bool, 13u32, buf)?;
+        }
+        if !PartialEq::<String>::eq(&self.optional_string, &Default::default()) {
+            Format::<Bytes>::encode(&self.optional_string, 14u32, buf)?;
+        }
+        if !PartialEq::<Vec<u8>>::eq(&self.optional_bytes, &Default::default()) {
+            Format::<Bytes>::encode(&self.optional_bytes, 15u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<TestAllTypesProto3NestedMessage>>,
+        >::eq(&self.optional_nested_message, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_nested_message, 18u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<ForeignMessage>>,
+        >::eq(&self.optional_foreign_message, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_foreign_message, 19u32, buf)?;
+        }
+        if !PartialEq::<
+            TestAllTypesProto3NestedEnum,
+        >::eq(&self.optional_nested_enum, &Default::default()) {
+            Format::<Enum>::encode(&self.optional_nested_enum, 21u32, buf)?;
+        }
+        if !PartialEq::<
+            ForeignEnum,
+        >::eq(&self.optional_foreign_enum, &Default::default()) {
+            Format::<Enum>::encode(&self.optional_foreign_enum, 22u32, buf)?;
+        }
+        if !PartialEq::<
+            TestAllTypesProto3AliasedEnum,
+        >::eq(&self.optional_aliased_enum, &Default::default()) {
+            Format::<Enum>::encode(&self.optional_aliased_enum, 23u32, buf)?;
+        }
+        if !PartialEq::<String>::eq(&self.optional_string_piece, &Default::default()) {
+            Format::<Bytes>::encode(&self.optional_string_piece, 24u32, buf)?;
+        }
+        if !PartialEq::<String>::eq(&self.optional_cord, &Default::default()) {
+            Format::<Bytes>::encode(&self.optional_cord, 25u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<TestAllTypesProto3>>,
+        >::eq(&self.recursive_message, &Default::default()) {
+            Format::<Nest>::encode(&self.recursive_message, 27u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.repeated_int32, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.repeated_int32, 31u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.repeated_int64, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.repeated_int64, 32u32, buf)?;
+        }
+        if !PartialEq::<Vec<u32>>::eq(&self.repeated_uint32, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.repeated_uint32, 33u32, buf)?;
+        }
+        if !PartialEq::<Vec<u64>>::eq(&self.repeated_uint64, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.repeated_uint64, 34u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.repeated_sint32, &Default::default()) {
+            Format::<Pack::<SInt>>::encode(&self.repeated_sint32, 35u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.repeated_sint64, &Default::default()) {
+            Format::<Pack::<SInt>>::encode(&self.repeated_sint64, 36u32, buf)?;
+        }
+        if !PartialEq::<Vec<u32>>::eq(&self.repeated_fixed32, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.repeated_fixed32, 37u32, buf)?;
+        }
+        if !PartialEq::<Vec<u64>>::eq(&self.repeated_fixed64, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.repeated_fixed64, 38u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.repeated_sfixed32, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.repeated_sfixed32, 39u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.repeated_sfixed64, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.repeated_sfixed64, 40u32, buf)?;
+        }
+        if !PartialEq::<Vec<f32>>::eq(&self.repeated_float, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.repeated_float, 41u32, buf)?;
+        }
+        if !PartialEq::<Vec<f64>>::eq(&self.repeated_double, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.repeated_double, 42u32, buf)?;
+        }
+        if !PartialEq::<Vec<bool>>::eq(&self.repeated_bool, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.repeated_bool, 43u32, buf)?;
+        }
+        if !PartialEq::<Vec<String>>::eq(&self.repeated_string, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.repeated_string, 44u32, buf)?;
+        }
+        if !PartialEq::<Vec<Vec<u8>>>::eq(&self.repeated_bytes, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.repeated_bytes, 45u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<TestAllTypesProto3NestedMessage>,
+        >::eq(&self.repeated_nested_message, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_nested_message, 48u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<ForeignMessage>,
+        >::eq(&self.repeated_foreign_message, &Default::default()) {
+            Format::<
+                Repeat::<Nest>,
+            >::encode(&self.repeated_foreign_message, 49u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<TestAllTypesProto3NestedEnum>,
+        >::eq(&self.repeated_nested_enum, &Default::default()) {
+            Format::<Repeat::<Enum>>::encode(&self.repeated_nested_enum, 51u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<ForeignEnum>,
+        >::eq(&self.repeated_foreign_enum, &Default::default()) {
+            Format::<Repeat::<Enum>>::encode(&self.repeated_foreign_enum, 52u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<String>,
+        >::eq(&self.repeated_string_piece, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.repeated_string_piece, 54u32, buf)?;
+        }
+        if !PartialEq::<Vec<String>>::eq(&self.repeated_cord, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.repeated_cord, 55u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.packed_int32, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.packed_int32, 75u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.packed_int64, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.packed_int64, 76u32, buf)?;
+        }
+        if !PartialEq::<Vec<u32>>::eq(&self.packed_uint32, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.packed_uint32, 77u32, buf)?;
+        }
+        if !PartialEq::<Vec<u64>>::eq(&self.packed_uint64, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.packed_uint64, 78u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.packed_sint32, &Default::default()) {
+            Format::<Pack::<SInt>>::encode(&self.packed_sint32, 79u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.packed_sint64, &Default::default()) {
+            Format::<Pack::<SInt>>::encode(&self.packed_sint64, 80u32, buf)?;
+        }
+        if !PartialEq::<Vec<u32>>::eq(&self.packed_fixed32, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.packed_fixed32, 81u32, buf)?;
+        }
+        if !PartialEq::<Vec<u64>>::eq(&self.packed_fixed64, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.packed_fixed64, 82u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.packed_sfixed32, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.packed_sfixed32, 83u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.packed_sfixed64, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.packed_sfixed64, 84u32, buf)?;
+        }
+        if !PartialEq::<Vec<f32>>::eq(&self.packed_float, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.packed_float, 85u32, buf)?;
+        }
+        if !PartialEq::<Vec<f64>>::eq(&self.packed_double, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.packed_double, 86u32, buf)?;
+        }
+        if !PartialEq::<Vec<bool>>::eq(&self.packed_bool, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.packed_bool, 87u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<TestAllTypesProto3NestedEnum>,
+        >::eq(&self.packed_nested_enum, &Default::default()) {
+            Format::<Repeat::<Enum>>::encode(&self.packed_nested_enum, 88u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.unpacked_int32, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.unpacked_int32, 89u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.unpacked_int64, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.unpacked_int64, 90u32, buf)?;
+        }
+        if !PartialEq::<Vec<u32>>::eq(&self.unpacked_uint32, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.unpacked_uint32, 91u32, buf)?;
+        }
+        if !PartialEq::<Vec<u64>>::eq(&self.unpacked_uint64, &Default::default()) {
+            Format::<Pack::<VInt>>::encode(&self.unpacked_uint64, 92u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.unpacked_sint32, &Default::default()) {
+            Format::<Pack::<SInt>>::encode(&self.unpacked_sint32, 93u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.unpacked_sint64, &Default::default()) {
+            Format::<Pack::<SInt>>::encode(&self.unpacked_sint64, 94u32, buf)?;
+        }
+        if !PartialEq::<Vec<u32>>::eq(&self.unpacked_fixed32, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.unpacked_fixed32, 95u32, buf)?;
+        }
+        if !PartialEq::<Vec<u64>>::eq(&self.unpacked_fixed64, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.unpacked_fixed64, 96u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.unpacked_sfixed32, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.unpacked_sfixed32, 97u32, buf)?;
+        }
+        if !PartialEq::<Vec<i64>>::eq(&self.unpacked_sfixed64, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.unpacked_sfixed64, 98u32, buf)?;
+        }
+        if !PartialEq::<Vec<f32>>::eq(&self.unpacked_float, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.unpacked_float, 99u32, buf)?;
+        }
+        if !PartialEq::<Vec<f64>>::eq(&self.unpacked_double, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.unpacked_double, 100u32, buf)?;
+        }
+        if !PartialEq::<Vec<bool>>::eq(&self.unpacked_bool, &Default::default()) {
+            Format::<Pack::<Fix>>::encode(&self.unpacked_bool, 101u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<TestAllTypesProto3NestedEnum>,
+        >::eq(&self.unpacked_nested_enum, &Default::default()) {
+            Format::<Repeat::<Enum>>::encode(&self.unpacked_nested_enum, 102u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i32, i32>,
+        >::eq(&self.map_int32_int32, &Default::default()) {
+            Format::<Map::<VInt, VInt>>::encode(&self.map_int32_int32, 56u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i64, i64>,
+        >::eq(&self.map_int64_int64, &Default::default()) {
+            Format::<Map::<VInt, VInt>>::encode(&self.map_int64_int64, 57u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<u32, u32>,
+        >::eq(&self.map_uint32_uint32, &Default::default()) {
+            Format::<Map::<VInt, VInt>>::encode(&self.map_uint32_uint32, 58u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<u64, u64>,
+        >::eq(&self.map_uint64_uint64, &Default::default()) {
+            Format::<Map::<VInt, VInt>>::encode(&self.map_uint64_uint64, 59u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i32, i32>,
+        >::eq(&self.map_sint32_sint32, &Default::default()) {
+            Format::<Map::<SInt, SInt>>::encode(&self.map_sint32_sint32, 60u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i64, i64>,
+        >::eq(&self.map_sint64_sint64, &Default::default()) {
+            Format::<Map::<SInt, SInt>>::encode(&self.map_sint64_sint64, 61u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<u32, u32>,
+        >::eq(&self.map_fixed32_fixed32, &Default::default()) {
+            Format::<Map::<Fix, Fix>>::encode(&self.map_fixed32_fixed32, 62u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<u64, u64>,
+        >::eq(&self.map_fixed64_fixed64, &Default::default()) {
+            Format::<Map::<Fix, Fix>>::encode(&self.map_fixed64_fixed64, 63u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i32, i32>,
+        >::eq(&self.map_sfixed32_sfixed32, &Default::default()) {
+            Format::<Map::<Fix, Fix>>::encode(&self.map_sfixed32_sfixed32, 64u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i64, i64>,
+        >::eq(&self.map_sfixed64_sfixed64, &Default::default()) {
+            Format::<Map::<Fix, Fix>>::encode(&self.map_sfixed64_sfixed64, 65u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i32, f32>,
+        >::eq(&self.map_int32_float, &Default::default()) {
+            Format::<Map::<VInt, Fix>>::encode(&self.map_int32_float, 66u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<i32, f64>,
+        >::eq(&self.map_int32_double, &Default::default()) {
+            Format::<Map::<VInt, Fix>>::encode(&self.map_int32_double, 67u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<bool, bool>,
+        >::eq(&self.map_bool_bool, &Default::default()) {
+            Format::<Map::<Fix, Fix>>::encode(&self.map_bool_bool, 68u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<String, String>,
+        >::eq(&self.map_string_string, &Default::default()) {
+            Format::<Map::<Bytes, Bytes>>::encode(&self.map_string_string, 69u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<String, Vec<u8>>,
+        >::eq(&self.map_string_bytes, &Default::default()) {
+            Format::<Map::<Bytes, Bytes>>::encode(&self.map_string_bytes, 70u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<String, TestAllTypesProto3NestedMessage>,
+        >::eq(&self.map_string_nested_message, &Default::default()) {
+            Format::<
+                Map::<Bytes, Nest>,
+            >::encode(&self.map_string_nested_message, 71u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<String, ForeignMessage>,
+        >::eq(&self.map_string_foreign_message, &Default::default()) {
+            Format::<
+                Map::<Bytes, Nest>,
+            >::encode(&self.map_string_foreign_message, 72u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<String, TestAllTypesProto3NestedEnum>,
+        >::eq(&self.map_string_nested_enum, &Default::default()) {
+            Format::<
+                Map::<Bytes, Enum>,
+            >::encode(&self.map_string_nested_enum, 73u32, buf)?;
+        }
+        if !PartialEq::<
+            ::std::collections::HashMap<String, ForeignEnum>,
+        >::eq(&self.map_string_foreign_enum, &Default::default()) {
+            Format::<
+                Map::<Bytes, Enum>,
+            >::encode(&self.map_string_foreign_enum, 74u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<BoolValue>>,
+        >::eq(&self.optional_bool_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_bool_wrapper, 201u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<Int32Value>>,
+        >::eq(&self.optional_int32_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_int32_wrapper, 202u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<Int64Value>>,
+        >::eq(&self.optional_int64_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_int64_wrapper, 203u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<UInt32Value>>,
+        >::eq(&self.optional_uint32_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_uint32_wrapper, 204u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<UInt64Value>>,
+        >::eq(&self.optional_uint64_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_uint64_wrapper, 205u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<FloatValue>>,
+        >::eq(&self.optional_float_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_float_wrapper, 206u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<DoubleValue>>,
+        >::eq(&self.optional_double_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_double_wrapper, 207u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<StringValue>>,
+        >::eq(&self.optional_string_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_string_wrapper, 208u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<BytesValue>>,
+        >::eq(&self.optional_bytes_wrapper, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_bytes_wrapper, 209u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<BoolValue>,
+        >::eq(&self.repeated_bool_wrapper, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_bool_wrapper, 211u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<Int32Value>,
+        >::eq(&self.repeated_int32_wrapper, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_int32_wrapper, 212u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<Int64Value>,
+        >::eq(&self.repeated_int64_wrapper, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_int64_wrapper, 213u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UInt32Value>,
+        >::eq(&self.repeated_uint32_wrapper, &Default::default()) {
+            Format::<
+                Repeat::<Nest>,
+            >::encode(&self.repeated_uint32_wrapper, 214u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UInt64Value>,
+        >::eq(&self.repeated_uint64_wrapper, &Default::default()) {
+            Format::<
+                Repeat::<Nest>,
+            >::encode(&self.repeated_uint64_wrapper, 215u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<FloatValue>,
+        >::eq(&self.repeated_float_wrapper, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_float_wrapper, 216u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<DoubleValue>,
+        >::eq(&self.repeated_double_wrapper, &Default::default()) {
+            Format::<
+                Repeat::<Nest>,
+            >::encode(&self.repeated_double_wrapper, 217u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<StringValue>,
+        >::eq(&self.repeated_string_wrapper, &Default::default()) {
+            Format::<
+                Repeat::<Nest>,
+            >::encode(&self.repeated_string_wrapper, 218u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<BytesValue>,
+        >::eq(&self.repeated_bytes_wrapper, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_bytes_wrapper, 219u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<Duration>>,
+        >::eq(&self.optional_duration, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_duration, 301u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<Timestamp>>,
+        >::eq(&self.optional_timestamp, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_timestamp, 302u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<FieldMask>>,
+        >::eq(&self.optional_field_mask, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_field_mask, 303u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<Struct>>,
+        >::eq(&self.optional_struct, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_struct, 304u32, buf)?;
+        }
+        if !PartialEq::<Option<Box<Any>>>::eq(&self.optional_any, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_any, 305u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<Value>>,
+        >::eq(&self.optional_value, &Default::default()) {
+            Format::<Nest>::encode(&self.optional_value, 306u32, buf)?;
+        }
+        if !PartialEq::<NullValue>::eq(&self.optional_null_value, &Default::default()) {
+            Format::<Enum>::encode(&self.optional_null_value, 307u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<Duration>,
+        >::eq(&self.repeated_duration, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_duration, 311u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<Timestamp>,
+        >::eq(&self.repeated_timestamp, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_timestamp, 312u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<FieldMask>,
+        >::eq(&self.repeated_fieldmask, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_fieldmask, 313u32, buf)?;
+        }
+        if !PartialEq::<Vec<Struct>>::eq(&self.repeated_struct, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_struct, 324u32, buf)?;
+        }
+        if !PartialEq::<Vec<Any>>::eq(&self.repeated_any, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_any, 315u32, buf)?;
+        }
+        if !PartialEq::<Vec<Value>>::eq(&self.repeated_value, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_value, 316u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<ListValue>,
+        >::eq(&self.repeated_list_value, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.repeated_list_value, 317u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.fieldname1, &Default::default()) {
+            Format::<VInt>::encode(&self.fieldname1, 401u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field_name2, &Default::default()) {
+            Format::<VInt>::encode(&self.field_name2, 402u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self._field_name3, &Default::default()) {
+            Format::<VInt>::encode(&self._field_name3, 403u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field__name4_, &Default::default()) {
+            Format::<VInt>::encode(&self.field__name4_, 404u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field0name5, &Default::default()) {
+            Format::<VInt>::encode(&self.field0name5, 405u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field_0_name6, &Default::default()) {
+            Format::<VInt>::encode(&self.field_0_name6, 406u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.fieldName7, &Default::default()) {
+            Format::<VInt>::encode(&self.fieldName7, 407u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.FieldName8, &Default::default()) {
+            Format::<VInt>::encode(&self.FieldName8, 408u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field_Name9, &Default::default()) {
+            Format::<VInt>::encode(&self.field_Name9, 409u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.Field_Name10, &Default::default()) {
+            Format::<VInt>::encode(&self.Field_Name10, 410u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.FIELD_NAME11, &Default::default()) {
+            Format::<VInt>::encode(&self.FIELD_NAME11, 411u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.FIELD_name12, &Default::default()) {
+            Format::<VInt>::encode(&self.FIELD_name12, 412u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.__field_name13, &Default::default()) {
+            Format::<VInt>::encode(&self.__field_name13, 413u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.__Field_name14, &Default::default()) {
+            Format::<VInt>::encode(&self.__Field_name14, 414u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field__name15, &Default::default()) {
+            Format::<VInt>::encode(&self.field__name15, 415u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field__Name16, &Default::default()) {
+            Format::<VInt>::encode(&self.field__Name16, 416u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.field_name17__, &Default::default()) {
+            Format::<VInt>::encode(&self.field_name17__, 417u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.Field_name18__, &Default::default()) {
+            Format::<VInt>::encode(&self.Field_name18__, 418u32, buf)?;
+        }
         match &self.oneof_field {
             TestAllTypesProto3OneOfOneofField::OneofUint32(value) => {
-                Format::<VInt>::encode(value, 888u32, buf)?;
+                Format::<VInt>::encode(value, 111u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofNestedMessage(value) => {
-                Format::<Nest>::encode(value, 898u32, buf)?;
+                Format::<Nest>::encode(value, 112u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofString(value) => {
-                Format::<Bytes>::encode(value, 906u32, buf)?;
+                Format::<Bytes>::encode(value, 113u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofBytes(value) => {
-                Format::<Bytes>::encode(value, 914u32, buf)?;
+                Format::<Bytes>::encode(value, 114u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofBool(value) => {
-                Format::<Fix>::encode(value, 920u32, buf)?;
+                Format::<Fix>::encode(value, 115u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofUint64(value) => {
-                Format::<VInt>::encode(value, 928u32, buf)?;
+                Format::<VInt>::encode(value, 116u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofFloat(value) => {
-                Format::<Fix>::encode(value, 941u32, buf)?;
+                Format::<Fix>::encode(value, 117u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofDouble(value) => {
-                Format::<Fix>::encode(value, 945u32, buf)?;
+                Format::<Fix>::encode(value, 118u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofEnum(value) => {
-                Format::<Enum>::encode(value, 952u32, buf)?;
+                Format::<Enum>::encode(value, 119u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::OneofNullValue(value) => {
-                Format::<Enum>::encode(value, 960u32, buf)?;
+                Format::<Enum>::encode(value, 120u32, buf)?;
             }
             TestAllTypesProto3OneOfOneofField::Unknown(..) => {}
         }
@@ -4443,8 +4855,14 @@ impl binformat::Encodable for TestAllTypesProto3NestedMessage {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.a, 8u32, buf)?;
-        Format::<Nest>::encode(&self.corecursive, 18u32, buf)?;
+        if !PartialEq::<i32>::eq(&self.a, &Default::default()) {
+            Format::<VInt>::encode(&self.a, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<TestAllTypesProto3>>,
+        >::eq(&self.corecursive, &Default::default()) {
+            Format::<Nest>::encode(&self.corecursive, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4524,7 +4942,9 @@ impl binformat::Encodable for ForeignMessage {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.c, 8u32, buf)?;
+        if !PartialEq::<i32>::eq(&self.c, &Default::default()) {
+            Format::<VInt>::encode(&self.c, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

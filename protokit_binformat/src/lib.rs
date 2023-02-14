@@ -8,9 +8,9 @@ use anyhow::{anyhow, bail};
 pub use anyhow::Result;
 use format::*;
 use integer_encoding::VarInt;
-use unk::*;
+pub use unk::*;
 
-use crate::format::{Format, RawVInt};
+use crate::format::Format;
 
 mod buffer;
 #[doc(hidden)]
@@ -18,6 +18,7 @@ pub mod format;
 #[doc(hidden)]
 pub mod unk;
 pub mod varint;
+
 
 pub trait Decodable {
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>>;
@@ -46,6 +47,7 @@ where
 pub type ReadBuffer<'a> = &'a [u8];
 
 pub type WriteBuffer = Vec<u8>;
+
 
 pub trait Encodable {
     fn qualified_name(&self) -> &'static str;
@@ -118,7 +120,7 @@ impl Decodable for () {
             //TODO: Implement optimistic parsing into nested messages
             LENDELIM => {
                 let (datalen, vlen) = u64::decode_var(buf).ok_or_else(|| anyhow!("reading uint"))?;
-                if buf.len() < (datalen as usize + vlen) {
+                if buf.len() < (datalen as usize).saturating_add(vlen) {
                     return Err(anyhow::Error::msg("Mising data"));
                 }
                 Ok(&buf[(datalen as usize) + vlen ..])

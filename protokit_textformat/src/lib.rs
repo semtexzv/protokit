@@ -286,7 +286,7 @@ impl Field for Vec<u8> {
             if v.is_ascii_alphanumeric() {
                 out.push(v.as_char());
             } else {
-                write!(out, "\\x{:x}", v)?;
+                write!(out, "\\x{v:x}")?;
             }
         }
         write!(out, "\"")?;
@@ -312,7 +312,7 @@ where
         out.indent(pad);
         out.push_str("}\n");
 
-        for (key, val) in self.iter() {
+        for (key, _val) in self.iter() {
             out.indent(pad);
             Field::format(key, ctx, pad, out)?;
             out.push_str(": ");

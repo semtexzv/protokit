@@ -10,7 +10,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Any::default());
 }
 #[repr(C)]
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Desbug, Default, Clone, PartialEq)]
 pub struct Any {
     pub _marker: ::core::marker::PhantomData<()>,
     pub type_url: String,

@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
-[dependencies]
-protokit_build = { path = "../../protokit_build", default-features = false}
+[dependencies.protokit_build]
+path = "../../protokit_build"
+default-features = false
+#features = ["descriptors"]

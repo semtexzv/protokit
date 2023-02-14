@@ -3,7 +3,7 @@ use std::fs::read_to_string;
 use std::io;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
-use nom_locate::LocatedSpan;
+
 
 use protokit_desc::arcstr::ArcStr;
 use protokit_desc::{FileDef, FileSetDef};
@@ -72,14 +72,13 @@ impl TranslateCtx {
 
         Ok(match &resolved[..] {
             [] => {
-                self.error(format!("{:?} was not found", p))?;
-                return Err(io::Error::new(io::ErrorKind::Other, format!("{:?} was not found", p)));
+                self.error(format!("{p:?} was not found"))?;
+                return Err(io::Error::new(io::ErrorKind::Other, format!("{p:?} was not found")));
             }
             [x] => x.clone(),
             [x, ..] => {
                 self.error(format!(
-                    "{:?} was found in multiple locations, using first: {:?}",
-                    p, resolved
+                    "{p:?} was found in multiple locations, using first: {resolved:?}"
                 ))?;
                 x.clone()
             }
@@ -108,7 +107,16 @@ impl TranslateCtx {
         let contents = read_to_string(&path)?;
         self.current_stack.push(path);
 
-        let mut parsed = crate::ast::Proto::parse_format_error(contents.deref()).unwrap();
+        let mut parsed = match crate::ast::Proto::parse_format_error(contents.deref()) {
+            Ok(parsed) => parsed,
+            Err(e) => {
+                let mut s = String::new();
+                miette::GraphicalReportHandler::new()
+                    .render_report(&mut s, &e)
+                    .unwrap();
+                panic!("{s}");
+            }
+        };
         let translated = self.run_passes(&name, &mut parsed);
 
         self.def.files.insert(name.clone(), translated);
@@ -117,7 +125,7 @@ impl TranslateCtx {
 
     fn run_passes(&mut self, name: &str, p: &mut Proto) -> FileDef {
         let mut def = defs::base_def(self, name, p);
-        eprintln!("Compiling explicit: {}", name);
+        eprintln!("Compiling explicit: {name}");
         {
             imports::ResolveImports { ctx: self }.visit_proto(p);
 

@@ -29,16 +29,14 @@ pub const LOCAL_ONLY_TYPE: LocalDefId = 0x00FFFFFF;
 pub const LOCAL_ONLY_ID: LocalDefId = 0x00FFFFFF;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum Syntax {
+    #[default]
     Proto2,
     Proto3,
 }
 
-impl Default for Syntax {
-    fn default() -> Syntax {
-        Syntax::Proto2
-    }
-}
+
 
 impl FromStr for Syntax {
     type Err = String;
@@ -195,6 +193,7 @@ pub enum Value {
     Float(f64),
     Object(HashMap<ArcStr, Value>),
 }
+
 #[cfg(feature = "descriptors")]
 fn builtin_to_descriptor(bt: &BuiltinType) -> FieldDescriptorProtoType {
     match bt {
@@ -308,12 +307,10 @@ impl FieldDef {
     pub fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, _msg_desc: &DescriptorProto, desc: &FieldDescriptorProto) -> Self {
         // eprintln!("{:?}", desc);
         // TODO: Fix the packed attr to be default true in proto3
-        let mut opts = desc.options.as_deref().map(|v| v.clone()).unwrap_or_default();
+        let mut opts = desc.options.as_deref().cloned().unwrap_or_default();
 
-        if file.syntax.as_deref() == Some("proto3") {
-            if opts.packed.is_none() {
-                opts.packed = Some(true);
-            }
+        if file.syntax.as_deref() == Some("proto3") && opts.packed.is_none() {
+            opts.packed = Some(true);
         }
 
         Self {
@@ -389,7 +386,7 @@ impl FieldDef {
                 unsafe {
                     name.as_bytes_mut()[.. 1].make_ascii_uppercase();
                 }
-                let map_entry_name = format!("{}Entry", name);
+                let map_entry_name = format!("{name}Entry");
                 fout.type_name = Some(format!(
                     ".{}.{}.{}",
                     file.package,
@@ -847,13 +844,13 @@ impl FileDef {
                 .dependency
                 .iter()
                 .map(|v| ImportDef {
-                    name: set.cache(&v),
+                    name: set.cache(v),
                     file_idx: set.files.get_index_of(v.as_str()).unwrap(),
                 })
                 .collect(),
             public_imports: vec![],
             syntax: Syntax::from_str(desc.syntax.as_ref().unwrap()).unwrap(),
-            package: set.cache(&desc.package.as_ref().unwrap()),
+            package: set.cache(desc.package.as_ref().unwrap()),
             messages: Default::default(),
             enums: Default::default(),
             services: Default::default(),
@@ -984,7 +981,7 @@ fn global_to_type(def_id: DefId) -> DataType {
     if def_id & LOCAL_DEFID_ENUM as u64 != 0 {
         return DataType::Enum(def_id);
     }
-    panic!("Invalid: {:x?}", def_id)
+    panic!("Invalid: {def_id:x?}")
 }
 
 fn resolve_type(
@@ -1068,7 +1065,7 @@ fn try_resolve_within_scopes(names: &HashMap<ArcStr, LocalDefId>, mut scope: &st
     // This method tries: First.Second.Third.Item => First.Second.Item => First.Item => Item
     loop {
         let scope_dot = if !scope.is_empty() { "." } else { "" };
-        let qualified = format!("{}{}{}", scope, scope_dot, symbol);
+        let qualified = format!("{scope}{scope_dot}{symbol}");
         match (names.get(qualified.as_str()), scope.rfind('.')) {
             (Some(v), _) => return Some(*v),
             (None, Some(p)) => scope = &scope[.. p],
@@ -1105,7 +1102,7 @@ fn try_resolve_symbol(
     loop {
         // Create a virtual global symbol, trying shorter package prefixes
         // If a package prefix is a match, We find it, and remove it in the inner function
-        let namespaced = format!(".{}.{}", file_package, symbol);
+        let namespaced = format!(".{file_package}.{symbol}");
         match (
             try_resolve_symbol(names, orig_package, "", namespaced.as_str()),
             file_package.rfind('.'),

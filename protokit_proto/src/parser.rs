@@ -1,19 +1,19 @@
 
 use lex_core::{parse_with_options, NumberFormatBuilder};
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, tag, tag_no_case, take_until, take_while, take_while1};
+use nom::bytes::complete::{escaped, tag, tag_no_case, take_until, take_while};
 use nom::character::complete::{alpha1, alphanumeric1, char, multispace1, none_of, one_of};
-use nom::combinator::{cut, eof, map, map_res, opt, peek, recognize, value};
-use nom::error::{context, ErrorKind, FromExternalError, ParseError};
+use nom::combinator::{cut, map, map_res, opt, recognize, value};
+use nom::error::{context, FromExternalError};
 use nom::multi::{many0, many0_count, many1, separated_list1};
 use nom::sequence::{delimited, pair, preceded, tuple};
 use nom::{Parser, Slice};
-use nom::character::{is_alphabetic, is_alphanumeric};
+
 use nom_supreme::error::GenericErrorTree;
-use nom_supreme::ParserExt;
+
 use nom_supreme::tag::TagError;
 use protokit_desc::{BuiltinType, FieldNum, Frequency, ImportType};
-use protokit_textformat;
+
 
 use crate::ast::*;
 use crate::deps::*;
@@ -28,7 +28,7 @@ fn is_eol(c: char) -> bool {
 fn semicolon(i: Span) -> IResult<()> {
     match ws(tag(";"))(i) {
         Ok((i, _)) => Ok((i, ())),
-        Err(e) =>  IResult::Err(nom::Err::Failure(MyParseError::from_tag(i, "Trailing semicolon"))),
+        Err(_e) =>  IResult::Err(nom::Err::Failure(MyParseError::from_tag(i, "Trailing semicolon"))),
     }
 }
 
@@ -191,7 +191,7 @@ fn opt_sign(i: Span) -> IResult<Option<char>> {
     opt(one_of("+-"))(i)
 }
 
-fn compound_constant(i: Span) -> IResult<Const<'_>> {
+fn compound_constant(_i: Span) -> IResult<Const<'_>> {
     unimplemented!()
     // let (i, res) = protokit_textformat::parser::message_body(i)?;
     // Ok((i, Const::Compound(res)))
@@ -683,7 +683,7 @@ impl<'i> Parse<'i> for Proto<'i> {
         let (i, items) = many0(file_item)(i)?;
 
         // Eat unused whitespace
-        // let (i, _) = ws(tag(""))(i)?;
+        let (i, _) = ws(tag(""))(i)?;
         Ok((i, Proto { syntax, items }))
     }
 }

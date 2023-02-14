@@ -5,18 +5,26 @@ use anyhow::bail;
 
 use integer_encoding::VarInt;
 
-use crate::{WriteBuffer, ReadBuffer,  Decodable, Encodable, Result};
+use crate::{WriteBuffer, ReadBuffer, Decodable, Encodable, Result};
+use crate::unk::{LENDELIM, VINT, FIX32, FIX64};
 
-pub trait ExtendFromBytes {
+pub trait BytesLike {
+    fn _clear(&mut self);
     fn extend_from_bytes(&mut self, bytes: &[u8]) -> Result<()>;
     fn _as_bytes(&self) -> &[u8];
     fn bytes_len(&self) -> usize;
 }
 
-impl<T> ExtendFromBytes for Option<T>
-where
-    T: ExtendFromBytes + Default,
+impl<T> BytesLike for Option<T>
+    where
+        T: BytesLike + Default,
 {
+    fn _clear(&mut self) {
+        if let Some(v) = self {
+            v._clear();
+        }
+    }
+
     fn extend_from_bytes(&mut self, bytes: &[u8]) -> Result<()> {
         self.get_or_insert_with(|| T::default()).extend_from_bytes(bytes)
     }
@@ -36,7 +44,11 @@ where
     }
 }
 
-impl ExtendFromBytes for Box<str> {
+impl BytesLike for Box<str> {
+    fn _clear(&mut self) {
+        *self = String::new().into_boxed_str();
+    }
+
     fn extend_from_bytes(&mut self, bytes: &[u8]) -> Result<()> {
         match std::str::from_utf8(bytes) {
             Ok(s) => {
@@ -58,7 +70,11 @@ impl ExtendFromBytes for Box<str> {
     }
 }
 
-impl ExtendFromBytes for String {
+impl BytesLike for String {
+    fn _clear(&mut self) {
+        self.clear();
+    }
+
     #[inline(always)]
     fn extend_from_bytes(&mut self, bytes: &[u8]) -> Result<()> {
         let s = std::str::from_utf8(bytes)?;
@@ -75,7 +91,11 @@ impl ExtendFromBytes for String {
     }
 }
 
-impl ExtendFromBytes for Vec<u8> {
+impl BytesLike for Vec<u8> {
+    fn _clear(&mut self) {
+        self.clear();
+    }
+
     fn extend_from_bytes(&mut self, bytes: &[u8]) -> Result<()> {
         self.extend_from_slice(bytes);
         Ok(())
@@ -91,8 +111,9 @@ impl ExtendFromBytes for Vec<u8> {
 }
 
 pub trait Format<M> {
+    const WIRE_TYPE: u8;
     fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
-        Format::<RawVInt>::encode_val(&tag, buf)?;
+        Format::<RawVInt>::encode_val(&(tag << 3 | Self::WIRE_TYPE as u32), buf)?;
         Self::encode_val(self, buf)
     }
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()>;
@@ -100,15 +121,12 @@ pub trait Format<M> {
 }
 
 pub struct Bytes;
+
 impl<B> Format<Bytes> for B
-where
-    B: ExtendFromBytes,
+    where
+        B: BytesLike,
 {
-    fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
-        Format::<RawVInt>::encode(&tag, 0, buf)?;
-        // Self::encode_val(buf)
-        self.encode_val(buf)
-    }
+    const WIRE_TYPE: u8 = LENDELIM;
 
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         Format::<RawVInt>::encode(&self.bytes_len(), 0, buf)?;
@@ -116,24 +134,26 @@ where
         Ok(())
     }
 
-
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        self._clear();
         let (dlen, len) = usize::decode_var(buf)
-            .ok_or_else(|| anyhow::Error::msg("Missing data"))?;
+            .ok_or_else(|| anyhow::Error::msg("Missing data <bytes1>"))?;
         if buf.len() < dlen + len {
-            return Err(anyhow::Error::msg("Mising data"));
+            return Err(anyhow::Error::msg("Mising data <bytes2>"));
         }
-        self.extend_from_bytes(&buf[len .. dlen + len])?;
-        Ok(&buf[len + dlen ..])
+        self.extend_from_bytes(&buf[len..dlen + len])?;
+        Ok(&buf[len + dlen..])
     }
 }
 
 pub struct Repeat<D>(PhantomData<D>);
 
 impl<T, D> Format<Repeat<D>> for Vec<T>
-where
-    T: Format<D> + Default,
+    where
+        T: Format<D> + Default,
 {
+    const WIRE_TYPE: u8 = T::WIRE_TYPE;
+
     fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
         for t in self {
             t.encode(tag, buf)?;
@@ -141,7 +161,7 @@ where
         Ok(())
     }
 
-    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+    fn encode_val(&self, _buf: &mut WriteBuffer) -> Result<()> {
         panic!("Unexpected, can't encode value without tag for packed fields");
     }
 
@@ -156,20 +176,22 @@ where
 pub struct Map<K, V>(PhantomData<(K, V)>);
 
 impl<KF, VF, K: Format<KF> + Default + Hash + Eq, V: Format<VF> + Default> Format<Map<KF, VF>> for HashMap<K, V> {
+    const WIRE_TYPE: u8 = LENDELIM;
+
     fn encode(&self, tag: u32, buf: &mut WriteBuffer) -> Result<()> {
         for (k, v) in self {
             let mut nest = WriteBuffer::new();
             Format::<KF>::encode(k, 1, &mut nest)?;
             Format::<VF>::encode(v, 2, &mut nest)?;
 
-            Format::<RawVInt>::encode_val(&tag, buf)?;
+            Format::<RawVInt>::encode_val(&(tag << 3 | LENDELIM as u32), buf)?;
             Format::<RawVInt>::encode_val(&nest.len(), buf)?;
             buf.extend_from_slice(&nest);
         }
         Ok(())
     }
 
-    fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+    fn encode_val(&self, _buf: &mut WriteBuffer) -> Result<()> {
         panic!("Not applicable")
     }
 
@@ -182,36 +204,25 @@ impl<KF, VF, K: Format<KF> + Default + Hash + Eq, V: Format<VF> + Default> Forma
         }
         let (mut inner_buf, outer_buf) = buf.split_at(len);
 
+        let mut k = K::default();
+        let mut v = V::default();
+
         while !inner_buf.is_empty() {
-            let mut k = K::default();
-            let mut v = V::default();
             let mut tag = 0;
             inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
-            match tag {
+            match tag >> 3 {
                 1 => {
                     inner_buf = Format::<KF>::decode(&mut k, inner_buf)?;
-                    inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
-                    if tag != 2 {
-                        bail!("Invalid tag in map entry: {tag}");
-                    }
-                    inner_buf = Format::<VF>::decode(&mut v, inner_buf)?
-                },
+                }
                 2 => {
                     inner_buf = Format::<VF>::decode(&mut v, inner_buf)?;
-                    inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
-                    if tag != 2 {
-                        bail!("Invalid tag in map entry: {tag}");
-                    }
-                    inner_buf = Format::<KF>::decode(&mut k, inner_buf)?
-                },
+                }
                 other => {
                     bail!("Invalid tag in map entry: {other}");
                 }
             }
-
-            self.insert(k, v);
         }
-
+        self.insert(k, v);
         Ok(outer_buf)
     }
 }
@@ -219,6 +230,8 @@ impl<KF, VF, K: Format<KF> + Default + Hash + Eq, V: Format<VF> + Default> Forma
 pub struct RawVInt;
 
 impl Format<RawVInt> for u64 {
+    const WIRE_TYPE: u8 = 255;
+
     fn encode(&self, _: u32, buf: &mut WriteBuffer) -> Result<()> {
         Format::<RawVInt>::encode_val(self, buf)
     }
@@ -227,18 +240,20 @@ impl Format<RawVInt> for u64 {
         let len = self.required_space();
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
-        self.encode_var(&mut buf[olen ..]);
+        self.encode_var(&mut buf[olen..]);
         Ok(())
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let (d, len) = u64::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
         *self = d;
-        Ok(&buf[len ..])
+        Ok(&buf[len..])
     }
 }
 
 impl Format<RawVInt> for i64 {
+    const WIRE_TYPE: u8 = 0;
+
     fn encode(&self, _: u32, buf: &mut WriteBuffer) -> Result<()> {
         Format::<RawVInt>::encode_val(self, buf)
     }
@@ -248,7 +263,7 @@ impl Format<RawVInt> for i64 {
         let len = target.required_space();
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
-        target.encode_var(&mut buf[olen ..]);
+        target.encode_var(&mut buf[olen..]);
         Ok(())
     }
 
@@ -257,13 +272,14 @@ impl Format<RawVInt> for i64 {
         unsafe {
             *self = std::mem::transmute(d);
         }
-        Ok(&buf[len ..])
+        Ok(&buf[len..])
     }
 }
 
 macro_rules! impl_rawint {
     ($($t:ty:$d:ty),*) => {$(
     impl Format<RawVInt> for $t {
+        const WIRE_TYPE: u8 = 0;
         fn decode<'b>(&mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
             let mut v : $d = 0;
             buf = Format::<RawVInt>::decode(&mut v, buf)?;
@@ -285,16 +301,18 @@ macro_rules! impl_rawint {
 }
 
 impl_rawint! {
-    u8:u64, u16:u64, u32:u64, usize:u64,
-    i8:i64, i16:i64, i32:i64, isize:i64
+    u32:u64, usize:u64,
+    i32:i64, isize:i64
 }
 
 pub struct VInt;
 
 impl<T> Format<VInt> for T
-where
-    T: Format<RawVInt>,
+    where
+        T: Format<RawVInt>,
 {
+    const WIRE_TYPE: u8 = VINT;
+
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         Format::<RawVInt>::encode(self, 0, buf)
     }
@@ -313,7 +331,7 @@ macro_rules! defer_opt_impl_body {
             }
         }
 
-        fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
+        fn encode_val(&self, _buf: &mut WriteBuffer) -> Result<()> {
             panic!("unexpected encode_val for optional fields");
         }
 
@@ -324,26 +342,29 @@ macro_rules! defer_opt_impl_body {
 }
 
 macro_rules! defer_opt_impl_complete {
-    ($($t:ty),*) => {$(
+    ($($t:ty = $wt:expr),*) => {$(
         impl<T> Format<$t> for Option<T>
         where
             T: Format<$t> + Default,
         {
+            const WIRE_TYPE: u8 = $wt;
             defer_opt_impl_body!{$t}
         }
     )*};
 }
 
-defer_opt_impl_complete! {VInt, SInt, Fix}
+defer_opt_impl_complete! {VInt = VINT, SInt = VINT, Fix = FIX32}
 
 pub struct Enum;
 
 pub trait ProtoEnum: From<u32> + Into<u32> {}
 
 impl<T> Format<Enum> for T
-where
-    T: Clone + ProtoEnum,
+    where
+        T: Clone + ProtoEnum,
 {
+    const WIRE_TYPE: u8 = VINT;
+
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let t: u32 = self.clone().into();
         Format::<RawVInt>::encode(&t, 0, buf)
@@ -358,49 +379,55 @@ where
 }
 
 impl<T> Format<Enum> for Option<T>
-where
-    T: Clone + ProtoEnum + Default,
+    where
+        T: Clone + ProtoEnum + Default,
 {
+    const WIRE_TYPE: u8 = VINT;
     defer_opt_impl_body! {Enum}
 }
 
 pub struct SInt;
 
 impl Format<SInt> for i32 {
+    const WIRE_TYPE: u8 = VINT;
+
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let len = self.required_space();
-        let olen = buf.len();
+        let oldlen = buf.len();
         buf.resize(buf.len() + len, 0);
-        self.encode_var(&mut buf[olen ..]);
+        self.encode_var(&mut buf[oldlen..]);
         Ok(())
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-        let (d, len) = i32::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
+        let (d, len) = Self::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
         *self = d;
-        Ok(&buf[len ..])
+        Ok(&buf[len..])
     }
 }
 
 impl Format<SInt> for i64 {
+    const WIRE_TYPE: u8 = VINT;
+
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let len = self.required_space();
-        let olen = buf.len();
+        let oldlen = buf.len();
         buf.resize(buf.len() + len, 0);
-        self.encode_var(&mut buf[olen ..]);
+        self.encode_var(&mut buf[oldlen..]);
         Ok(())
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let (d, len) = i64::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
         *self = d;
-        Ok(&buf[len ..])
+        Ok(&buf[len..])
     }
 }
 
 pub struct Fix;
 
 impl Format<Fix> for bool {
+    const WIRE_TYPE: u8 = VINT;
 
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         buf.push(if *self { 1 } else { 0 });
@@ -408,14 +435,18 @@ impl Format<Fix> for bool {
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        if buf.len() == 0 {
+            bail!("Missing data")
+        }
         *self = buf[0] != 0;
-        Ok(&buf[1 ..])
+        Ok(&buf[1..])
     }
 }
 
 macro_rules! impl_fix {
-    ($($t:ty),*) => {$(
+    ($($t:ty = $wt:expr),*) => {$(
     impl<'a> Format<Fix> for $t {
+        const WIRE_TYPE: u8 = $wt;
 
         fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
             buf.extend_from_slice(&self.to_le_bytes());
@@ -436,17 +467,19 @@ macro_rules! impl_fix {
 }
 
 impl_fix! {
-    u8, u16, u32, u64,
-    i8, i16, i32, i64,
-    f32, f64
+    u32 = FIX32, u64 = FIX64,
+    i32 = FIX32, i64 = FIX64,
+    f32 = FIX32, f64 = FIX64
 }
 
 pub struct Nest;
 
 impl<T> Format<Nest> for T
-where
-    T: Decodable + Encodable + Default,
+    where
+        T: Decodable + Encodable + Default,
 {
+    const WIRE_TYPE: u8 = LENDELIM;
+
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let mut nested = WriteBuffer::new();
         self.encode(&mut nested)?;
@@ -476,9 +509,11 @@ where
 pub struct Pack<F>(F);
 
 impl<T, F> Format<Pack<F>> for Vec<T>
-where
-    T: Format<F> + Default,
+    where
+        T: Format<F> + Default,
 {
+    const WIRE_TYPE: u8 = LENDELIM;
+
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let mut nested = WriteBuffer::new();
         for it in self {
@@ -496,6 +531,8 @@ where
         if buf.len() < len {
             bail!("Not enough data")
         }
+
+        self.clear();
         let (mut inner_buf, outer_buf) = buf.split_at(len);
         while !inner_buf.is_empty() {
             let mut it = T::default();
@@ -505,4 +542,16 @@ where
 
         Ok(outer_buf)
     }
+}
+
+#[test]
+fn test_wrong() {
+    let mut buf = [0o002u8];
+    let mut val = 0;
+    <i32 as Format<SInt>>::decode(&mut val, &mut buf).unwrap();
+
+    assert_eq!(val, 1);
+    let mut out = WriteBuffer::new();
+    <i32 as Format<SInt>>::encode_val(&val, &mut out).unwrap();
+    assert_eq!(out[0], buf[0]);
 }

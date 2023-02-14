@@ -115,7 +115,7 @@ impl Build {
         }
 
         for (k, v) in &subdirs {
-            eprintln!("Creating module in: {:?}", out_dir.join(&k));
+            eprintln!("Creating module in: {:?}", out_dir.join(k));
             filegen::generate_mod(out_dir.join(k), &self.options, v.iter().copied());
         }
 

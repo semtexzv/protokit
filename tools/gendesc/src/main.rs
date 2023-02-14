@@ -1,7 +1,7 @@
-fn main() -> protokit_codegen::Result<()> {
+fn main() -> protokit_build::Result<()> {
     std::env::set_var("RUST_LOG", "trace");
-    let mut config = protokit_codegen::Codegen::without_replacements()
-        .out_dir("../protokit_desc/src/generated")
+    let mut config = protokit_build::Build::without_replacements()
+        .out_dir("./protokit_desc/src/generated")
         .include("proto")
         .include("../proto")
         .include("vendor/validate")

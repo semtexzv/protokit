@@ -109,8 +109,12 @@ impl binformat::Encodable for Timestamp {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.seconds, 8u32, buf)?;
-        Format::<VInt>::encode(&self.nanos, 16u32, buf)?;
+        if !PartialEq::<i64>::eq(&self.seconds, &Default::default()) {
+            Format::<VInt>::encode(&self.seconds, 1u32, buf)?;
+        }
+        if !PartialEq::<i32>::eq(&self.nanos, &Default::default()) {
+            Format::<VInt>::encode(&self.nanos, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

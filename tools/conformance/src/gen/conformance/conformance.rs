@@ -83,7 +83,9 @@ impl binformat::Encodable for FailureSet {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Bytes>>::encode(&self.failure, 10u32, buf)?;
+        if !PartialEq::<Vec<String>>::eq(&self.failure, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.failure, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -371,23 +373,37 @@ impl binformat::Encodable for ConformanceRequest {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Enum>::encode(&self.requested_output_format, 24u32, buf)?;
-        Format::<Bytes>::encode(&self.message_type, 34u32, buf)?;
-        Format::<Enum>::encode(&self.test_category, 40u32, buf)?;
-        Format::<Nest>::encode(&self.jspb_encoding_options, 50u32, buf)?;
-        Format::<Fix>::encode(&self.print_unknown_fields, 72u32, buf)?;
+        if !PartialEq::<
+            WireFormat,
+        >::eq(&self.requested_output_format, &Default::default()) {
+            Format::<Enum>::encode(&self.requested_output_format, 3u32, buf)?;
+        }
+        if !PartialEq::<String>::eq(&self.message_type, &Default::default()) {
+            Format::<Bytes>::encode(&self.message_type, 4u32, buf)?;
+        }
+        if !PartialEq::<TestCategory>::eq(&self.test_category, &Default::default()) {
+            Format::<Enum>::encode(&self.test_category, 5u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<JspbEncodingConfig>>,
+        >::eq(&self.jspb_encoding_options, &Default::default()) {
+            Format::<Nest>::encode(&self.jspb_encoding_options, 6u32, buf)?;
+        }
+        if !PartialEq::<bool>::eq(&self.print_unknown_fields, &Default::default()) {
+            Format::<Fix>::encode(&self.print_unknown_fields, 9u32, buf)?;
+        }
         match &self.payload {
             ConformanceRequestOneOfPayload::ProtobufPayload(value) => {
-                Format::<Bytes>::encode(value, 10u32, buf)?;
+                Format::<Bytes>::encode(value, 1u32, buf)?;
             }
             ConformanceRequestOneOfPayload::JsonPayload(value) => {
-                Format::<Bytes>::encode(value, 18u32, buf)?;
+                Format::<Bytes>::encode(value, 2u32, buf)?;
             }
             ConformanceRequestOneOfPayload::JspbPayload(value) => {
-                Format::<Bytes>::encode(value, 58u32, buf)?;
+                Format::<Bytes>::encode(value, 7u32, buf)?;
             }
             ConformanceRequestOneOfPayload::TextPayload(value) => {
-                Format::<Bytes>::encode(value, 66u32, buf)?;
+                Format::<Bytes>::encode(value, 8u32, buf)?;
             }
             ConformanceRequestOneOfPayload::Unknown(..) => {}
         }
@@ -698,31 +714,31 @@ impl binformat::Encodable for ConformanceResponse {
         use binformat::format::*;
         match &self.result {
             ConformanceResponseOneOfResult::ParseError(value) => {
-                Format::<Bytes>::encode(value, 10u32, buf)?;
+                Format::<Bytes>::encode(value, 1u32, buf)?;
             }
             ConformanceResponseOneOfResult::SerializeError(value) => {
-                Format::<Bytes>::encode(value, 50u32, buf)?;
+                Format::<Bytes>::encode(value, 6u32, buf)?;
             }
             ConformanceResponseOneOfResult::TimeoutError(value) => {
-                Format::<Bytes>::encode(value, 74u32, buf)?;
+                Format::<Bytes>::encode(value, 9u32, buf)?;
             }
             ConformanceResponseOneOfResult::RuntimeError(value) => {
-                Format::<Bytes>::encode(value, 18u32, buf)?;
+                Format::<Bytes>::encode(value, 2u32, buf)?;
             }
             ConformanceResponseOneOfResult::ProtobufPayload(value) => {
-                Format::<Bytes>::encode(value, 26u32, buf)?;
+                Format::<Bytes>::encode(value, 3u32, buf)?;
             }
             ConformanceResponseOneOfResult::JsonPayload(value) => {
-                Format::<Bytes>::encode(value, 34u32, buf)?;
+                Format::<Bytes>::encode(value, 4u32, buf)?;
             }
             ConformanceResponseOneOfResult::Skipped(value) => {
-                Format::<Bytes>::encode(value, 42u32, buf)?;
+                Format::<Bytes>::encode(value, 5u32, buf)?;
             }
             ConformanceResponseOneOfResult::JspbPayload(value) => {
-                Format::<Bytes>::encode(value, 58u32, buf)?;
+                Format::<Bytes>::encode(value, 7u32, buf)?;
             }
             ConformanceResponseOneOfResult::TextPayload(value) => {
-                Format::<Bytes>::encode(value, 66u32, buf)?;
+                Format::<Bytes>::encode(value, 8u32, buf)?;
             }
             ConformanceResponseOneOfResult::Unknown(..) => {}
         }
@@ -828,7 +844,9 @@ impl binformat::Encodable for JspbEncodingConfig {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Fix>::encode(&self.use_jspb_array_any_format, 8u32, buf)?;
+        if !PartialEq::<bool>::eq(&self.use_jspb_array_any_format, &Default::default()) {
+            Format::<Fix>::encode(&self.use_jspb_array_any_format, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

@@ -10,6 +10,11 @@ pub struct Registry {
 }
 
 impl Registry {
+    pub fn init(init: fn(&mut Self)) -> Self {
+        let mut out = Self::default();
+        init(&mut out);
+        out
+    }
     pub fn register(&mut self, msg: &dyn AnyMessage) {
         self.messages.insert(msg.qualified_name(), msg.new());
     }
@@ -47,7 +52,7 @@ where
         + 'static,
 {
     fn new(&self) -> Box<dyn AnyMessage> {
-        Box::new(Self::default())
+        Box::<T>::default()
     }
 
     fn qualified_name(&self) -> &'static str {

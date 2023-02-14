@@ -107,7 +107,9 @@ impl binformat::Encodable for FileDescriptorSet {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Nest>>::encode(&self.file, 10u32, buf)?;
+        if !PartialEq::<Vec<FileDescriptorProto>>::eq(&self.file, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.file, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -447,18 +449,54 @@ impl binformat::Encodable for FileDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.package, 18u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.dependency, 26u32, buf)?;
-        Format::<Repeat::<VInt>>::encode(&self.public_dependency, 80u32, buf)?;
-        Format::<Repeat::<VInt>>::encode(&self.weak_dependency, 88u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.message_type, 34u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.enum_type, 42u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.service, 50u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.extension, 58u32, buf)?;
-        Format::<Nest>::encode(&self.options, 66u32, buf)?;
-        Format::<Nest>::encode(&self.source_code_info, 74u32, buf)?;
-        Format::<Bytes>::encode(&self.syntax, 98u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.package, &Default::default()) {
+            Format::<Bytes>::encode(&self.package, 2u32, buf)?;
+        }
+        if !PartialEq::<Vec<String>>::eq(&self.dependency, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.dependency, 3u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.public_dependency, &Default::default()) {
+            Format::<Repeat::<VInt>>::encode(&self.public_dependency, 10u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.weak_dependency, &Default::default()) {
+            Format::<Repeat::<VInt>>::encode(&self.weak_dependency, 11u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<DescriptorProto>,
+        >::eq(&self.message_type, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.message_type, 4u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<EnumDescriptorProto>,
+        >::eq(&self.enum_type, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.enum_type, 5u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<ServiceDescriptorProto>,
+        >::eq(&self.service, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.service, 6u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<FieldDescriptorProto>,
+        >::eq(&self.extension, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.extension, 7u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<FileOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 8u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<SourceCodeInfo>>,
+        >::eq(&self.source_code_info, &Default::default()) {
+            Format::<Nest>::encode(&self.source_code_info, 9u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.syntax, &Default::default()) {
+            Format::<Bytes>::encode(&self.syntax, 12u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -752,16 +790,52 @@ impl binformat::Encodable for DescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.field, 18u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.extension, 50u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.nested_type, 26u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.enum_type, 34u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.extension_range, 42u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.oneof_decl, 66u32, buf)?;
-        Format::<Nest>::encode(&self.options, 58u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.reserved_range, 74u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 82u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<FieldDescriptorProto>,
+        >::eq(&self.field, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.field, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<FieldDescriptorProto>,
+        >::eq(&self.extension, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.extension, 6u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<DescriptorProto>,
+        >::eq(&self.nested_type, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.nested_type, 3u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<EnumDescriptorProto>,
+        >::eq(&self.enum_type, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.enum_type, 4u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<DescriptorProtoExtensionRange>,
+        >::eq(&self.extension_range, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.extension_range, 5u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<OneofDescriptorProto>,
+        >::eq(&self.oneof_decl, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.oneof_decl, 8u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<MessageOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 7u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<DescriptorProtoReservedRange>,
+        >::eq(&self.reserved_range, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.reserved_range, 9u32, buf)?;
+        }
+        if !PartialEq::<Vec<String>>::eq(&self.reserved_name, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 10u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -890,9 +964,17 @@ impl binformat::Encodable for DescriptorProtoExtensionRange {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.start, 8u32, buf)?;
-        Format::<VInt>::encode(&self.end, 16u32, buf)?;
-        Format::<Nest>::encode(&self.options, 26u32, buf)?;
+        if !PartialEq::<Option<i32>>::eq(&self.start, &Default::default()) {
+            Format::<VInt>::encode(&self.start, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.end, &Default::default()) {
+            Format::<VInt>::encode(&self.end, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<ExtensionRangeOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 3u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -998,8 +1080,12 @@ impl binformat::Encodable for DescriptorProtoReservedRange {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.start, 8u32, buf)?;
-        Format::<VInt>::encode(&self.end, 16u32, buf)?;
+        if !PartialEq::<Option<i32>>::eq(&self.start, &Default::default()) {
+            Format::<VInt>::encode(&self.start, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.end, &Default::default()) {
+            Format::<VInt>::encode(&self.end, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1079,7 +1165,11 @@ impl binformat::Encodable for ExtensionRangeOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1401,17 +1491,45 @@ impl binformat::Encodable for FieldDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<VInt>::encode(&self.number, 24u32, buf)?;
-        Format::<Enum>::encode(&self.label, 32u32, buf)?;
-        Format::<Enum>::encode(&self.r#type, 40u32, buf)?;
-        Format::<Bytes>::encode(&self.type_name, 50u32, buf)?;
-        Format::<Bytes>::encode(&self.extendee, 18u32, buf)?;
-        Format::<Bytes>::encode(&self.default_value, 58u32, buf)?;
-        Format::<VInt>::encode(&self.oneof_index, 72u32, buf)?;
-        Format::<Bytes>::encode(&self.json_name, 82u32, buf)?;
-        Format::<Nest>::encode(&self.options, 66u32, buf)?;
-        Format::<Fix>::encode(&self.proto3_optional, 136u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.number, &Default::default()) {
+            Format::<VInt>::encode(&self.number, 3u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<FieldDescriptorProtoLabel>,
+        >::eq(&self.label, &Default::default()) {
+            Format::<Enum>::encode(&self.label, 4u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<FieldDescriptorProtoType>,
+        >::eq(&self.r#type, &Default::default()) {
+            Format::<Enum>::encode(&self.r#type, 5u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.type_name, &Default::default()) {
+            Format::<Bytes>::encode(&self.type_name, 6u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.extendee, &Default::default()) {
+            Format::<Bytes>::encode(&self.extendee, 2u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.default_value, &Default::default()) {
+            Format::<Bytes>::encode(&self.default_value, 7u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.oneof_index, &Default::default()) {
+            Format::<VInt>::encode(&self.oneof_index, 9u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.json_name, &Default::default()) {
+            Format::<Bytes>::encode(&self.json_name, 10u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<FieldOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 8u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.proto3_optional, &Default::default()) {
+            Format::<Fix>::encode(&self.proto3_optional, 17u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1511,8 +1629,14 @@ impl binformat::Encodable for OneofDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Nest>::encode(&self.options, 18u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<OneofOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1689,11 +1813,27 @@ impl binformat::Encodable for EnumDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.value, 18u32, buf)?;
-        Format::<Nest>::encode(&self.options, 26u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.reserved_range, 34u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 42u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<EnumValueDescriptorProto>,
+        >::eq(&self.value, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.value, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<EnumOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 3u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<EnumDescriptorProtoEnumReservedRange>,
+        >::eq(&self.reserved_range, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.reserved_range, 4u32, buf)?;
+        }
+        if !PartialEq::<Vec<String>>::eq(&self.reserved_name, &Default::default()) {
+            Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 5u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1799,8 +1939,12 @@ impl binformat::Encodable for EnumDescriptorProtoEnumReservedRange {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.start, 8u32, buf)?;
-        Format::<VInt>::encode(&self.end, 16u32, buf)?;
+        if !PartialEq::<Option<i32>>::eq(&self.start, &Default::default()) {
+            Format::<VInt>::encode(&self.start, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.end, &Default::default()) {
+            Format::<VInt>::encode(&self.end, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -1926,9 +2070,17 @@ impl binformat::Encodable for EnumValueDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<VInt>::encode(&self.number, 16u32, buf)?;
-        Format::<Nest>::encode(&self.options, 26u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.number, &Default::default()) {
+            Format::<VInt>::encode(&self.number, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<EnumValueOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 3u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2051,9 +2203,19 @@ impl binformat::Encodable for ServiceDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.method, 18u32, buf)?;
-        Format::<Nest>::encode(&self.options, 26u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<MethodDescriptorProto>,
+        >::eq(&self.method, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.method, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<ServiceOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 3u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2251,12 +2413,26 @@ impl binformat::Encodable for MethodDescriptorProto {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.input_type, 18u32, buf)?;
-        Format::<Bytes>::encode(&self.output_type, 26u32, buf)?;
-        Format::<Nest>::encode(&self.options, 34u32, buf)?;
-        Format::<Fix>::encode(&self.client_streaming, 40u32, buf)?;
-        Format::<Fix>::encode(&self.server_streaming, 48u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.name, &Default::default()) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.input_type, &Default::default()) {
+            Format::<Bytes>::encode(&self.input_type, 2u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.output_type, &Default::default()) {
+            Format::<Bytes>::encode(&self.output_type, 3u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<Box<MethodOptions>>,
+        >::eq(&self.options, &Default::default()) {
+            Format::<Nest>::encode(&self.options, 4u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.client_streaming, &Default::default()) {
+            Format::<Fix>::encode(&self.client_streaming, 5u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.server_streaming, &Default::default()) {
+            Format::<Fix>::encode(&self.server_streaming, 6u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -2839,27 +3015,97 @@ impl binformat::Encodable for FileOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.java_package, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.java_outer_classname, 66u32, buf)?;
-        Format::<Fix>::encode(&self.java_multiple_files, 80u32, buf)?;
-        Format::<Fix>::encode(&self.java_generate_equals_and_hash, 160u32, buf)?;
-        Format::<Fix>::encode(&self.java_string_check_utf8, 216u32, buf)?;
-        Format::<Enum>::encode(&self.optimize_for, 72u32, buf)?;
-        Format::<Bytes>::encode(&self.go_package, 90u32, buf)?;
-        Format::<Fix>::encode(&self.cc_generic_services, 128u32, buf)?;
-        Format::<Fix>::encode(&self.java_generic_services, 136u32, buf)?;
-        Format::<Fix>::encode(&self.py_generic_services, 144u32, buf)?;
-        Format::<Fix>::encode(&self.php_generic_services, 336u32, buf)?;
-        Format::<Fix>::encode(&self.deprecated, 184u32, buf)?;
-        Format::<Fix>::encode(&self.cc_enable_arenas, 248u32, buf)?;
-        Format::<Bytes>::encode(&self.objc_class_prefix, 290u32, buf)?;
-        Format::<Bytes>::encode(&self.csharp_namespace, 298u32, buf)?;
-        Format::<Bytes>::encode(&self.swift_prefix, 314u32, buf)?;
-        Format::<Bytes>::encode(&self.php_class_prefix, 322u32, buf)?;
-        Format::<Bytes>::encode(&self.php_namespace, 330u32, buf)?;
-        Format::<Bytes>::encode(&self.php_metadata_namespace, 354u32, buf)?;
-        Format::<Bytes>::encode(&self.ruby_package, 362u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        if !PartialEq::<Option<String>>::eq(&self.java_package, &Default::default()) {
+            Format::<Bytes>::encode(&self.java_package, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.java_outer_classname, &Default::default()) {
+            Format::<Bytes>::encode(&self.java_outer_classname, 8u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.java_multiple_files, &Default::default()) {
+            Format::<Fix>::encode(&self.java_multiple_files, 10u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.java_generate_equals_and_hash, &Default::default()) {
+            Format::<Fix>::encode(&self.java_generate_equals_and_hash, 20u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.java_string_check_utf8, &Default::default()) {
+            Format::<Fix>::encode(&self.java_string_check_utf8, 27u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<FileOptionsOptimizeMode>,
+        >::eq(&self.optimize_for, &Default::default()) {
+            Format::<Enum>::encode(&self.optimize_for, 9u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.go_package, &Default::default()) {
+            Format::<Bytes>::encode(&self.go_package, 11u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.cc_generic_services, &Default::default()) {
+            Format::<Fix>::encode(&self.cc_generic_services, 16u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.java_generic_services, &Default::default()) {
+            Format::<Fix>::encode(&self.java_generic_services, 17u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.py_generic_services, &Default::default()) {
+            Format::<Fix>::encode(&self.py_generic_services, 18u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.php_generic_services, &Default::default()) {
+            Format::<Fix>::encode(&self.php_generic_services, 42u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.deprecated, &Default::default()) {
+            Format::<Fix>::encode(&self.deprecated, 23u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.cc_enable_arenas, &Default::default()) {
+            Format::<Fix>::encode(&self.cc_enable_arenas, 31u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.objc_class_prefix, &Default::default()) {
+            Format::<Bytes>::encode(&self.objc_class_prefix, 36u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.csharp_namespace, &Default::default()) {
+            Format::<Bytes>::encode(&self.csharp_namespace, 37u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.swift_prefix, &Default::default()) {
+            Format::<Bytes>::encode(&self.swift_prefix, 39u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.php_class_prefix, &Default::default()) {
+            Format::<Bytes>::encode(&self.php_class_prefix, 40u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.php_namespace, &Default::default()) {
+            Format::<Bytes>::encode(&self.php_namespace, 41u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.php_metadata_namespace, &Default::default()) {
+            Format::<Bytes>::encode(&self.php_metadata_namespace, 44u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.ruby_package, &Default::default()) {
+            Format::<Bytes>::encode(&self.ruby_package, 45u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3108,13 +3354,33 @@ impl binformat::Encodable for MessageOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Fix>::encode(&self.message_set_wire_format, 8u32, buf)?;
-        Format::<Fix>::encode(&self.no_standard_descriptor_accessor, 16u32, buf)?;
-        Format::<Fix>::encode(&self.deprecated, 24u32, buf)?;
-        Format::<Fix>::encode(&self.map_entry, 56u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
-        Format::<Fix>::encode(&self.disabled, 8568u32, buf)?;
-        Format::<Fix>::encode(&self.ignored, 8576u32, buf)?;
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.message_set_wire_format, &Default::default()) {
+            Format::<Fix>::encode(&self.message_set_wire_format, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<bool>,
+        >::eq(&self.no_standard_descriptor_accessor, &Default::default()) {
+            Format::<Fix>::encode(&self.no_standard_descriptor_accessor, 2u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.deprecated, &Default::default()) {
+            Format::<Fix>::encode(&self.deprecated, 3u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.map_entry, &Default::default()) {
+            Format::<Fix>::encode(&self.map_entry, 7u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.disabled, &Default::default()) {
+            Format::<Fix>::encode(&self.disabled, 1071u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.ignored, &Default::default()) {
+            Format::<Fix>::encode(&self.ignored, 1072u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3373,14 +3639,36 @@ impl binformat::Encodable for FieldOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Enum>::encode(&self.ctype, 8u32, buf)?;
-        Format::<Fix>::encode(&self.packed, 16u32, buf)?;
-        Format::<Enum>::encode(&self.jstype, 48u32, buf)?;
-        Format::<Fix>::encode(&self.lazy, 40u32, buf)?;
-        Format::<Fix>::encode(&self.deprecated, 24u32, buf)?;
-        Format::<Fix>::encode(&self.weak, 80u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
-        Format::<Nest>::encode(&self.rules, 8570u32, buf)?;
+        if !PartialEq::<
+            Option<FieldOptionsCType>,
+        >::eq(&self.ctype, &Default::default()) {
+            Format::<Enum>::encode(&self.ctype, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.packed, &Default::default()) {
+            Format::<Fix>::encode(&self.packed, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<FieldOptionsJSType>,
+        >::eq(&self.jstype, &Default::default()) {
+            Format::<Enum>::encode(&self.jstype, 6u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.lazy, &Default::default()) {
+            Format::<Fix>::encode(&self.lazy, 5u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.deprecated, &Default::default()) {
+            Format::<Fix>::encode(&self.deprecated, 3u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.weak, &Default::default()) {
+            Format::<Fix>::encode(&self.weak, 10u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
+        if !PartialEq::<Option<Box<FieldRules>>>::eq(&self.rules, &Default::default()) {
+            Format::<Nest>::encode(&self.rules, 1071u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3486,8 +3774,14 @@ impl binformat::Encodable for OneofOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
-        Format::<Fix>::encode(&self.required, 8568u32, buf)?;
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.required, &Default::default()) {
+            Format::<Fix>::encode(&self.required, 1071u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3619,9 +3913,17 @@ impl binformat::Encodable for EnumOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Fix>::encode(&self.allow_alias, 16u32, buf)?;
-        Format::<Fix>::encode(&self.deprecated, 24u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        if !PartialEq::<Option<bool>>::eq(&self.allow_alias, &Default::default()) {
+            Format::<Fix>::encode(&self.allow_alias, 2u32, buf)?;
+        }
+        if !PartialEq::<Option<bool>>::eq(&self.deprecated, &Default::default()) {
+            Format::<Fix>::encode(&self.deprecated, 3u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3727,8 +4029,14 @@ impl binformat::Encodable for EnumValueOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Fix>::encode(&self.deprecated, 8u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        if !PartialEq::<Option<bool>>::eq(&self.deprecated, &Default::default()) {
+            Format::<Fix>::encode(&self.deprecated, 1u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3834,8 +4142,14 @@ impl binformat::Encodable for ServiceOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Fix>::encode(&self.deprecated, 264u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        if !PartialEq::<Option<bool>>::eq(&self.deprecated, &Default::default()) {
+            Format::<Fix>::encode(&self.deprecated, 33u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -3975,9 +4289,19 @@ impl binformat::Encodable for MethodOptions {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Fix>::encode(&self.deprecated, 264u32, buf)?;
-        Format::<Enum>::encode(&self.idempotency_level, 272u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 7994u32, buf)?;
+        if !PartialEq::<Option<bool>>::eq(&self.deprecated, &Default::default()) {
+            Format::<Fix>::encode(&self.deprecated, 33u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<MethodOptionsIdempotencyLevel>,
+        >::eq(&self.idempotency_level, &Default::default()) {
+            Format::<Enum>::encode(&self.idempotency_level, 34u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<UninterpretedOption>,
+        >::eq(&self.uninterpreted_option, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4201,13 +4525,31 @@ impl binformat::Encodable for UninterpretedOption {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Nest>>::encode(&self.name, 18u32, buf)?;
-        Format::<Bytes>::encode(&self.identifier_value, 26u32, buf)?;
-        Format::<VInt>::encode(&self.positive_int_value, 32u32, buf)?;
-        Format::<VInt>::encode(&self.negative_int_value, 40u32, buf)?;
-        Format::<Fix>::encode(&self.double_value, 49u32, buf)?;
-        Format::<Bytes>::encode(&self.string_value, 58u32, buf)?;
-        Format::<Bytes>::encode(&self.aggregate_value, 66u32, buf)?;
+        if !PartialEq::<
+            Vec<UninterpretedOptionNamePart>,
+        >::eq(&self.name, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.name, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.identifier_value, &Default::default()) {
+            Format::<Bytes>::encode(&self.identifier_value, 3u32, buf)?;
+        }
+        if !PartialEq::<Option<u64>>::eq(&self.positive_int_value, &Default::default()) {
+            Format::<VInt>::encode(&self.positive_int_value, 4u32, buf)?;
+        }
+        if !PartialEq::<Option<i64>>::eq(&self.negative_int_value, &Default::default()) {
+            Format::<VInt>::encode(&self.negative_int_value, 5u32, buf)?;
+        }
+        if !PartialEq::<Option<f64>>::eq(&self.double_value, &Default::default()) {
+            Format::<Fix>::encode(&self.double_value, 6u32, buf)?;
+        }
+        if !PartialEq::<Option<Vec<u8>>>::eq(&self.string_value, &Default::default()) {
+            Format::<Bytes>::encode(&self.string_value, 7u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.aggregate_value, &Default::default()) {
+            Format::<Bytes>::encode(&self.aggregate_value, 8u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4310,8 +4652,12 @@ impl binformat::Encodable for UninterpretedOptionNamePart {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name_part, 10u32, buf)?;
-        Format::<Fix>::encode(&self.is_extension, 16u32, buf)?;
+        if !PartialEq::<String>::eq(&self.name_part, &Default::default()) {
+            Format::<Bytes>::encode(&self.name_part, 1u32, buf)?;
+        }
+        if !PartialEq::<bool>::eq(&self.is_extension, &Default::default()) {
+            Format::<Fix>::encode(&self.is_extension, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4388,7 +4734,11 @@ impl binformat::Encodable for SourceCodeInfo {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Nest>>::encode(&self.location, 10u32, buf)?;
+        if !PartialEq::<
+            Vec<SourceCodeInfoLocation>,
+        >::eq(&self.location, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.location, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4569,11 +4919,29 @@ impl binformat::Encodable for SourceCodeInfoLocation {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<VInt>>::encode(&self.path, 8u32, buf)?;
-        Format::<Repeat::<VInt>>::encode(&self.span, 16u32, buf)?;
-        Format::<Bytes>::encode(&self.leading_comments, 26u32, buf)?;
-        Format::<Bytes>::encode(&self.trailing_comments, 34u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.leading_detached_comments, 50u32, buf)?;
+        if !PartialEq::<Vec<i32>>::eq(&self.path, &Default::default()) {
+            Format::<Repeat::<VInt>>::encode(&self.path, 1u32, buf)?;
+        }
+        if !PartialEq::<Vec<i32>>::eq(&self.span, &Default::default()) {
+            Format::<Repeat::<VInt>>::encode(&self.span, 2u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.leading_comments, &Default::default()) {
+            Format::<Bytes>::encode(&self.leading_comments, 3u32, buf)?;
+        }
+        if !PartialEq::<
+            Option<String>,
+        >::eq(&self.trailing_comments, &Default::default()) {
+            Format::<Bytes>::encode(&self.trailing_comments, 4u32, buf)?;
+        }
+        if !PartialEq::<
+            Vec<String>,
+        >::eq(&self.leading_detached_comments, &Default::default()) {
+            Format::<
+                Repeat::<Bytes>,
+            >::encode(&self.leading_detached_comments, 6u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4650,7 +5018,11 @@ impl binformat::Encodable for GeneratedCodeInfo {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Nest>>::encode(&self.annotation, 10u32, buf)?;
+        if !PartialEq::<
+            Vec<GeneratedCodeInfoAnnotation>,
+        >::eq(&self.annotation, &Default::default()) {
+            Format::<Repeat::<Nest>>::encode(&self.annotation, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -4805,10 +5177,18 @@ impl binformat::Encodable for GeneratedCodeInfoAnnotation {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<VInt>>::encode(&self.path, 8u32, buf)?;
-        Format::<Bytes>::encode(&self.source_file, 18u32, buf)?;
-        Format::<VInt>::encode(&self.begin, 24u32, buf)?;
-        Format::<VInt>::encode(&self.end, 32u32, buf)?;
+        if !PartialEq::<Vec<i32>>::eq(&self.path, &Default::default()) {
+            Format::<Repeat::<VInt>>::encode(&self.path, 1u32, buf)?;
+        }
+        if !PartialEq::<Option<String>>::eq(&self.source_file, &Default::default()) {
+            Format::<Bytes>::encode(&self.source_file, 2u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.begin, &Default::default()) {
+            Format::<VInt>::encode(&self.begin, 3u32, buf)?;
+        }
+        if !PartialEq::<Option<i32>>::eq(&self.end, &Default::default()) {
+            Format::<VInt>::encode(&self.end, 4u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
