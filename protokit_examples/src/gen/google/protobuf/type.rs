@@ -7,8 +7,8 @@ use ::protokit::*;
 use ::protokit as root;
 use root::types::any::*;
 use super::source_context::*;
-use root::types::any::*;
 use super::source_context::*;
+use root::types::any::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Type::default());
     registry.register(&Field::default());
@@ -206,12 +206,25 @@ impl binformat::Encodable for Type {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.fields, 18u32, buf)?;
-        Format::<Repeat::<Bytes>>::encode(&self.oneofs, 26u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.options, 34u32, buf)?;
-        Format::<Nest>::encode(&self.source_context, 42u32, buf)?;
-        Format::<Enum>::encode(&self.syntax, 48u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.fields.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.fields, 2u32, buf)?;
+        }
+        if self.oneofs.should_encode(true) {
+            Format::<Repeat::<Bytes>>::encode(&self.oneofs, 3u32, buf)?;
+        }
+        if self.options.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.options, 4u32, buf)?;
+        }
+        if self.source_context.should_encode(true) {
+            Format::<Nest>::encode(&self.source_context, 5u32, buf)?;
+        }
+        if self.syntax.should_encode(true) {
+            Format::<Enum>::encode(&self.syntax, 6u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -510,16 +523,37 @@ impl binformat::Encodable for Field {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Enum>::encode(&self.kind, 8u32, buf)?;
-        Format::<Enum>::encode(&self.cardinality, 16u32, buf)?;
-        Format::<VInt>::encode(&self.number, 24u32, buf)?;
-        Format::<Bytes>::encode(&self.name, 34u32, buf)?;
-        Format::<Bytes>::encode(&self.type_url, 50u32, buf)?;
-        Format::<VInt>::encode(&self.oneof_index, 56u32, buf)?;
-        Format::<Fix>::encode(&self.packed, 64u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.options, 74u32, buf)?;
-        Format::<Bytes>::encode(&self.json_name, 82u32, buf)?;
-        Format::<Bytes>::encode(&self.default_value, 90u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.kind.should_encode(true) {
+            Format::<Enum>::encode(&self.kind, 1u32, buf)?;
+        }
+        if self.cardinality.should_encode(true) {
+            Format::<Enum>::encode(&self.cardinality, 2u32, buf)?;
+        }
+        if self.number.should_encode(true) {
+            Format::<VInt>::encode(&self.number, 3u32, buf)?;
+        }
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 4u32, buf)?;
+        }
+        if self.type_url.should_encode(true) {
+            Format::<Bytes>::encode(&self.type_url, 6u32, buf)?;
+        }
+        if self.oneof_index.should_encode(true) {
+            Format::<VInt>::encode(&self.oneof_index, 7u32, buf)?;
+        }
+        if self.packed.should_encode(true) {
+            Format::<Fix>::encode(&self.packed, 8u32, buf)?;
+        }
+        if self.options.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.options, 9u32, buf)?;
+        }
+        if self.json_name.should_encode(true) {
+            Format::<Bytes>::encode(&self.json_name, 10u32, buf)?;
+        }
+        if self.default_value.should_encode(true) {
+            Format::<Bytes>::encode(&self.default_value, 11u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -691,11 +725,22 @@ impl binformat::Encodable for Enum {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.enumvalue, 18u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.options, 26u32, buf)?;
-        Format::<Nest>::encode(&self.source_context, 34u32, buf)?;
-        Format::<Enum>::encode(&self.syntax, 40u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.enumvalue.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.enumvalue, 2u32, buf)?;
+        }
+        if self.options.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.options, 3u32, buf)?;
+        }
+        if self.source_context.should_encode(true) {
+            Format::<Nest>::encode(&self.source_context, 4u32, buf)?;
+        }
+        if self.syntax.should_encode(true) {
+            Format::<Enum>::encode(&self.syntax, 5u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -821,9 +866,16 @@ impl binformat::Encodable for EnumValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<VInt>::encode(&self.number, 16u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.options, 26u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.number.should_encode(true) {
+            Format::<VInt>::encode(&self.number, 2u32, buf)?;
+        }
+        if self.options.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.options, 3u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -923,8 +975,13 @@ impl binformat::Encodable for ProtoOption {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Nest>::encode(&self.value, 18u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.value.should_encode(true) {
+            Format::<Nest>::encode(&self.value, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -958,6 +1015,14 @@ impl Default for FieldKind {
     }
 }
 impl binformat::format::ProtoEnum for FieldKind {}
+impl binformat::ShouldEncode for FieldKind {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for FieldKind {
     fn from(v: u32) -> FieldKind {
         match v {
@@ -1128,6 +1193,14 @@ impl Default for FieldCardinality {
     }
 }
 impl binformat::format::ProtoEnum for FieldCardinality {}
+impl binformat::ShouldEncode for FieldCardinality {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for FieldCardinality {
     fn from(v: u32) -> FieldCardinality {
         match v {
@@ -1206,6 +1279,14 @@ impl Default for Syntax {
     }
 }
 impl binformat::format::ProtoEnum for Syntax {}
+impl binformat::ShouldEncode for Syntax {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for Syntax {
     fn from(v: u32) -> Syntax {
         match v {

@@ -227,13 +227,28 @@ impl binformat::Encodable for Api {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.methods, 18u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.options, 26u32, buf)?;
-        Format::<Bytes>::encode(&self.version, 34u32, buf)?;
-        Format::<Nest>::encode(&self.source_context, 42u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.mixins, 50u32, buf)?;
-        Format::<Enum>::encode(&self.syntax, 56u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.methods.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.methods, 2u32, buf)?;
+        }
+        if self.options.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.options, 3u32, buf)?;
+        }
+        if self.version.should_encode(true) {
+            Format::<Bytes>::encode(&self.version, 4u32, buf)?;
+        }
+        if self.source_context.should_encode(true) {
+            Format::<Nest>::encode(&self.source_context, 5u32, buf)?;
+        }
+        if self.mixins.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.mixins, 6u32, buf)?;
+        }
+        if self.syntax.should_encode(true) {
+            Format::<Enum>::encode(&self.syntax, 7u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -457,13 +472,28 @@ impl binformat::Encodable for Method {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.request_type_url, 18u32, buf)?;
-        Format::<Fix>::encode(&self.request_streaming, 24u32, buf)?;
-        Format::<Bytes>::encode(&self.response_type_url, 34u32, buf)?;
-        Format::<Fix>::encode(&self.response_streaming, 40u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.options, 50u32, buf)?;
-        Format::<Enum>::encode(&self.syntax, 56u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.request_type_url.should_encode(true) {
+            Format::<Bytes>::encode(&self.request_type_url, 2u32, buf)?;
+        }
+        if self.request_streaming.should_encode(true) {
+            Format::<Fix>::encode(&self.request_streaming, 3u32, buf)?;
+        }
+        if self.response_type_url.should_encode(true) {
+            Format::<Bytes>::encode(&self.response_type_url, 4u32, buf)?;
+        }
+        if self.response_streaming.should_encode(true) {
+            Format::<Fix>::encode(&self.response_streaming, 5u32, buf)?;
+        }
+        if self.options.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.options, 6u32, buf)?;
+        }
+        if self.syntax.should_encode(true) {
+            Format::<Enum>::encode(&self.syntax, 7u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -563,8 +593,13 @@ impl binformat::Encodable for Mixin {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.root, 18u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(true) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.root.should_encode(true) {
+            Format::<Bytes>::encode(&self.root, 2u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

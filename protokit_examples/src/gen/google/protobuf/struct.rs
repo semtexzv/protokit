@@ -84,7 +84,10 @@ impl binformat::Encodable for Struct {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Map::<Bytes, Nest>>::encode(&self.fields, 10u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.fields.should_encode(true) {
+            Format::<Map::<Bytes, Nest>>::encode(&self.fields, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -313,24 +316,25 @@ impl binformat::Encodable for Value {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
+        use binformat::ShouldEncode;
         match &self.kind {
             ValueOneOfKind::NullValue(value) => {
-                Format::<Enum>::encode(value, 8u32, buf)?;
+                Format::<Enum>::encode(value, 1u32, buf)?;
             }
             ValueOneOfKind::NumberValue(value) => {
-                Format::<Fix>::encode(value, 17u32, buf)?;
+                Format::<Fix>::encode(value, 2u32, buf)?;
             }
             ValueOneOfKind::StringValue(value) => {
-                Format::<Bytes>::encode(value, 26u32, buf)?;
+                Format::<Bytes>::encode(value, 3u32, buf)?;
             }
             ValueOneOfKind::BoolValue(value) => {
-                Format::<Fix>::encode(value, 32u32, buf)?;
+                Format::<Fix>::encode(value, 4u32, buf)?;
             }
             ValueOneOfKind::StructValue(value) => {
-                Format::<Nest>::encode(value, 42u32, buf)?;
+                Format::<Nest>::encode(value, 5u32, buf)?;
             }
             ValueOneOfKind::ListValue(value) => {
-                Format::<Nest>::encode(value, 50u32, buf)?;
+                Format::<Nest>::encode(value, 6u32, buf)?;
             }
             ValueOneOfKind::Unknown(..) => {}
         }
@@ -348,6 +352,14 @@ pub enum ValueOneOfKind {
     StructValue(Struct),
     ListValue(ListValue),
     Unknown(::core::marker::PhantomData<()>),
+}
+impl binformat::ShouldEncode for ValueOneOfKind {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
 }
 impl Default for ValueOneOfKind {
     fn default() -> Self {
@@ -426,7 +438,10 @@ impl binformat::Encodable for ListValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Nest>>::encode(&self.values, 10u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.values.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.values, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -442,6 +457,14 @@ impl Default for NullValue {
     }
 }
 impl binformat::format::ProtoEnum for NullValue {}
+impl binformat::ShouldEncode for NullValue {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for NullValue {
     fn from(v: u32) -> NullValue {
         match v {

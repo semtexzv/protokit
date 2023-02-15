@@ -2,6 +2,7 @@
 #![feature(const_mut_refs)]
 #![feature(new_uninit)]
 
+use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
 use anyhow::{anyhow, bail};
@@ -25,8 +26,8 @@ pub trait Decodable {
 }
 
 impl<T> Decodable for Box<T>
-where
-    T: Decodable,
+    where
+        T: Decodable,
 {
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         self.deref_mut().merge_field(tag, buf)
@@ -34,8 +35,8 @@ where
 }
 
 impl<T> Decodable for Option<Box<T>>
-where
-    T: Decodable + Default,
+    where
+        T: Decodable + Default,
 {
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         self.get_or_insert_with(Default::default)
@@ -55,8 +56,8 @@ pub trait Encodable {
 }
 
 impl<T> Encodable for Box<T>
-where
-    T: Encodable,
+    where
+        T: Encodable,
 {
     fn qualified_name(&self) -> &'static str {
         self.deref().qualified_name()
@@ -68,8 +69,8 @@ where
 }
 
 impl<T> Encodable for Option<Box<T>>
-where
-    T: Encodable + Default,
+    where
+        T: Encodable + Default,
 {
     fn qualified_name(&self) -> &'static str {
         T::default().qualified_name()
@@ -105,7 +106,7 @@ impl Decodable for () {
         match (tag & 0b111) as u8 {
             VINT => {
                 let (_vint, len) = u64::decode_var(buf).ok_or_else(|| anyhow!("reading uint"))?;
-                Ok(&buf[len ..])
+                Ok(&buf[len..])
             }
             FIX64 => {
                 let mut v = 0;
@@ -123,7 +124,7 @@ impl Decodable for () {
                 if buf.len() < (datalen as usize).saturating_add(vlen) {
                     return Err(anyhow::Error::msg("Mising data"));
                 }
-                Ok(&buf[(datalen as usize) + vlen ..])
+                Ok(&buf[(datalen as usize) + vlen..])
             }
             other => bail!("Unknown wire type {other}"),
         }
@@ -153,4 +154,39 @@ pub fn encode<T: Encodable>(v: &T) -> Result<WriteBuffer> {
     let mut buf = WriteBuffer::new();
     v.encode(&mut buf)?;
     Ok(buf)
+}
+
+pub trait ShouldEncode {
+    fn should_encode(&self, proto3: bool) -> bool { true }
+}
+
+macro_rules! should_not_default {
+    ($($t:ty),*) => {
+        $(impl ShouldEncode for $t {
+            fn should_encode(&self, proto3: bool) -> bool {
+                self != &<$t>::default()
+            }
+        })*
+    };
+}
+
+should_not_default!(i32, u32, i64, u64, f32, f64, bool, String);
+
+impl<T> ShouldEncode for Vec<T> {
+    fn should_encode(&self, proto3: bool) -> bool {
+        !self.is_empty()
+    }
+}
+
+impl<T> ShouldEncode for Option<T> {
+    fn should_encode(&self, proto3: bool) -> bool {
+        self.is_some()
+    }
+}
+
+
+impl<K, V> ShouldEncode for HashMap<K, V> {
+    fn should_encode(&self, proto3: bool) -> bool {
+        !self.is_empty()
+    }
 }

@@ -232,7 +232,7 @@ impl CodeGenerator<'_> {
     }
     pub fn type_to_encoder(&self, f: &FieldDef, force_packed: bool) -> Result<TokenStream> {
         let format = self.type_to_binformat(f, force_packed)?;
-        Ok(quote! { Format::<#format>  })
+        Ok(quote! { Format::<#format>::encode })
     }
     pub fn type_to_decoder(&self, f: &FieldDef) -> Result<TokenStream> {
         let format = self.type_to_binformat(f, false)?;
@@ -255,9 +255,10 @@ impl CodeGenerator<'_> {
         let encode_fn = self.type_to_encoder(&field, file.syntax == Syntax::Proto3).unwrap();
 
         let force_include = file.syntax == Proto3 && field.frequency == Frequency::Optional && field.is_message();
+        let proto3 = file.syntax == Proto3;
 
         out.bin_encoders.push(quote! {
-            if !PartialEq::<#typ>::eq(&self.#name, &Default::default()) {
+            if self.#name.should_encode(#proto3) {
                 #encode_fn(&self.#name, #field_num, buf)?;
             }
         });
@@ -753,6 +754,7 @@ impl CodeGenerator<'_> {
                 }
                 fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
                     use binformat::format::*;
+                    use binformat::ShouldEncode;
                     #(#bin_encoders)*
                     binformat::Encodable::encode(&self._unknown, buf)?;
                     Ok(())
@@ -790,6 +792,14 @@ impl CodeGenerator<'_> {
             pub enum #oneof_type  {
                 #(#fields,)*
                 Unknown(::core::marker::PhantomData<()>),
+            }
+            impl binformat::ShouldEncode for #oneof_type {
+                fn should_encode(&self, proto3: bool) -> bool {
+                    match self {
+                        Self::Unknown(_) => false,
+                        _ => true,
+                    }
+                }
             }
             impl Default for #oneof_type {
                 fn default() -> Self {
@@ -861,6 +871,14 @@ impl CodeGenerator<'_> {
             }
             impl binformat::format::ProtoEnum for #enum_name {
 
+            }
+            impl binformat::ShouldEncode for #enum_name {
+                fn should_encode(&self, proto3: bool) -> bool {
+                    match self  {
+                        Self::Unknown(_) => false,
+                        _ => true
+                    }
+                }
             }
             impl From<u32> for #enum_name {
                 fn from(v: u32) -> #enum_name {

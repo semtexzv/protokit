@@ -107,9 +107,8 @@ impl binformat::Encodable for FieldRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<
-            Option<Box<MessageRules>>,
-        >::eq(&self.message, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.message.should_encode(false) {
             Format::<Nest>::encode(&self.message, 17u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -373,28 +372,29 @@ impl binformat::Encodable for FloatRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<f32>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Fix>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<f32>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Fix>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<f32>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Fix>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<f32>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Fix>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<f32>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Fix>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<f32>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<f32>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -658,28 +658,29 @@ impl binformat::Encodable for DoubleRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<f64>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Fix>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<f64>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Fix>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<f64>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Fix>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<f64>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Fix>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<f64>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Fix>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<f64>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<f64>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -943,28 +944,29 @@ impl binformat::Encodable for Int32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<i32>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<VInt>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<VInt>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<VInt>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<VInt>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<VInt>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -1228,28 +1230,29 @@ impl binformat::Encodable for Int64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<i64>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<VInt>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<VInt>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<VInt>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<VInt>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<VInt>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<i64>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<i64>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -1513,28 +1516,29 @@ impl binformat::Encodable for UInt32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<u32>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<VInt>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<VInt>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<VInt>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<VInt>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<VInt>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<u32>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<u32>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -1798,28 +1802,29 @@ impl binformat::Encodable for UInt64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<u64>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<VInt>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<VInt>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<VInt>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<VInt>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<VInt>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<u64>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<u64>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -2083,28 +2088,29 @@ impl binformat::Encodable for SInt32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<i32>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<SInt>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<SInt>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<SInt>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<SInt>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<SInt>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<SInt>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<SInt>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -2368,28 +2374,29 @@ impl binformat::Encodable for SInt64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<i64>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<SInt>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<SInt>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<SInt>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<SInt>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<SInt>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<i64>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<SInt>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<i64>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<SInt>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -2653,28 +2660,29 @@ impl binformat::Encodable for Fixed32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<u32>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Fix>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Fix>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Fix>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Fix>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<u32>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Fix>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<u32>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<u32>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -2938,28 +2946,29 @@ impl binformat::Encodable for Fixed64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<u64>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Fix>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Fix>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Fix>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Fix>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Fix>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<u64>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<u64>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -3223,28 +3232,29 @@ impl binformat::Encodable for SFixed32Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<i32>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Fix>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Fix>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Fix>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Fix>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<i32>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Fix>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -3508,28 +3518,29 @@ impl binformat::Encodable for SFixed64Rules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<i64>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Fix>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Fix>::encode(&self.lt, 2u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Fix>::encode(&self.lte, 3u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Fix>::encode(&self.gt, 4u32, buf)?;
         }
-        if !PartialEq::<Option<i64>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Fix>::encode(&self.gte, 5u32, buf)?;
         }
-        if !PartialEq::<Vec<i64>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.r#in, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<i64>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Fix>>::encode(&self.not_in, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -3611,7 +3622,8 @@ impl binformat::Encodable for BoolRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<bool>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Fix>::encode(&self.r#const, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -4059,52 +4071,53 @@ impl binformat::Encodable for StringRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<String>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Bytes>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.len, &Default::default()) {
+        if self.len.should_encode(false) {
             Format::<VInt>::encode(&self.len, 19u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.min_len, &Default::default()) {
+        if self.min_len.should_encode(false) {
             Format::<VInt>::encode(&self.min_len, 2u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.max_len, &Default::default()) {
+        if self.max_len.should_encode(false) {
             Format::<VInt>::encode(&self.max_len, 3u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.len_bytes, &Default::default()) {
+        if self.len_bytes.should_encode(false) {
             Format::<VInt>::encode(&self.len_bytes, 20u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.min_bytes, &Default::default()) {
+        if self.min_bytes.should_encode(false) {
             Format::<VInt>::encode(&self.min_bytes, 4u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.max_bytes, &Default::default()) {
+        if self.max_bytes.should_encode(false) {
             Format::<VInt>::encode(&self.max_bytes, 5u32, buf)?;
         }
-        if !PartialEq::<Option<String>>::eq(&self.pattern, &Default::default()) {
+        if self.pattern.should_encode(false) {
             Format::<Bytes>::encode(&self.pattern, 6u32, buf)?;
         }
-        if !PartialEq::<Option<String>>::eq(&self.prefix, &Default::default()) {
+        if self.prefix.should_encode(false) {
             Format::<Bytes>::encode(&self.prefix, 7u32, buf)?;
         }
-        if !PartialEq::<Option<String>>::eq(&self.suffix, &Default::default()) {
+        if self.suffix.should_encode(false) {
             Format::<Bytes>::encode(&self.suffix, 8u32, buf)?;
         }
-        if !PartialEq::<Option<String>>::eq(&self.contains, &Default::default()) {
+        if self.contains.should_encode(false) {
             Format::<Bytes>::encode(&self.contains, 9u32, buf)?;
         }
-        if !PartialEq::<Option<String>>::eq(&self.not_contains, &Default::default()) {
+        if self.not_contains.should_encode(false) {
             Format::<Bytes>::encode(&self.not_contains, 23u32, buf)?;
         }
-        if !PartialEq::<Vec<String>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Bytes>>::encode(&self.r#in, 10u32, buf)?;
         }
-        if !PartialEq::<Vec<String>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Bytes>>::encode(&self.not_in, 11u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.strict, &Default::default()) {
+        if self.strict.should_encode(false) {
             Format::<Fix>::encode(&self.strict, 25u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 26u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -4425,37 +4438,38 @@ impl binformat::Encodable for BytesRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<Vec<u8>>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<Bytes>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.len, &Default::default()) {
+        if self.len.should_encode(false) {
             Format::<VInt>::encode(&self.len, 13u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.min_len, &Default::default()) {
+        if self.min_len.should_encode(false) {
             Format::<VInt>::encode(&self.min_len, 2u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.max_len, &Default::default()) {
+        if self.max_len.should_encode(false) {
             Format::<VInt>::encode(&self.max_len, 3u32, buf)?;
         }
-        if !PartialEq::<Option<String>>::eq(&self.pattern, &Default::default()) {
+        if self.pattern.should_encode(false) {
             Format::<Bytes>::encode(&self.pattern, 4u32, buf)?;
         }
-        if !PartialEq::<Option<Vec<u8>>>::eq(&self.prefix, &Default::default()) {
+        if self.prefix.should_encode(false) {
             Format::<Bytes>::encode(&self.prefix, 5u32, buf)?;
         }
-        if !PartialEq::<Option<Vec<u8>>>::eq(&self.suffix, &Default::default()) {
+        if self.suffix.should_encode(false) {
             Format::<Bytes>::encode(&self.suffix, 6u32, buf)?;
         }
-        if !PartialEq::<Option<Vec<u8>>>::eq(&self.contains, &Default::default()) {
+        if self.contains.should_encode(false) {
             Format::<Bytes>::encode(&self.contains, 7u32, buf)?;
         }
-        if !PartialEq::<Vec<Vec<u8>>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Bytes>>::encode(&self.r#in, 8u32, buf)?;
         }
-        if !PartialEq::<Vec<Vec<u8>>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Bytes>>::encode(&self.not_in, 9u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 14u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -4615,16 +4629,17 @@ impl binformat::Encodable for EnumRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<i32>>::eq(&self.r#const, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.r#const.should_encode(false) {
             Format::<VInt>::encode(&self.r#const, 1u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.defined_only, &Default::default()) {
+        if self.defined_only.should_encode(false) {
             Format::<Fix>::encode(&self.defined_only, 2u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.r#in, 3u32, buf)?;
         }
-        if !PartialEq::<Vec<i32>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<VInt>>::encode(&self.not_in, 4u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -4732,10 +4747,11 @@ impl binformat::Encodable for MessageRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<bool>>::eq(&self.skip, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.skip.should_encode(false) {
             Format::<Fix>::encode(&self.skip, 1u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.required, &Default::default()) {
+        if self.required.should_encode(false) {
             Format::<Fix>::encode(&self.required, 2u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -4918,19 +4934,20 @@ impl binformat::Encodable for RepeatedRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<u64>>::eq(&self.min_items, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.min_items.should_encode(false) {
             Format::<VInt>::encode(&self.min_items, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.max_items, &Default::default()) {
+        if self.max_items.should_encode(false) {
             Format::<VInt>::encode(&self.max_items, 2u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.unique, &Default::default()) {
+        if self.unique.should_encode(false) {
             Format::<Fix>::encode(&self.unique, 3u32, buf)?;
         }
-        if !PartialEq::<Option<Box<FieldRules>>>::eq(&self.items, &Default::default()) {
+        if self.items.should_encode(false) {
             Format::<Nest>::encode(&self.items, 4u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 5u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -5136,22 +5153,23 @@ impl binformat::Encodable for MapRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<u64>>::eq(&self.min_pairs, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.min_pairs.should_encode(false) {
             Format::<VInt>::encode(&self.min_pairs, 1u32, buf)?;
         }
-        if !PartialEq::<Option<u64>>::eq(&self.max_pairs, &Default::default()) {
+        if self.max_pairs.should_encode(false) {
             Format::<VInt>::encode(&self.max_pairs, 2u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.no_sparse, &Default::default()) {
+        if self.no_sparse.should_encode(false) {
             Format::<Fix>::encode(&self.no_sparse, 3u32, buf)?;
         }
-        if !PartialEq::<Option<Box<FieldRules>>>::eq(&self.keys, &Default::default()) {
+        if self.keys.should_encode(false) {
             Format::<Nest>::encode(&self.keys, 4u32, buf)?;
         }
-        if !PartialEq::<Option<Box<FieldRules>>>::eq(&self.values, &Default::default()) {
+        if self.values.should_encode(false) {
             Format::<Nest>::encode(&self.values, 5u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.ignore_empty, &Default::default()) {
+        if self.ignore_empty.should_encode(false) {
             Format::<Fix>::encode(&self.ignore_empty, 6u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -5279,13 +5297,14 @@ impl binformat::Encodable for AnyRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<bool>>::eq(&self.required, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.required.should_encode(false) {
             Format::<Fix>::encode(&self.required, 1u32, buf)?;
         }
-        if !PartialEq::<Vec<String>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Bytes>>::encode(&self.r#in, 2u32, buf)?;
         }
-        if !PartialEq::<Vec<String>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Bytes>>::encode(&self.not_in, 3u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -5528,28 +5547,29 @@ impl binformat::Encodable for DurationRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<bool>>::eq(&self.required, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.required.should_encode(false) {
             Format::<Fix>::encode(&self.required, 1u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Duration>>>::eq(&self.r#const, &Default::default()) {
+        if self.r#const.should_encode(false) {
             Format::<Nest>::encode(&self.r#const, 2u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Duration>>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Nest>::encode(&self.lt, 3u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Duration>>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Nest>::encode(&self.lte, 4u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Duration>>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Nest>::encode(&self.gt, 5u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Duration>>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Nest>::encode(&self.gte, 6u32, buf)?;
         }
-        if !PartialEq::<Vec<Duration>>::eq(&self.r#in, &Default::default()) {
+        if self.r#in.should_encode(false) {
             Format::<Repeat::<Nest>>::encode(&self.r#in, 7u32, buf)?;
         }
-        if !PartialEq::<Vec<Duration>>::eq(&self.not_in, &Default::default()) {
+        if self.not_in.should_encode(false) {
             Format::<Repeat::<Nest>>::encode(&self.not_in, 8u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -5821,31 +5841,32 @@ impl binformat::Encodable for TimestampRules {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Option<bool>>::eq(&self.required, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.required.should_encode(false) {
             Format::<Fix>::encode(&self.required, 1u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Timestamp>>>::eq(&self.r#const, &Default::default()) {
+        if self.r#const.should_encode(false) {
             Format::<Nest>::encode(&self.r#const, 2u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Timestamp>>>::eq(&self.lt, &Default::default()) {
+        if self.lt.should_encode(false) {
             Format::<Nest>::encode(&self.lt, 3u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Timestamp>>>::eq(&self.lte, &Default::default()) {
+        if self.lte.should_encode(false) {
             Format::<Nest>::encode(&self.lte, 4u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Timestamp>>>::eq(&self.gt, &Default::default()) {
+        if self.gt.should_encode(false) {
             Format::<Nest>::encode(&self.gt, 5u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Timestamp>>>::eq(&self.gte, &Default::default()) {
+        if self.gte.should_encode(false) {
             Format::<Nest>::encode(&self.gte, 6u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.lt_now, &Default::default()) {
+        if self.lt_now.should_encode(false) {
             Format::<Fix>::encode(&self.lt_now, 7u32, buf)?;
         }
-        if !PartialEq::<Option<bool>>::eq(&self.gt_now, &Default::default()) {
+        if self.gt_now.should_encode(false) {
             Format::<Fix>::encode(&self.gt_now, 8u32, buf)?;
         }
-        if !PartialEq::<Option<Box<Duration>>>::eq(&self.within, &Default::default()) {
+        if self.within.should_encode(false) {
             Format::<Nest>::encode(&self.within, 9u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -5865,6 +5886,14 @@ impl Default for KnownRegex {
     }
 }
 impl binformat::format::ProtoEnum for KnownRegex {}
+impl binformat::ShouldEncode for KnownRegex {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for KnownRegex {
     fn from(v: u32) -> KnownRegex {
         match v {

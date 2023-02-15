@@ -83,7 +83,8 @@ impl binformat::Encodable for FailureSet {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Vec<String>>::eq(&self.failure, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.failure.should_encode(true) {
             Format::<Repeat::<Bytes>>::encode(&self.failure, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -373,23 +374,20 @@ impl binformat::Encodable for ConformanceRequest {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<
-            WireFormat,
-        >::eq(&self.requested_output_format, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.requested_output_format.should_encode(true) {
             Format::<Enum>::encode(&self.requested_output_format, 3u32, buf)?;
         }
-        if !PartialEq::<String>::eq(&self.message_type, &Default::default()) {
+        if self.message_type.should_encode(true) {
             Format::<Bytes>::encode(&self.message_type, 4u32, buf)?;
         }
-        if !PartialEq::<TestCategory>::eq(&self.test_category, &Default::default()) {
+        if self.test_category.should_encode(true) {
             Format::<Enum>::encode(&self.test_category, 5u32, buf)?;
         }
-        if !PartialEq::<
-            Option<Box<JspbEncodingConfig>>,
-        >::eq(&self.jspb_encoding_options, &Default::default()) {
+        if self.jspb_encoding_options.should_encode(true) {
             Format::<Nest>::encode(&self.jspb_encoding_options, 6u32, buf)?;
         }
-        if !PartialEq::<bool>::eq(&self.print_unknown_fields, &Default::default()) {
+        if self.print_unknown_fields.should_encode(true) {
             Format::<Fix>::encode(&self.print_unknown_fields, 9u32, buf)?;
         }
         match &self.payload {
@@ -419,6 +417,14 @@ pub enum ConformanceRequestOneOfPayload {
     JspbPayload(String),
     TextPayload(String),
     Unknown(::core::marker::PhantomData<()>),
+}
+impl binformat::ShouldEncode for ConformanceRequestOneOfPayload {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
 }
 impl Default for ConformanceRequestOneOfPayload {
     fn default() -> Self {
@@ -712,6 +718,7 @@ impl binformat::Encodable for ConformanceResponse {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
+        use binformat::ShouldEncode;
         match &self.result {
             ConformanceResponseOneOfResult::ParseError(value) => {
                 Format::<Bytes>::encode(value, 1u32, buf)?;
@@ -759,6 +766,14 @@ pub enum ConformanceResponseOneOfResult {
     JspbPayload(String),
     TextPayload(String),
     Unknown(::core::marker::PhantomData<()>),
+}
+impl binformat::ShouldEncode for ConformanceResponseOneOfResult {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
 }
 impl Default for ConformanceResponseOneOfResult {
     fn default() -> Self {
@@ -844,7 +859,8 @@ impl binformat::Encodable for JspbEncodingConfig {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<bool>::eq(&self.use_jspb_array_any_format, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.use_jspb_array_any_format.should_encode(true) {
             Format::<Fix>::encode(&self.use_jspb_array_any_format, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -866,6 +882,14 @@ impl Default for WireFormat {
     }
 }
 impl binformat::format::ProtoEnum for WireFormat {}
+impl binformat::ShouldEncode for WireFormat {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for WireFormat {
     fn from(v: u32) -> WireFormat {
         match v {
@@ -950,6 +974,14 @@ impl Default for TestCategory {
     }
 }
 impl binformat::format::ProtoEnum for TestCategory {}
+impl binformat::ShouldEncode for TestCategory {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for TestCategory {
     fn from(v: u32) -> TestCategory {
         match v {

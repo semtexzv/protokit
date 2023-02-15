@@ -389,23 +389,46 @@ impl binformat::Encodable for Book {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.title, 26u32, buf)?;
-        Format::<Bytes>::encode(&self.author, 34u32, buf)?;
-        Format::<VInt>::encode(&self.x, 1848u32, buf)?;
-        Format::<Pack::<VInt>>::encode(&self.pack, 2586u32, buf)?;
-        Format::<Pack::<Fix>>::encode(&self.pack2, 25866u32, buf)?;
-        Format::<Repeat::<Enum>>::encode(&self.category, 258u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.sections, 642u32, buf)?;
-        Format::<Map::<Bytes, Bytes>>::encode(&self.test1, 2578u32, buf)?;
-        Format::<Nest>::encode(&self.other, 282u32, buf)?;
-        Format::<Nest>::encode(&self.book, 2570570u32, buf)?;
-        Format::<Bytes>::encode(&self.extfield, 530u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.title.should_encode(true) {
+            Format::<Bytes>::encode(&self.title, 3u32, buf)?;
+        }
+        if self.author.should_encode(true) {
+            Format::<Bytes>::encode(&self.author, 4u32, buf)?;
+        }
+        if self.x.should_encode(true) {
+            Format::<VInt>::encode(&self.x, 231u32, buf)?;
+        }
+        if self.pack.should_encode(true) {
+            Format::<Pack::<VInt>>::encode(&self.pack, 323u32, buf)?;
+        }
+        if self.pack2.should_encode(true) {
+            Format::<Pack::<Fix>>::encode(&self.pack2, 3233u32, buf)?;
+        }
+        if self.category.should_encode(true) {
+            Format::<Repeat::<Enum>>::encode(&self.category, 32u32, buf)?;
+        }
+        if self.sections.should_encode(true) {
+            Format::<Repeat::<Nest>>::encode(&self.sections, 80u32, buf)?;
+        }
+        if self.test1.should_encode(true) {
+            Format::<Map::<Bytes, Bytes>>::encode(&self.test1, 322u32, buf)?;
+        }
+        if self.other.should_encode(true) {
+            Format::<Nest>::encode(&self.other, 35u32, buf)?;
+        }
+        if self.book.should_encode(true) {
+            Format::<Nest>::encode(&self.book, 321321u32, buf)?;
+        }
+        if self.extfield.should_encode(true) {
+            Format::<Bytes>::encode(&self.extfield, 66u32, buf)?;
+        }
         match &self.id {
             BookOneOfId::Local(value) => {
-                Format::<VInt>::encode(value, 8u32, buf)?;
+                Format::<VInt>::encode(value, 1u32, buf)?;
             }
             BookOneOfId::Isbn(value) => {
-                Format::<Bytes>::encode(value, 18u32, buf)?;
+                Format::<Bytes>::encode(value, 2u32, buf)?;
             }
             BookOneOfId::Unknown(..) => {}
         }
@@ -419,6 +442,14 @@ pub enum BookOneOfId {
     Local(i32),
     Isbn(String),
     Unknown(::core::marker::PhantomData<()>),
+}
+impl binformat::ShouldEncode for BookOneOfId {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
 }
 impl Default for BookOneOfId {
     fn default() -> Self {
@@ -497,7 +528,10 @@ impl binformat::Encodable for BookSection {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.contents, 10u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.contents.should_encode(true) {
+            Format::<Bytes>::encode(&self.contents, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -515,6 +549,14 @@ impl Default for Category {
     }
 }
 impl binformat::format::ProtoEnum for Category {}
+impl binformat::ShouldEncode for Category {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for Category {
     fn from(v: u32) -> Category {
         match v {

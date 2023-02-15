@@ -91,7 +91,8 @@ impl binformat::Encodable for DoubleValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<f64>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<Fix>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -173,7 +174,8 @@ impl binformat::Encodable for FloatValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<f32>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<Fix>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -255,7 +257,8 @@ impl binformat::Encodable for Int64Value {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<i64>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<VInt>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -337,7 +340,8 @@ impl binformat::Encodable for UInt64Value {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<u64>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<VInt>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -419,7 +423,8 @@ impl binformat::Encodable for Int32Value {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<i32>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<VInt>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -501,7 +506,8 @@ impl binformat::Encodable for UInt32Value {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<u32>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<VInt>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -583,7 +589,8 @@ impl binformat::Encodable for BoolValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<bool>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<Fix>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -662,7 +669,8 @@ impl binformat::Encodable for StringValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<String>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<Bytes>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -741,7 +749,8 @@ impl binformat::Encodable for BytesValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Vec<u8>>::eq(&self.value, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.value.should_encode(true) {
             Format::<Bytes>::encode(&self.value, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;

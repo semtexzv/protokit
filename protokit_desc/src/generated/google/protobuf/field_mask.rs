@@ -80,7 +80,8 @@ impl binformat::Encodable for FieldMask {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Vec<String>>::eq(&self.paths, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.paths.should_encode(true) {
             Format::<Repeat::<Bytes>>::encode(&self.paths, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;

@@ -56,6 +56,7 @@ impl binformat::Encodable for Empty {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
+        use binformat::ShouldEncode;
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }

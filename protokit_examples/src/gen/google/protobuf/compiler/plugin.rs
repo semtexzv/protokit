@@ -163,10 +163,19 @@ impl binformat::Encodable for Version {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<VInt>::encode(&self.major, 8u32, buf)?;
-        Format::<VInt>::encode(&self.minor, 16u32, buf)?;
-        Format::<VInt>::encode(&self.patch, 24u32, buf)?;
-        Format::<Bytes>::encode(&self.suffix, 34u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.major.should_encode(false) {
+            Format::<VInt>::encode(&self.major, 1u32, buf)?;
+        }
+        if self.minor.should_encode(false) {
+            Format::<VInt>::encode(&self.minor, 2u32, buf)?;
+        }
+        if self.patch.should_encode(false) {
+            Format::<VInt>::encode(&self.patch, 3u32, buf)?;
+        }
+        if self.suffix.should_encode(false) {
+            Format::<Bytes>::encode(&self.suffix, 4u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -314,10 +323,19 @@ impl binformat::Encodable for CodeGeneratorRequest {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Repeat::<Bytes>>::encode(&self.file_to_generate, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.parameter, 18u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.proto_file, 122u32, buf)?;
-        Format::<Nest>::encode(&self.compiler_version, 26u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.file_to_generate.should_encode(false) {
+            Format::<Repeat::<Bytes>>::encode(&self.file_to_generate, 1u32, buf)?;
+        }
+        if self.parameter.should_encode(false) {
+            Format::<Bytes>::encode(&self.parameter, 2u32, buf)?;
+        }
+        if self.proto_file.should_encode(false) {
+            Format::<Repeat::<Nest>>::encode(&self.proto_file, 15u32, buf)?;
+        }
+        if self.compiler_version.should_encode(false) {
+            Format::<Nest>::encode(&self.compiler_version, 3u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -443,9 +461,16 @@ impl binformat::Encodable for CodeGeneratorResponse {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.error, 10u32, buf)?;
-        Format::<VInt>::encode(&self.supported_features, 16u32, buf)?;
-        Format::<Repeat::<Nest>>::encode(&self.file, 122u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.error.should_encode(false) {
+            Format::<Bytes>::encode(&self.error, 1u32, buf)?;
+        }
+        if self.supported_features.should_encode(false) {
+            Format::<VInt>::encode(&self.supported_features, 2u32, buf)?;
+        }
+        if self.file.should_encode(false) {
+            Format::<Repeat::<Nest>>::encode(&self.file, 15u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -593,10 +618,19 @@ impl binformat::Encodable for CodeGeneratorResponseFile {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.name, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.insertion_point, 18u32, buf)?;
-        Format::<Bytes>::encode(&self.content, 122u32, buf)?;
-        Format::<Nest>::encode(&self.generated_code_info, 130u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.name.should_encode(false) {
+            Format::<Bytes>::encode(&self.name, 1u32, buf)?;
+        }
+        if self.insertion_point.should_encode(false) {
+            Format::<Bytes>::encode(&self.insertion_point, 2u32, buf)?;
+        }
+        if self.content.should_encode(false) {
+            Format::<Bytes>::encode(&self.content, 15u32, buf)?;
+        }
+        if self.generated_code_info.should_encode(false) {
+            Format::<Nest>::encode(&self.generated_code_info, 16u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
@@ -613,6 +647,14 @@ impl Default for CodeGeneratorResponseFeature {
     }
 }
 impl binformat::format::ProtoEnum for CodeGeneratorResponseFeature {}
+impl binformat::ShouldEncode for CodeGeneratorResponseFeature {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for CodeGeneratorResponseFeature {
     fn from(v: u32) -> CodeGeneratorResponseFeature {
         match v {

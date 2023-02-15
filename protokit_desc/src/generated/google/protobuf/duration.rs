@@ -109,10 +109,11 @@ impl binformat::Encodable for Duration {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<i64>::eq(&self.seconds, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.seconds.should_encode(true) {
             Format::<VInt>::encode(&self.seconds, 1u32, buf)?;
         }
-        if !PartialEq::<i32>::eq(&self.nanos, &Default::default()) {
+        if self.nanos.should_encode(true) {
             Format::<VInt>::encode(&self.nanos, 2u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;

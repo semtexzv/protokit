@@ -84,9 +84,8 @@ impl binformat::Encodable for Struct {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<
-            ::std::collections::HashMap<String, Value>,
-        >::eq(&self.fields, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.fields.should_encode(true) {
             Format::<Map::<Bytes, Nest>>::encode(&self.fields, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -317,6 +316,7 @@ impl binformat::Encodable for Value {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
+        use binformat::ShouldEncode;
         match &self.kind {
             ValueOneOfKind::NullValue(value) => {
                 Format::<Enum>::encode(value, 1u32, buf)?;
@@ -352,6 +352,14 @@ pub enum ValueOneOfKind {
     StructValue(Struct),
     ListValue(ListValue),
     Unknown(::core::marker::PhantomData<()>),
+}
+impl binformat::ShouldEncode for ValueOneOfKind {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
 }
 impl Default for ValueOneOfKind {
     fn default() -> Self {
@@ -430,7 +438,8 @@ impl binformat::Encodable for ListValue {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        if !PartialEq::<Vec<Value>>::eq(&self.values, &Default::default()) {
+        use binformat::ShouldEncode;
+        if self.values.should_encode(true) {
             Format::<Repeat::<Nest>>::encode(&self.values, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
@@ -448,6 +457,14 @@ impl Default for NullValue {
     }
 }
 impl binformat::format::ProtoEnum for NullValue {}
+impl binformat::ShouldEncode for NullValue {
+    fn should_encode(&self, proto3: bool) -> bool {
+        match self {
+            Self::Unknown(_) => false,
+            _ => true,
+        }
+    }
+}
 impl From<u32> for NullValue {
     fn from(v: u32) -> NullValue {
         match v {

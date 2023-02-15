@@ -80,7 +80,10 @@ impl binformat::Encodable for SourceContext {
     }
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
         use binformat::format::*;
-        Format::<Bytes>::encode(&self.file_name, 10u32, buf)?;
+        use binformat::ShouldEncode;
+        if self.file_name.should_encode(true) {
+            Format::<Bytes>::encode(&self.file_name, 1u32, buf)?;
+        }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
     }
