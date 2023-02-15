@@ -157,7 +157,7 @@ pub struct TestAllTypesProto2 {
     pub Field_name18__: Option<i32>,
     pub extension_int32: Option<i32>,
     pub oneof_field: TestAllTypesProto2OneOfOneofField,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TestAllTypesProto2 {
     #[inline(always)]
@@ -3680,82 +3680,202 @@ impl binformat::Decodable for TestAllTypesProto2 {
                 buf = Format::<VInt>::decode(&mut self.extension_int32, buf)?;
             }
             888u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint32(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofUint32(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint32(
+                        tmp,
+                    );
+                }
             }
             890u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint32(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofUint32(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint32(
+                        tmp,
+                    );
+                }
             }
             898u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self
-                    .oneof_field = TestAllTypesProto2OneOfOneofField::OneofNestedMessage(
-                    tmp,
-                );
+                if let TestAllTypesProto2OneOfOneofField::OneofNestedMessage(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofNestedMessage(
+                        tmp,
+                    );
+                }
             }
             906u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofString(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofString(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofString(
+                        tmp,
+                    );
+                }
             }
             914u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofBytes(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofBytes(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofBytes(
+                        tmp,
+                    );
+                }
             }
             920u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofBool(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofBool(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofBool(tmp);
+                }
             }
             922u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofBool(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofBool(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofBool(tmp);
+                }
             }
             928u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint64(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofUint64(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint64(
+                        tmp,
+                    );
+                }
             }
             930u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint64(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofUint64(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofUint64(
+                        tmp,
+                    );
+                }
             }
             941u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofFloat(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofFloat(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofFloat(
+                        tmp,
+                    );
+                }
             }
             938u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofFloat(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofFloat(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofFloat(
+                        tmp,
+                    );
+                }
             }
             945u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofDouble(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofDouble(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofDouble(
+                        tmp,
+                    );
+                }
             }
             946u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofDouble(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofDouble(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto2OneOfOneofField::OneofDouble(
+                        tmp,
+                    );
+                }
             }
             952u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofEnum(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofEnum(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofEnum(tmp);
+                }
             }
             954u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofEnum(tmp);
+                if let TestAllTypesProto2OneOfOneofField::OneofEnum(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto2OneOfOneofField::OneofEnum(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4205,6 +4325,11 @@ pub enum TestAllTypesProto2OneOfOneofField {
     OneofEnum(TestAllTypesProto2NestedEnum),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for TestAllTypesProto2OneOfOneofField {
+    fn default() -> Self {
+        TestAllTypesProto2OneOfOneofField::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for TestAllTypesProto2OneOfOneofField {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
@@ -4213,17 +4338,12 @@ impl binformat::ShouldEncode for TestAllTypesProto2OneOfOneofField {
         }
     }
 }
-impl Default for TestAllTypesProto2OneOfOneofField {
-    fn default() -> Self {
-        TestAllTypesProto2OneOfOneofField::Unknown(::core::marker::PhantomData)
-    }
-}
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct TestAllTypesProto2NestedMessage {
     pub a: Option<i32>,
     pub corecursive: Option<Box<TestAllTypesProto2>>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TestAllTypesProto2NestedMessage {
     #[inline(always)]
@@ -4333,7 +4453,7 @@ pub struct TestAllTypesProto2MessageSetCorrect {
     pub message_set_extension: Option<
         Box<TestAllTypesProto2MessageSetCorrectExtension2>,
     >,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TestAllTypesProto2MessageSetCorrect {
     #[inline(always)]
@@ -4428,7 +4548,7 @@ pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
         Box<TestAllTypesProto2MessageSetCorrectExtension1>,
     >,
     pub str: Option<String>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TestAllTypesProto2MessageSetCorrectExtension1 {
     #[inline(always)]
@@ -4546,7 +4666,7 @@ pub struct TestAllTypesProto2MessageSetCorrectExtension2 {
         Box<TestAllTypesProto2MessageSetCorrectExtension2>,
     >,
     pub i: Option<i32>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TestAllTypesProto2MessageSetCorrectExtension2 {
     #[inline(always)]
@@ -4664,7 +4784,7 @@ impl binformat::Encodable for TestAllTypesProto2MessageSetCorrectExtension2 {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct ForeignMessageProto2 {
     pub c: Option<i32>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl ForeignMessageProto2 {
     #[inline(always)]
@@ -4752,7 +4872,7 @@ pub struct UnknownToTestAllTypes {
     pub a: Option<i32>,
     pub optional_bool: Option<bool>,
     pub repeated_int32: Vec<i32>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl UnknownToTestAllTypes {
     #[inline(always)]
@@ -4970,7 +5090,7 @@ impl binformat::Encodable for UnknownToTestAllTypes {
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct NullHypothesisProto2 {
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl NullHypothesisProto2 {}
 impl textformat::Decodable for NullHypothesisProto2 {
@@ -5023,7 +5143,7 @@ impl binformat::Encodable for NullHypothesisProto2 {
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct EnumOnlyProto2 {
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl EnumOnlyProto2 {}
 impl textformat::Decodable for EnumOnlyProto2 {
@@ -5077,7 +5197,7 @@ impl binformat::Encodable for EnumOnlyProto2 {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct OneStringProto2 {
     pub data: Option<String>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl OneStringProto2 {
     #[inline(always)]
@@ -5159,7 +5279,7 @@ pub struct ProtoWithKeywords {
     pub inline: Option<i32>,
     pub concept: Option<String>,
     pub requires: Vec<String>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl ProtoWithKeywords {
     #[inline(always)]
@@ -5288,48 +5408,36 @@ impl binformat::Encodable for ProtoWithKeywords {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum TestAllTypesProto2NestedEnum {
-    FOO,
-    BAR,
-    BAZ,
-    NEG,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct TestAllTypesProto2NestedEnum(pub i32);
+impl TestAllTypesProto2NestedEnum {
+    pub const FOO: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(0i32);
+    pub const BAR: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(1i32);
+    pub const BAZ: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(2i32);
+    pub const NEG: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(-1i32);
 }
 impl Default for TestAllTypesProto2NestedEnum {
     fn default() -> TestAllTypesProto2NestedEnum {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for TestAllTypesProto2NestedEnum {}
 impl binformat::ShouldEncode for TestAllTypesProto2NestedEnum {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for TestAllTypesProto2NestedEnum {
-    fn from(v: u32) -> TestAllTypesProto2NestedEnum {
-        match v {
-            0u32 => TestAllTypesProto2NestedEnum::FOO,
-            1u32 => TestAllTypesProto2NestedEnum::BAR,
-            2u32 => TestAllTypesProto2NestedEnum::BAZ,
-            4294967295u32 => TestAllTypesProto2NestedEnum::NEG,
-            other => TestAllTypesProto2NestedEnum::Unknown(other),
-        }
+impl From<i32> for TestAllTypesProto2NestedEnum {
+    fn from(v: i32) -> TestAllTypesProto2NestedEnum {
+        Self(v)
     }
 }
-impl From<TestAllTypesProto2NestedEnum> for u32 {
-    fn from(v: TestAllTypesProto2NestedEnum) -> u32 {
-        match v {
-            TestAllTypesProto2NestedEnum::FOO => 0u32,
-            TestAllTypesProto2NestedEnum::BAR => 1u32,
-            TestAllTypesProto2NestedEnum::BAZ => 2u32,
-            TestAllTypesProto2NestedEnum::NEG => 4294967295u32,
-            TestAllTypesProto2NestedEnum::Unknown(other) => other,
-        }
+impl From<TestAllTypesProto2NestedEnum> for i32 {
+    fn from(v: TestAllTypesProto2NestedEnum) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for TestAllTypesProto2NestedEnum {
@@ -5340,11 +5448,11 @@ impl textformat::Field for TestAllTypesProto2NestedEnum {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            TestAllTypesProto2NestedEnum::FOO => "FOO",
-            TestAllTypesProto2NestedEnum::BAR => "BAR",
-            TestAllTypesProto2NestedEnum::BAZ => "BAZ",
-            TestAllTypesProto2NestedEnum::NEG => "NEG",
-            TestAllTypesProto2NestedEnum::Unknown(n) => {
+            TestAllTypesProto2NestedEnum(0i32) => "FOO",
+            TestAllTypesProto2NestedEnum(1i32) => "BAR",
+            TestAllTypesProto2NestedEnum(2i32) => "BAZ",
+            TestAllTypesProto2NestedEnum(-1i32) => "NEG",
+            TestAllTypesProto2NestedEnum(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5370,51 +5478,41 @@ impl textformat::Field for TestAllTypesProto2NestedEnum {
             textformat::ast::Literal::Identifier("NEG") => {
                 *self = TestAllTypesProto2NestedEnum::NEG;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum ForeignEnumProto2 {
-    FOREIGN_FOO,
-    FOREIGN_BAR,
-    FOREIGN_BAZ,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct ForeignEnumProto2(pub i32);
+impl ForeignEnumProto2 {
+    pub const FOREIGN_FOO: ForeignEnumProto2 = ForeignEnumProto2(0i32);
+    pub const FOREIGN_BAR: ForeignEnumProto2 = ForeignEnumProto2(1i32);
+    pub const FOREIGN_BAZ: ForeignEnumProto2 = ForeignEnumProto2(2i32);
 }
 impl Default for ForeignEnumProto2 {
     fn default() -> ForeignEnumProto2 {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for ForeignEnumProto2 {}
 impl binformat::ShouldEncode for ForeignEnumProto2 {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for ForeignEnumProto2 {
-    fn from(v: u32) -> ForeignEnumProto2 {
-        match v {
-            0u32 => ForeignEnumProto2::FOREIGN_FOO,
-            1u32 => ForeignEnumProto2::FOREIGN_BAR,
-            2u32 => ForeignEnumProto2::FOREIGN_BAZ,
-            other => ForeignEnumProto2::Unknown(other),
-        }
+impl From<i32> for ForeignEnumProto2 {
+    fn from(v: i32) -> ForeignEnumProto2 {
+        Self(v)
     }
 }
-impl From<ForeignEnumProto2> for u32 {
-    fn from(v: ForeignEnumProto2) -> u32 {
-        match v {
-            ForeignEnumProto2::FOREIGN_FOO => 0u32,
-            ForeignEnumProto2::FOREIGN_BAR => 1u32,
-            ForeignEnumProto2::FOREIGN_BAZ => 2u32,
-            ForeignEnumProto2::Unknown(other) => other,
-        }
+impl From<ForeignEnumProto2> for i32 {
+    fn from(v: ForeignEnumProto2) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for ForeignEnumProto2 {
@@ -5425,10 +5523,10 @@ impl textformat::Field for ForeignEnumProto2 {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            ForeignEnumProto2::FOREIGN_FOO => "FOREIGN_FOO",
-            ForeignEnumProto2::FOREIGN_BAR => "FOREIGN_BAR",
-            ForeignEnumProto2::FOREIGN_BAZ => "FOREIGN_BAZ",
-            ForeignEnumProto2::Unknown(n) => {
+            ForeignEnumProto2(0i32) => "FOREIGN_FOO",
+            ForeignEnumProto2(1i32) => "FOREIGN_BAR",
+            ForeignEnumProto2(2i32) => "FOREIGN_BAZ",
+            ForeignEnumProto2(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5451,48 +5549,40 @@ impl textformat::Field for ForeignEnumProto2 {
             textformat::ast::Literal::Identifier("FOREIGN_BAZ") => {
                 *self = ForeignEnumProto2::FOREIGN_BAZ;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum EnumOnlyProto2Bool {
-    kFalse,
-    kTrue,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct EnumOnlyProto2Bool(pub i32);
+impl EnumOnlyProto2Bool {
+    pub const kFalse: EnumOnlyProto2Bool = EnumOnlyProto2Bool(0i32);
+    pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1i32);
 }
 impl Default for EnumOnlyProto2Bool {
     fn default() -> EnumOnlyProto2Bool {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for EnumOnlyProto2Bool {}
 impl binformat::ShouldEncode for EnumOnlyProto2Bool {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for EnumOnlyProto2Bool {
-    fn from(v: u32) -> EnumOnlyProto2Bool {
-        match v {
-            0u32 => EnumOnlyProto2Bool::kFalse,
-            1u32 => EnumOnlyProto2Bool::kTrue,
-            other => EnumOnlyProto2Bool::Unknown(other),
-        }
+impl From<i32> for EnumOnlyProto2Bool {
+    fn from(v: i32) -> EnumOnlyProto2Bool {
+        Self(v)
     }
 }
-impl From<EnumOnlyProto2Bool> for u32 {
-    fn from(v: EnumOnlyProto2Bool) -> u32 {
-        match v {
-            EnumOnlyProto2Bool::kFalse => 0u32,
-            EnumOnlyProto2Bool::kTrue => 1u32,
-            EnumOnlyProto2Bool::Unknown(other) => other,
-        }
+impl From<EnumOnlyProto2Bool> for i32 {
+    fn from(v: EnumOnlyProto2Bool) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for EnumOnlyProto2Bool {
@@ -5503,9 +5593,9 @@ impl textformat::Field for EnumOnlyProto2Bool {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            EnumOnlyProto2Bool::kFalse => "kFalse",
-            EnumOnlyProto2Bool::kTrue => "kTrue",
-            EnumOnlyProto2Bool::Unknown(n) => {
+            EnumOnlyProto2Bool(0i32) => "kFalse",
+            EnumOnlyProto2Bool(1i32) => "kTrue",
+            EnumOnlyProto2Bool(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5525,7 +5615,7 @@ impl textformat::Field for EnumOnlyProto2Bool {
             textformat::ast::Literal::Identifier("kTrue") => {
                 *self = EnumOnlyProto2Bool::kTrue;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())

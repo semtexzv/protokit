@@ -1,6 +1,6 @@
 fn main() {
     protokit_build::Build::new()
-        // .track_unknowns(true)
+        .track_unknowns(true)
         .include("../../vendor/protobuf/conformance")
         .include("../../vendor/protobuf/src/")
         .include("../../vendor/protobuf/src/google/protobuf")

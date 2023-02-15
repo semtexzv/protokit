@@ -319,12 +319,12 @@ impl FieldDef {
                 Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) => Frequency::Optional,
                 Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
                 Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
-                Some(FieldDescriptorProtoLabel::Unknown(label)) => {
+                Some(FieldDescriptorProtoLabel(label)) => {
                     panic!("Unknown label: {label:?}")
                 }
                 None => Frequency::Singular,
             },
-            typ: match desc.r#type.as_ref().unwrap() {
+            typ: match *desc.r#type.as_ref().unwrap() {
                 FieldDescriptorProtoType::TYPE_DOUBLE => DataType::Builtin(BuiltinType::Double),
                 FieldDescriptorProtoType::TYPE_FLOAT => DataType::Builtin(BuiltinType::Float),
                 FieldDescriptorProtoType::TYPE_INT64 => DataType::Builtin(BuiltinType::Int64),
@@ -348,7 +348,7 @@ impl FieldDef {
                 FieldDescriptorProtoType::TYPE_SINT32 => DataType::Builtin(BuiltinType::Sint32),
                 FieldDescriptorProtoType::TYPE_SINT64 => DataType::Builtin(BuiltinType::Sint64),
 
-                FieldDescriptorProtoType::Unknown(_) => panic!(),
+                FieldDescriptorProtoType(_) => panic!(),
             },
             num: desc.number.unwrap(),
             options: opts,

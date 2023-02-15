@@ -11,12 +11,12 @@ use root::types::field_mask::*;
 use super::super::super::google::protobuf::r#struct::*;
 use root::types::timestamp::*;
 use super::super::super::google::protobuf::wrappers::*;
+use root::types::any::*;
+use root::types::field_mask::*;
 use super::super::super::google::protobuf::wrappers::*;
+use super::super::super::google::protobuf::r#struct::*;
 use root::types::timestamp::*;
 use super::super::super::google::protobuf::duration::*;
-use super::super::super::google::protobuf::r#struct::*;
-use root::types::field_mask::*;
-use root::types::any::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&TestAllTypesProto3::default());
     registry.register(&TestAllTypesProto3NestedMessage::default());
@@ -175,7 +175,7 @@ pub struct TestAllTypesProto3 {
     pub field_name17__: i32,
     pub Field_name18__: i32,
     pub oneof_field: TestAllTypesProto3OneOfOneofField,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TestAllTypesProto3 {
     #[inline(always)]
@@ -4037,98 +4037,230 @@ impl binformat::Decodable for TestAllTypesProto3 {
                 buf = Format::<VInt>::decode(&mut self.Field_name18__, buf)?;
             }
             888u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint32(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofUint32(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint32(
+                        tmp,
+                    );
+                }
             }
             890u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint32(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofUint32(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint32(
+                        tmp,
+                    );
+                }
             }
             898u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self
-                    .oneof_field = TestAllTypesProto3OneOfOneofField::OneofNestedMessage(
-                    tmp,
-                );
+                if let TestAllTypesProto3OneOfOneofField::OneofNestedMessage(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofNestedMessage(
+                        tmp,
+                    );
+                }
             }
             906u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofString(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofString(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofString(
+                        tmp,
+                    );
+                }
             }
             914u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofBytes(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofBytes(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofBytes(
+                        tmp,
+                    );
+                }
             }
             920u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofBool(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofBool(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofBool(tmp);
+                }
             }
             922u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofBool(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofBool(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofBool(tmp);
+                }
             }
             928u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint64(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofUint64(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint64(
+                        tmp,
+                    );
+                }
             }
             930u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint64(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofUint64(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofUint64(
+                        tmp,
+                    );
+                }
             }
             941u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofFloat(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofFloat(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofFloat(
+                        tmp,
+                    );
+                }
             }
             938u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofFloat(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofFloat(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofFloat(
+                        tmp,
+                    );
+                }
             }
             945u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofDouble(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofDouble(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofDouble(
+                        tmp,
+                    );
+                }
             }
             946u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofDouble(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofDouble(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofDouble(
+                        tmp,
+                    );
+                }
             }
             952u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofEnum(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofEnum(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofEnum(tmp);
+                }
             }
             954u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofEnum(tmp);
+                if let TestAllTypesProto3OneOfOneofField::OneofEnum(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.oneof_field = TestAllTypesProto3OneOfOneofField::OneofEnum(tmp);
+                }
             }
             960u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self
-                    .oneof_field = TestAllTypesProto3OneOfOneofField::OneofNullValue(
-                    tmp,
-                );
+                if let TestAllTypesProto3OneOfOneofField::OneofNullValue(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofNullValue(
+                        tmp,
+                    );
+                }
             }
             962u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self
-                    .oneof_field = TestAllTypesProto3OneOfOneofField::OneofNullValue(
-                    tmp,
-                );
+                if let TestAllTypesProto3OneOfOneofField::OneofNullValue(tmp)
+                    = &mut self.oneof_field
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self
+                        .oneof_field = TestAllTypesProto3OneOfOneofField::OneofNullValue(
+                        tmp,
+                    );
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4635,6 +4767,11 @@ pub enum TestAllTypesProto3OneOfOneofField {
     OneofNullValue(NullValue),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for TestAllTypesProto3OneOfOneofField {
+    fn default() -> Self {
+        TestAllTypesProto3OneOfOneofField::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for TestAllTypesProto3OneOfOneofField {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
@@ -4643,17 +4780,12 @@ impl binformat::ShouldEncode for TestAllTypesProto3OneOfOneofField {
         }
     }
 }
-impl Default for TestAllTypesProto3OneOfOneofField {
-    fn default() -> Self {
-        TestAllTypesProto3OneOfOneofField::Unknown(::core::marker::PhantomData)
-    }
-}
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct TestAllTypesProto3NestedMessage {
     pub a: i32,
     pub corecursive: Option<Box<TestAllTypesProto3>>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TestAllTypesProto3NestedMessage {
     #[inline(always)]
@@ -4761,7 +4893,7 @@ impl binformat::Encodable for TestAllTypesProto3NestedMessage {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct ForeignMessage {
     pub c: i32,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl ForeignMessage {
     #[inline(always)]
@@ -4843,7 +4975,7 @@ impl binformat::Encodable for ForeignMessage {
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct NullHypothesisProto3 {
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl NullHypothesisProto3 {}
 impl textformat::Decodable for NullHypothesisProto3 {
@@ -4896,7 +5028,7 @@ impl binformat::Encodable for NullHypothesisProto3 {
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct EnumOnlyProto3 {
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl EnumOnlyProto3 {}
 impl textformat::Decodable for EnumOnlyProto3 {
@@ -4946,48 +5078,36 @@ impl binformat::Encodable for EnumOnlyProto3 {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum TestAllTypesProto3NestedEnum {
-    FOO,
-    BAR,
-    BAZ,
-    NEG,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct TestAllTypesProto3NestedEnum(pub i32);
+impl TestAllTypesProto3NestedEnum {
+    pub const FOO: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(0i32);
+    pub const BAR: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(1i32);
+    pub const BAZ: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(2i32);
+    pub const NEG: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(-1i32);
 }
 impl Default for TestAllTypesProto3NestedEnum {
     fn default() -> TestAllTypesProto3NestedEnum {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for TestAllTypesProto3NestedEnum {}
 impl binformat::ShouldEncode for TestAllTypesProto3NestedEnum {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for TestAllTypesProto3NestedEnum {
-    fn from(v: u32) -> TestAllTypesProto3NestedEnum {
-        match v {
-            0u32 => TestAllTypesProto3NestedEnum::FOO,
-            1u32 => TestAllTypesProto3NestedEnum::BAR,
-            2u32 => TestAllTypesProto3NestedEnum::BAZ,
-            4294967295u32 => TestAllTypesProto3NestedEnum::NEG,
-            other => TestAllTypesProto3NestedEnum::Unknown(other),
-        }
+impl From<i32> for TestAllTypesProto3NestedEnum {
+    fn from(v: i32) -> TestAllTypesProto3NestedEnum {
+        Self(v)
     }
 }
-impl From<TestAllTypesProto3NestedEnum> for u32 {
-    fn from(v: TestAllTypesProto3NestedEnum) -> u32 {
-        match v {
-            TestAllTypesProto3NestedEnum::FOO => 0u32,
-            TestAllTypesProto3NestedEnum::BAR => 1u32,
-            TestAllTypesProto3NestedEnum::BAZ => 2u32,
-            TestAllTypesProto3NestedEnum::NEG => 4294967295u32,
-            TestAllTypesProto3NestedEnum::Unknown(other) => other,
-        }
+impl From<TestAllTypesProto3NestedEnum> for i32 {
+    fn from(v: TestAllTypesProto3NestedEnum) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for TestAllTypesProto3NestedEnum {
@@ -4998,11 +5118,11 @@ impl textformat::Field for TestAllTypesProto3NestedEnum {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            TestAllTypesProto3NestedEnum::FOO => "FOO",
-            TestAllTypesProto3NestedEnum::BAR => "BAR",
-            TestAllTypesProto3NestedEnum::BAZ => "BAZ",
-            TestAllTypesProto3NestedEnum::NEG => "NEG",
-            TestAllTypesProto3NestedEnum::Unknown(n) => {
+            TestAllTypesProto3NestedEnum(0i32) => "FOO",
+            TestAllTypesProto3NestedEnum(1i32) => "BAR",
+            TestAllTypesProto3NestedEnum(2i32) => "BAZ",
+            TestAllTypesProto3NestedEnum(-1i32) => "NEG",
+            TestAllTypesProto3NestedEnum(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5028,60 +5148,50 @@ impl textformat::Field for TestAllTypesProto3NestedEnum {
             textformat::ast::Literal::Identifier("NEG") => {
                 *self = TestAllTypesProto3NestedEnum::NEG;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum TestAllTypesProto3AliasedEnum {
-    ALIAS_FOO,
-    ALIAS_BAR,
-    ALIAS_BAZ,
-    MOO,
-    moo,
-    bAz,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct TestAllTypesProto3AliasedEnum(pub i32);
+impl TestAllTypesProto3AliasedEnum {
+    pub const ALIAS_FOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+        0i32,
+    );
+    pub const ALIAS_BAR: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+        1i32,
+    );
+    pub const ALIAS_BAZ: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+        2i32,
+    );
+    pub const MOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
+    pub const moo: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
+    pub const bAz: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
 }
 impl Default for TestAllTypesProto3AliasedEnum {
     fn default() -> TestAllTypesProto3AliasedEnum {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for TestAllTypesProto3AliasedEnum {}
 impl binformat::ShouldEncode for TestAllTypesProto3AliasedEnum {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for TestAllTypesProto3AliasedEnum {
-    fn from(v: u32) -> TestAllTypesProto3AliasedEnum {
-        match v {
-            0u32 => TestAllTypesProto3AliasedEnum::ALIAS_FOO,
-            1u32 => TestAllTypesProto3AliasedEnum::ALIAS_BAR,
-            2u32 => TestAllTypesProto3AliasedEnum::ALIAS_BAZ,
-            2u32 => TestAllTypesProto3AliasedEnum::MOO,
-            2u32 => TestAllTypesProto3AliasedEnum::moo,
-            2u32 => TestAllTypesProto3AliasedEnum::bAz,
-            other => TestAllTypesProto3AliasedEnum::Unknown(other),
-        }
+impl From<i32> for TestAllTypesProto3AliasedEnum {
+    fn from(v: i32) -> TestAllTypesProto3AliasedEnum {
+        Self(v)
     }
 }
-impl From<TestAllTypesProto3AliasedEnum> for u32 {
-    fn from(v: TestAllTypesProto3AliasedEnum) -> u32 {
-        match v {
-            TestAllTypesProto3AliasedEnum::ALIAS_FOO => 0u32,
-            TestAllTypesProto3AliasedEnum::ALIAS_BAR => 1u32,
-            TestAllTypesProto3AliasedEnum::ALIAS_BAZ => 2u32,
-            TestAllTypesProto3AliasedEnum::MOO => 2u32,
-            TestAllTypesProto3AliasedEnum::moo => 2u32,
-            TestAllTypesProto3AliasedEnum::bAz => 2u32,
-            TestAllTypesProto3AliasedEnum::Unknown(other) => other,
-        }
+impl From<TestAllTypesProto3AliasedEnum> for i32 {
+    fn from(v: TestAllTypesProto3AliasedEnum) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for TestAllTypesProto3AliasedEnum {
@@ -5092,13 +5202,13 @@ impl textformat::Field for TestAllTypesProto3AliasedEnum {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            TestAllTypesProto3AliasedEnum::ALIAS_FOO => "ALIAS_FOO",
-            TestAllTypesProto3AliasedEnum::ALIAS_BAR => "ALIAS_BAR",
-            TestAllTypesProto3AliasedEnum::ALIAS_BAZ => "ALIAS_BAZ",
-            TestAllTypesProto3AliasedEnum::MOO => "MOO",
-            TestAllTypesProto3AliasedEnum::moo => "moo",
-            TestAllTypesProto3AliasedEnum::bAz => "bAz",
-            TestAllTypesProto3AliasedEnum::Unknown(n) => {
+            TestAllTypesProto3AliasedEnum(0i32) => "ALIAS_FOO",
+            TestAllTypesProto3AliasedEnum(1i32) => "ALIAS_BAR",
+            TestAllTypesProto3AliasedEnum(2i32) => "ALIAS_BAZ",
+            TestAllTypesProto3AliasedEnum(2i32) => "MOO",
+            TestAllTypesProto3AliasedEnum(2i32) => "moo",
+            TestAllTypesProto3AliasedEnum(2i32) => "bAz",
+            TestAllTypesProto3AliasedEnum(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5130,51 +5240,41 @@ impl textformat::Field for TestAllTypesProto3AliasedEnum {
             textformat::ast::Literal::Identifier("bAz") => {
                 *self = TestAllTypesProto3AliasedEnum::bAz;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum ForeignEnum {
-    FOREIGN_FOO,
-    FOREIGN_BAR,
-    FOREIGN_BAZ,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct ForeignEnum(pub i32);
+impl ForeignEnum {
+    pub const FOREIGN_FOO: ForeignEnum = ForeignEnum(0i32);
+    pub const FOREIGN_BAR: ForeignEnum = ForeignEnum(1i32);
+    pub const FOREIGN_BAZ: ForeignEnum = ForeignEnum(2i32);
 }
 impl Default for ForeignEnum {
     fn default() -> ForeignEnum {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for ForeignEnum {}
 impl binformat::ShouldEncode for ForeignEnum {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for ForeignEnum {
-    fn from(v: u32) -> ForeignEnum {
-        match v {
-            0u32 => ForeignEnum::FOREIGN_FOO,
-            1u32 => ForeignEnum::FOREIGN_BAR,
-            2u32 => ForeignEnum::FOREIGN_BAZ,
-            other => ForeignEnum::Unknown(other),
-        }
+impl From<i32> for ForeignEnum {
+    fn from(v: i32) -> ForeignEnum {
+        Self(v)
     }
 }
-impl From<ForeignEnum> for u32 {
-    fn from(v: ForeignEnum) -> u32 {
-        match v {
-            ForeignEnum::FOREIGN_FOO => 0u32,
-            ForeignEnum::FOREIGN_BAR => 1u32,
-            ForeignEnum::FOREIGN_BAZ => 2u32,
-            ForeignEnum::Unknown(other) => other,
-        }
+impl From<ForeignEnum> for i32 {
+    fn from(v: ForeignEnum) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for ForeignEnum {
@@ -5185,10 +5285,10 @@ impl textformat::Field for ForeignEnum {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            ForeignEnum::FOREIGN_FOO => "FOREIGN_FOO",
-            ForeignEnum::FOREIGN_BAR => "FOREIGN_BAR",
-            ForeignEnum::FOREIGN_BAZ => "FOREIGN_BAZ",
-            ForeignEnum::Unknown(n) => {
+            ForeignEnum(0i32) => "FOREIGN_FOO",
+            ForeignEnum(1i32) => "FOREIGN_BAR",
+            ForeignEnum(2i32) => "FOREIGN_BAZ",
+            ForeignEnum(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5211,48 +5311,40 @@ impl textformat::Field for ForeignEnum {
             textformat::ast::Literal::Identifier("FOREIGN_BAZ") => {
                 *self = ForeignEnum::FOREIGN_BAZ;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum EnumOnlyProto3Bool {
-    kFalse,
-    kTrue,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct EnumOnlyProto3Bool(pub i32);
+impl EnumOnlyProto3Bool {
+    pub const kFalse: EnumOnlyProto3Bool = EnumOnlyProto3Bool(0i32);
+    pub const kTrue: EnumOnlyProto3Bool = EnumOnlyProto3Bool(1i32);
 }
 impl Default for EnumOnlyProto3Bool {
     fn default() -> EnumOnlyProto3Bool {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for EnumOnlyProto3Bool {}
 impl binformat::ShouldEncode for EnumOnlyProto3Bool {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for EnumOnlyProto3Bool {
-    fn from(v: u32) -> EnumOnlyProto3Bool {
-        match v {
-            0u32 => EnumOnlyProto3Bool::kFalse,
-            1u32 => EnumOnlyProto3Bool::kTrue,
-            other => EnumOnlyProto3Bool::Unknown(other),
-        }
+impl From<i32> for EnumOnlyProto3Bool {
+    fn from(v: i32) -> EnumOnlyProto3Bool {
+        Self(v)
     }
 }
-impl From<EnumOnlyProto3Bool> for u32 {
-    fn from(v: EnumOnlyProto3Bool) -> u32 {
-        match v {
-            EnumOnlyProto3Bool::kFalse => 0u32,
-            EnumOnlyProto3Bool::kTrue => 1u32,
-            EnumOnlyProto3Bool::Unknown(other) => other,
-        }
+impl From<EnumOnlyProto3Bool> for i32 {
+    fn from(v: EnumOnlyProto3Bool) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for EnumOnlyProto3Bool {
@@ -5263,9 +5355,9 @@ impl textformat::Field for EnumOnlyProto3Bool {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            EnumOnlyProto3Bool::kFalse => "kFalse",
-            EnumOnlyProto3Bool::kTrue => "kTrue",
-            EnumOnlyProto3Bool::Unknown(n) => {
+            EnumOnlyProto3Bool(0i32) => "kFalse",
+            EnumOnlyProto3Bool(1i32) => "kTrue",
+            EnumOnlyProto3Bool(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5285,7 +5377,7 @@ impl textformat::Field for EnumOnlyProto3Bool {
             textformat::ast::Literal::Identifier("kTrue") => {
                 *self = EnumOnlyProto3Bool::kTrue;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())

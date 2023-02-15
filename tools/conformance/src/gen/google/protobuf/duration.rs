@@ -13,7 +13,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
 pub struct Duration {
     pub seconds: i64,
     pub nanos: i32,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Duration {
     #[inline(always)]

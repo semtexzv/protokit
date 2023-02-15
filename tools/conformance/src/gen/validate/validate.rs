@@ -39,7 +39,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct FieldRules {
     pub message: Option<Box<MessageRules>>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl FieldRules {
     #[inline(always)]
@@ -126,7 +126,7 @@ pub struct FloatRules {
     pub r#in: Vec<f32>,
     pub not_in: Vec<f32>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl FloatRules {
     #[inline(always)]
@@ -412,7 +412,7 @@ pub struct DoubleRules {
     pub r#in: Vec<f64>,
     pub not_in: Vec<f64>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl DoubleRules {
     #[inline(always)]
@@ -698,7 +698,7 @@ pub struct Int32Rules {
     pub r#in: Vec<i32>,
     pub not_in: Vec<i32>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Int32Rules {
     #[inline(always)]
@@ -984,7 +984,7 @@ pub struct Int64Rules {
     pub r#in: Vec<i64>,
     pub not_in: Vec<i64>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Int64Rules {
     #[inline(always)]
@@ -1270,7 +1270,7 @@ pub struct UInt32Rules {
     pub r#in: Vec<u32>,
     pub not_in: Vec<u32>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl UInt32Rules {
     #[inline(always)]
@@ -1556,7 +1556,7 @@ pub struct UInt64Rules {
     pub r#in: Vec<u64>,
     pub not_in: Vec<u64>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl UInt64Rules {
     #[inline(always)]
@@ -1842,7 +1842,7 @@ pub struct SInt32Rules {
     pub r#in: Vec<i32>,
     pub not_in: Vec<i32>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl SInt32Rules {
     #[inline(always)]
@@ -2128,7 +2128,7 @@ pub struct SInt64Rules {
     pub r#in: Vec<i64>,
     pub not_in: Vec<i64>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl SInt64Rules {
     #[inline(always)]
@@ -2414,7 +2414,7 @@ pub struct Fixed32Rules {
     pub r#in: Vec<u32>,
     pub not_in: Vec<u32>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Fixed32Rules {
     #[inline(always)]
@@ -2700,7 +2700,7 @@ pub struct Fixed64Rules {
     pub r#in: Vec<u64>,
     pub not_in: Vec<u64>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Fixed64Rules {
     #[inline(always)]
@@ -2986,7 +2986,7 @@ pub struct SFixed32Rules {
     pub r#in: Vec<i32>,
     pub not_in: Vec<i32>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl SFixed32Rules {
     #[inline(always)]
@@ -3272,7 +3272,7 @@ pub struct SFixed64Rules {
     pub r#in: Vec<i64>,
     pub not_in: Vec<i64>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl SFixed64Rules {
     #[inline(always)]
@@ -3551,7 +3551,7 @@ impl binformat::Encodable for SFixed64Rules {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct BoolRules {
     pub r#const: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl BoolRules {
     #[inline(always)]
@@ -3649,7 +3649,7 @@ pub struct StringRules {
     pub not_in: Vec<String>,
     pub strict: Option<bool>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl StringRules {
     #[inline(always)]
@@ -4138,7 +4138,7 @@ pub struct BytesRules {
     pub r#in: Vec<Vec<u8>>,
     pub not_in: Vec<Vec<u8>>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl BytesRules {
     #[inline(always)]
@@ -4483,7 +4483,7 @@ pub struct EnumRules {
     pub defined_only: Option<bool>,
     pub r#in: Vec<i32>,
     pub not_in: Vec<i32>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl EnumRules {
     #[inline(always)]
@@ -4651,7 +4651,7 @@ impl binformat::Encodable for EnumRules {
 pub struct MessageRules {
     pub skip: Option<bool>,
     pub required: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl MessageRules {
     #[inline(always)]
@@ -4766,7 +4766,7 @@ pub struct RepeatedRules {
     pub unique: Option<bool>,
     pub items: Option<Box<FieldRules>>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl RepeatedRules {
     #[inline(always)]
@@ -4963,7 +4963,7 @@ pub struct MapRules {
     pub keys: Option<Box<FieldRules>>,
     pub values: Option<Box<FieldRules>>,
     pub ignore_empty: Option<bool>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl MapRules {
     #[inline(always)]
@@ -5182,7 +5182,7 @@ pub struct AnyRules {
     pub required: Option<bool>,
     pub r#in: Vec<String>,
     pub not_in: Vec<String>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl AnyRules {
     #[inline(always)]
@@ -5322,7 +5322,7 @@ pub struct DurationRules {
     pub gte: Option<Box<Duration>>,
     pub r#in: Vec<Duration>,
     pub not_in: Vec<Duration>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl DurationRules {
     #[inline(always)]
@@ -5588,7 +5588,7 @@ pub struct TimestampRules {
     pub lt_now: Option<bool>,
     pub gt_now: Option<bool>,
     pub within: Option<Box<Duration>>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl TimestampRules {
     #[inline(always)]
@@ -5873,45 +5873,35 @@ impl binformat::Encodable for TimestampRules {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum KnownRegex {
-    UNKNOWN,
-    HTTP_HEADER_NAME,
-    HTTP_HEADER_VALUE,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct KnownRegex(pub i32);
+impl KnownRegex {
+    pub const UNKNOWN: KnownRegex = KnownRegex(0i32);
+    pub const HTTP_HEADER_NAME: KnownRegex = KnownRegex(1i32);
+    pub const HTTP_HEADER_VALUE: KnownRegex = KnownRegex(2i32);
 }
 impl Default for KnownRegex {
     fn default() -> KnownRegex {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for KnownRegex {}
 impl binformat::ShouldEncode for KnownRegex {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for KnownRegex {
-    fn from(v: u32) -> KnownRegex {
-        match v {
-            0u32 => KnownRegex::UNKNOWN,
-            1u32 => KnownRegex::HTTP_HEADER_NAME,
-            2u32 => KnownRegex::HTTP_HEADER_VALUE,
-            other => KnownRegex::Unknown(other),
-        }
+impl From<i32> for KnownRegex {
+    fn from(v: i32) -> KnownRegex {
+        Self(v)
     }
 }
-impl From<KnownRegex> for u32 {
-    fn from(v: KnownRegex) -> u32 {
-        match v {
-            KnownRegex::UNKNOWN => 0u32,
-            KnownRegex::HTTP_HEADER_NAME => 1u32,
-            KnownRegex::HTTP_HEADER_VALUE => 2u32,
-            KnownRegex::Unknown(other) => other,
-        }
+impl From<KnownRegex> for i32 {
+    fn from(v: KnownRegex) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for KnownRegex {
@@ -5922,10 +5912,10 @@ impl textformat::Field for KnownRegex {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            KnownRegex::UNKNOWN => "UNKNOWN",
-            KnownRegex::HTTP_HEADER_NAME => "HTTP_HEADER_NAME",
-            KnownRegex::HTTP_HEADER_VALUE => "HTTP_HEADER_VALUE",
-            KnownRegex::Unknown(n) => {
+            KnownRegex(0i32) => "UNKNOWN",
+            KnownRegex(1i32) => "HTTP_HEADER_NAME",
+            KnownRegex(2i32) => "HTTP_HEADER_VALUE",
+            KnownRegex(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5948,7 +5938,7 @@ impl textformat::Field for KnownRegex {
             textformat::ast::Literal::Identifier("HTTP_HEADER_VALUE") => {
                 *self = KnownRegex::HTTP_HEADER_VALUE;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())

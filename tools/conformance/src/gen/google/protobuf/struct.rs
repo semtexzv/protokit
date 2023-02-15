@@ -14,7 +14,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Struct {
     pub fields: ::std::collections::HashMap<String, Value>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Struct {
     #[inline(always)]
@@ -96,7 +96,7 @@ impl binformat::Encodable for Struct {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Value {
     pub kind: ValueOneOfKind,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Value {
     #[inline(always)]
@@ -261,49 +261,85 @@ impl binformat::Decodable for Value {
         use binformat::format::*;
         match tag {
             8u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::NullValue(tmp);
+                if let ValueOneOfKind::NullValue(tmp) = &mut self.kind {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::NullValue(tmp);
+                }
             }
             10u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::NullValue(tmp);
+                if let ValueOneOfKind::NullValue(tmp) = &mut self.kind {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::NullValue(tmp);
+                }
             }
             17u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::NumberValue(tmp);
+                if let ValueOneOfKind::NumberValue(tmp) = &mut self.kind {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::NumberValue(tmp);
+                }
             }
             18u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::NumberValue(tmp);
+                if let ValueOneOfKind::NumberValue(tmp) = &mut self.kind {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::NumberValue(tmp);
+                }
             }
             26u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::StringValue(tmp);
+                if let ValueOneOfKind::StringValue(tmp) = &mut self.kind {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::StringValue(tmp);
+                }
             }
             32u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::BoolValue(tmp);
+                if let ValueOneOfKind::BoolValue(tmp) = &mut self.kind {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::BoolValue(tmp);
+                }
             }
             34u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::BoolValue(tmp);
+                if let ValueOneOfKind::BoolValue(tmp) = &mut self.kind {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::BoolValue(tmp);
+                }
             }
             42u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::StructValue(tmp);
+                if let ValueOneOfKind::StructValue(tmp) = &mut self.kind {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::StructValue(tmp);
+                }
             }
             50u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.kind = ValueOneOfKind::ListValue(tmp);
+                if let ValueOneOfKind::ListValue(tmp) = &mut self.kind {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.kind = ValueOneOfKind::ListValue(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -353,6 +389,11 @@ pub enum ValueOneOfKind {
     ListValue(ListValue),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for ValueOneOfKind {
+    fn default() -> Self {
+        ValueOneOfKind::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for ValueOneOfKind {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
@@ -361,16 +402,11 @@ impl binformat::ShouldEncode for ValueOneOfKind {
         }
     }
 }
-impl Default for ValueOneOfKind {
-    fn default() -> Self {
-        ValueOneOfKind::Unknown(::core::marker::PhantomData)
-    }
-}
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct ListValue {
     pub values: Vec<Value>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl ListValue {
     #[inline(always)]
@@ -446,39 +482,33 @@ impl binformat::Encodable for ListValue {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum NullValue {
-    NULL_VALUE,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct NullValue(pub i32);
+impl NullValue {
+    pub const NULL_VALUE: NullValue = NullValue(0i32);
 }
 impl Default for NullValue {
     fn default() -> NullValue {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for NullValue {}
 impl binformat::ShouldEncode for NullValue {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for NullValue {
-    fn from(v: u32) -> NullValue {
-        match v {
-            0u32 => NullValue::NULL_VALUE,
-            other => NullValue::Unknown(other),
-        }
+impl From<i32> for NullValue {
+    fn from(v: i32) -> NullValue {
+        Self(v)
     }
 }
-impl From<NullValue> for u32 {
-    fn from(v: NullValue) -> u32 {
-        match v {
-            NullValue::NULL_VALUE => 0u32,
-            NullValue::Unknown(other) => other,
-        }
+impl From<NullValue> for i32 {
+    fn from(v: NullValue) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for NullValue {
@@ -489,8 +519,8 @@ impl textformat::Field for NullValue {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            NullValue::NULL_VALUE => "NULL_VALUE",
-            NullValue::Unknown(n) => {
+            NullValue(0i32) => "NULL_VALUE",
+            NullValue(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -507,7 +537,7 @@ impl textformat::Field for NullValue {
             textformat::ast::Literal::Identifier("NULL_VALUE") => {
                 *self = NullValue::NULL_VALUE;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())

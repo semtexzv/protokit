@@ -89,7 +89,6 @@ pub fn type_marker(typ: BuiltinType) -> &'static str {
 }
 
 
-
 #[derive(Debug, Default)]
 pub struct MessageParts {
     imports: HashSet<u32>,
@@ -144,7 +143,7 @@ impl CodeGenerator<'_> {
             BuiltinType::String_ => return self.options.string_type.clone(),
             BuiltinType::Bytes_ => return self.options.bytes_type.clone(),
         })
-        .unwrap()
+            .unwrap()
     }
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
         Ok(match typ {
@@ -164,18 +163,17 @@ impl CodeGenerator<'_> {
     }
     pub fn field_type(&self, typ: &FieldDef) -> Result<TokenStream> {
         let mut base = self.base_type(&typ.typ)?;
-            let is_msg = match typ.typ {
-                DataType::Message(_) => true,
-                _ => false,
-            };
-            match (typ.frequency, is_msg) {
-                (Frequency::Singular | Frequency::Required, false) => Ok(base),
-                (Frequency::Singular | Frequency::Required, true) => Ok(quote!(Option<Box<#base>>)),
-                (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
-                (Frequency::Optional, true) => Ok(quote!(Option<Box<#base>>)),
-                (Frequency::Repeated, _) => Ok(quote!(Vec<#base>)),
-            }
-
+        let is_msg = match typ.typ {
+            DataType::Message(_) => true,
+            _ => false,
+        };
+        match (typ.frequency, is_msg) {
+            (Frequency::Singular | Frequency::Required, false) => Ok(base),
+            (Frequency::Singular | Frequency::Required, true) => Ok(quote!(Option<Box<#base>>)),
+            (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
+            (Frequency::Optional, true) => Ok(quote!(Option<Box<#base>>)),
+            (Frequency::Repeated, _) => Ok(quote!(Vec<#base>)),
+        }
     }
 
     pub fn type_to_binformat(&self, f: &FieldDef, force_packed: bool) -> Result<TokenStream> {
@@ -449,7 +447,7 @@ impl CodeGenerator<'_> {
         if self.options.generate_textformat {
             self.field_textformat(out, &field_name, field, field_raw_name, &field_type, ext_pkg);
         }
-        self.field_binformat(out, file,msg_name, &field_name, field_idx, field);
+        self.field_binformat(out, file, msg_name, &field_name, field_idx, field);
     }
 
     pub fn oneof_variant(
@@ -504,9 +502,13 @@ impl CodeGenerator<'_> {
 
         out.bin_decoders.push(quote! {
             #normal_tag => {
-                let mut tmp = Default::default();
-                buf = #decode_fn(&mut tmp, buf)?;
-                self.#oneof_name = #oneof_type::#variant_name(tmp);
+                if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
+                    buf = #decode_fn(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = #decode_fn(&mut tmp, buf)?;
+                    self.#oneof_name = #oneof_type::#variant_name(tmp);
+                }
             }
         });
 
@@ -514,13 +516,17 @@ impl CodeGenerator<'_> {
             let packed_tag = field_num << 3 | packed as u32;
             let mut variant = variant.clone();
             variant.set_packed(true);
-            let parse_fn = self.type_to_decoder(&variant).unwrap();
+            let decode_fn = self.type_to_decoder(&variant).unwrap();
 
             out.bin_decoders.push(quote! {
                 #packed_tag => {
-                    let mut tmp = Default::default();
-                    buf = #parse_fn(&mut tmp, buf)?;
-                    self.#oneof_name = #oneof_type::#variant_name(tmp);
+                     if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
+                        buf = #decode_fn(tmp, buf)?;
+                    } else {
+                        let mut tmp = Default::default();
+                        buf = #decode_fn(&mut tmp, buf)?;
+                        self.#oneof_name = #oneof_type::#variant_name(tmp);
+                    }
                 }
             });
         }
@@ -624,7 +630,7 @@ impl CodeGenerator<'_> {
             tag_num: FieldNum,
             def: &'a FieldDef,
             pkg: Option<ArcStr>,
-            file: &'a FileDef
+            file: &'a FileDef,
         }
 
         let field_iter = unit
@@ -660,7 +666,7 @@ impl CodeGenerator<'_> {
                         tag_num: *num,
                         def,
                         pkg: Some(ext_file.package.clone()),
-                        file: ext_file
+                        file: ext_file,
                     })
             })
         });
@@ -782,16 +788,17 @@ impl CodeGenerator<'_> {
             fields.push(quote! { #name(#typ) })
         }
 
-        let def = &unit.fields.by_number.first().unwrap().1.name;
-        let def = format_ident!("{}", rustify_name(def.as_str()).to_case(Case::Pascal));
-        let _def = quote! { #oneof_type::#def(Default::default()) };
-
         quote! {
             #[repr(C, u32)]
             #[derive(Debug, Clone, PartialEq)]
             pub enum #oneof_type  {
                 #(#fields,)*
                 Unknown(::core::marker::PhantomData<()>),
+            }
+            impl Default for #oneof_type {
+                fn default() -> Self {
+                    #oneof_type::Unknown(::core::marker::PhantomData)
+                }
             }
             impl binformat::ShouldEncode for #oneof_type {
                 fn should_encode(&self, proto3: bool) -> bool {
@@ -801,11 +808,6 @@ impl CodeGenerator<'_> {
                     }
                 }
             }
-            impl Default for #oneof_type {
-                fn default() -> Self {
-                    #oneof_type::Unknown(::core::marker::PhantomData)
-                }
-            }
         }
     }
 
@@ -813,21 +815,20 @@ impl CodeGenerator<'_> {
         let enum_name = format_ident!("{}", rustify_name(unit.name.as_str()));
 
         let mut variants = vec![];
-        let mut arms_from = vec![];
-        let mut arms_into = vec![];
         let mut text_from = vec![];
         let mut text_to = vec![];
 
+        let mut consts = vec![];
+
         for (_name, field) in unit.variants.by_name.iter() {
             let name_str = field.name.as_str();
-            let name = format_ident!("{}", field.name.as_str()); //ctx.syms.resolve(field.name).unwrap());
-            let num = field.num as u32;
+            let name = format_ident!("{}", field.name.as_str());
+            let num = field.num;
 
             variants.push(quote! { #name });
-            arms_from.push(quote! { #num => #enum_name::#name });
-            arms_into.push(quote! { #enum_name::#name => #num });
             text_from.push(quote! { textformat::ast::Literal::Identifier(#name_str) => *self = #enum_name::#name});
-            text_to.push(quote! { #enum_name::#name => #name_str, });
+            text_to.push(quote! { #enum_name(#num) => #name_str, });
+            consts.push(quote! { pub const #name: #enum_name = #enum_name(#num); });
         }
 
         let text_format = if self.options.generate_textformat {
@@ -836,7 +837,7 @@ impl CodeGenerator<'_> {
                     fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
                         let str = match self {
                             #(#text_to)*
-                            #enum_name::Unknown(n) => {
+                            #enum_name(n) => {
                                 write!(out, "{n}")?;
                                 return Ok(());
                             }
@@ -847,7 +848,7 @@ impl CodeGenerator<'_> {
                     fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
                         match v {
                             #(#text_from,)*
-                            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+                            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
                             other => textformat::bail!("Invalid enum value: {other:?}")
                         }
                         Ok(())
@@ -858,15 +859,18 @@ impl CodeGenerator<'_> {
             quote! {}
         };
 
+
+        let def = unit.variants.by_name.first().unwrap().1.num as i32;
+
         quote! {
-            #[derive(Debug, Clone, PartialEq)]
-            pub enum #enum_name {
-                #(#variants,)*
-                Unknown(u32)
+            #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+            pub struct #enum_name(pub i32);
+            impl #enum_name {
+                #(#consts)*
             }
             impl Default for #enum_name {
                 fn default() -> #enum_name {
-                    Self::from(0)
+                    Self::from(#def)
                 }
             }
             impl binformat::format::ProtoEnum for #enum_name {
@@ -875,35 +879,21 @@ impl CodeGenerator<'_> {
             impl binformat::ShouldEncode for #enum_name {
                 fn should_encode(&self, proto3: bool) -> bool {
                     match self  {
-                        Self::Unknown(_) => false,
+                        Self(#def) => false,
                         _ => true
                     }
                 }
             }
-            impl From<u32> for #enum_name {
-                fn from(v: u32) -> #enum_name {
-                    match v {
-                        #(#arms_from,)*
-                        other => #enum_name::Unknown(other),
-                    }
+            impl From<i32> for #enum_name {
+                fn from(v: i32) -> #enum_name {
+                    Self(v)
                 }
             }
-            impl From<#enum_name> for u32 {
-                fn from(v: #enum_name) -> u32 {
-                    match v {
-                        #(#arms_into,)*
-                        #enum_name::Unknown(other) => other,
-                    }
+            impl From<#enum_name> for i32 {
+                fn from(v: #enum_name) -> i32 {
+                    v.0
                 }
             }
-            // impl Into<u32> for #enum_name {
-            //     fn into(self) -> u32 {
-            //         match self {
-            //             #(#arms_into,)*
-            //             #enum_name::Unknown(other) => other,
-            //         }
-            //     }
-            // }
             #text_format
         }
     }
@@ -955,21 +945,21 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, unit_id:
             }
 
             let their_name = if file.name.contains('/') {
-                &file.name.as_str()[file.name.rfind('/').unwrap() + 1 ..]
+                &file.name.as_str()[file.name.rfind('/').unwrap() + 1..]
             } else {
                 file.name.as_str()
             };
             let their_name = if their_name.contains('.') {
-                &their_name[.. their_name.rfind('.').unwrap()]
+                &their_name[..their_name.rfind('.').unwrap()]
             } else {
                 their_name
             };
             let mut our_module = unit.package.as_str();
             let mut that_module = file.package.as_str();
 
-            while !our_module.is_empty() && !that_module.is_empty() && our_module[.. 1] == that_module[.. 1] {
-                our_module = &our_module[1 ..];
-                that_module = &that_module[1 ..];
+            while !our_module.is_empty() && !that_module.is_empty() && our_module[..1] == that_module[..1] {
+                our_module = &our_module[1..];
+                that_module = &that_module[1..];
             }
             let mut path = String::new();
             path.push_str("super::");
@@ -992,6 +982,7 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, unit_id:
                 use #import::*;
             }
         });
+
     let output = quote! {
         #![allow(nonstandard_style)]
         #![allow(unused)]
@@ -1013,7 +1004,7 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, unit_id:
         #(#enums)*
         #(#services)*
     };
-    let output = syn::parse2(output.clone()).with_context(||output.to_string()).unwrap();
+    let output = syn::parse2(output.clone()).with_context(|| output.to_string()).unwrap();
     let output = prettyplease::unparse(&output);
     println!("Creating file: {name:?}");
     let mut f = File::options()
@@ -1037,7 +1028,7 @@ pub fn generate_descriptor(ctx: &TranslateCtx, name: impl AsRef<Path>) {
     f.flush().unwrap();
 }
 
-pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item = &'s str>) {
+pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item=&'s str>) {
     let root = opts.import_root.clone();
     let files: Vec<_> = files
         .map(|v| {

@@ -542,109 +542,193 @@ impl binformat::Decodable for FieldRules {
                 buf = Format::<Nest>::decode(&mut self.message, buf)?;
             }
             10u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Float(tmp);
+                if let FieldRulesOneOfType::Float(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Float(tmp);
+                }
             }
             18u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Double(tmp);
+                if let FieldRulesOneOfType::Double(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Double(tmp);
+                }
             }
             26u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Int32(tmp);
+                if let FieldRulesOneOfType::Int32(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Int32(tmp);
+                }
             }
             34u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Int64(tmp);
+                if let FieldRulesOneOfType::Int64(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Int64(tmp);
+                }
             }
             42u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Uint32(tmp);
+                if let FieldRulesOneOfType::Uint32(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Uint32(tmp);
+                }
             }
             50u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Uint64(tmp);
+                if let FieldRulesOneOfType::Uint64(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Uint64(tmp);
+                }
             }
             58u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Sint32(tmp);
+                if let FieldRulesOneOfType::Sint32(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Sint32(tmp);
+                }
             }
             66u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Sint64(tmp);
+                if let FieldRulesOneOfType::Sint64(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Sint64(tmp);
+                }
             }
             74u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Fixed32(tmp);
+                if let FieldRulesOneOfType::Fixed32(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Fixed32(tmp);
+                }
             }
             82u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Fixed64(tmp);
+                if let FieldRulesOneOfType::Fixed64(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Fixed64(tmp);
+                }
             }
             90u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Sfixed32(tmp);
+                if let FieldRulesOneOfType::Sfixed32(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Sfixed32(tmp);
+                }
             }
             98u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Sfixed64(tmp);
+                if let FieldRulesOneOfType::Sfixed64(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Sfixed64(tmp);
+                }
             }
             106u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Bool(tmp);
+                if let FieldRulesOneOfType::Bool(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Bool(tmp);
+                }
             }
             114u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::String(tmp);
+                if let FieldRulesOneOfType::String(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::String(tmp);
+                }
             }
             122u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Bytes(tmp);
+                if let FieldRulesOneOfType::Bytes(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Bytes(tmp);
+                }
             }
             130u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Enum(tmp);
+                if let FieldRulesOneOfType::Enum(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Enum(tmp);
+                }
             }
             146u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Repeated(tmp);
+                if let FieldRulesOneOfType::Repeated(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Repeated(tmp);
+                }
             }
             154u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Map(tmp);
+                if let FieldRulesOneOfType::Map(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Map(tmp);
+                }
             }
             162u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Any(tmp);
+                if let FieldRulesOneOfType::Any(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Any(tmp);
+                }
             }
             170u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Duration(tmp);
+                if let FieldRulesOneOfType::Duration(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Duration(tmp);
+                }
             }
             178u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Nest>::decode(&mut tmp, buf)?;
-                self.r#type = FieldRulesOneOfType::Timestamp(tmp);
+                if let FieldRulesOneOfType::Timestamp(tmp) = &mut self.r#type {
+                    buf = Format::<Nest>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Nest>::decode(&mut tmp, buf)?;
+                    self.r#type = FieldRulesOneOfType::Timestamp(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -757,17 +841,17 @@ pub enum FieldRulesOneOfType {
     Timestamp(TimestampRules),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for FieldRulesOneOfType {
+    fn default() -> Self {
+        FieldRulesOneOfType::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for FieldRulesOneOfType {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
             Self::Unknown(_) => false,
             _ => true,
         }
-    }
-}
-impl Default for FieldRulesOneOfType {
-    fn default() -> Self {
-        FieldRulesOneOfType::Unknown(::core::marker::PhantomData)
     }
 }
 #[repr(C)]
@@ -4930,104 +5014,188 @@ impl binformat::Decodable for StringRules {
                 buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             96u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Email(tmp);
+                if let StringRulesOneOfWellKnown::Email(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Email(tmp);
+                }
             }
             98u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Email(tmp);
+                if let StringRulesOneOfWellKnown::Email(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Email(tmp);
+                }
             }
             104u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Hostname(tmp);
+                if let StringRulesOneOfWellKnown::Hostname(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Hostname(tmp);
+                }
             }
             106u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Hostname(tmp);
+                if let StringRulesOneOfWellKnown::Hostname(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Hostname(tmp);
+                }
             }
             112u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Ip(tmp);
+                if let StringRulesOneOfWellKnown::Ip(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Ip(tmp);
+                }
             }
             114u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Ip(tmp);
+                if let StringRulesOneOfWellKnown::Ip(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Ip(tmp);
+                }
             }
             120u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Ipv4(tmp);
+                if let StringRulesOneOfWellKnown::Ipv4(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Ipv4(tmp);
+                }
             }
             122u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Ipv4(tmp);
+                if let StringRulesOneOfWellKnown::Ipv4(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Ipv4(tmp);
+                }
             }
             128u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Ipv6(tmp);
+                if let StringRulesOneOfWellKnown::Ipv6(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Ipv6(tmp);
+                }
             }
             130u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Ipv6(tmp);
+                if let StringRulesOneOfWellKnown::Ipv6(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Ipv6(tmp);
+                }
             }
             136u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Uri(tmp);
+                if let StringRulesOneOfWellKnown::Uri(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Uri(tmp);
+                }
             }
             138u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Uri(tmp);
+                if let StringRulesOneOfWellKnown::Uri(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Uri(tmp);
+                }
             }
             144u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::UriRef(tmp);
+                if let StringRulesOneOfWellKnown::UriRef(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::UriRef(tmp);
+                }
             }
             146u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::UriRef(tmp);
+                if let StringRulesOneOfWellKnown::UriRef(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::UriRef(tmp);
+                }
             }
             168u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Address(tmp);
+                if let StringRulesOneOfWellKnown::Address(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Address(tmp);
+                }
             }
             170u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Address(tmp);
+                if let StringRulesOneOfWellKnown::Address(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Address(tmp);
+                }
             }
             176u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Uuid(tmp);
+                if let StringRulesOneOfWellKnown::Uuid(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Uuid(tmp);
+                }
             }
             178u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::Uuid(tmp);
+                if let StringRulesOneOfWellKnown::Uuid(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::Uuid(tmp);
+                }
             }
             192u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::WellKnownRegex(tmp);
+                if let StringRulesOneOfWellKnown::WellKnownRegex(tmp)
+                    = &mut self.well_known
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::WellKnownRegex(tmp);
+                }
             }
             194u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Enum>::decode(&mut tmp, buf)?;
-                self.well_known = StringRulesOneOfWellKnown::WellKnownRegex(tmp);
+                if let StringRulesOneOfWellKnown::WellKnownRegex(tmp)
+                    = &mut self.well_known
+                {
+                    buf = Format::<Enum>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Enum>::decode(&mut tmp, buf)?;
+                    self.well_known = StringRulesOneOfWellKnown::WellKnownRegex(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5141,17 +5309,17 @@ pub enum StringRulesOneOfWellKnown {
     WellKnownRegex(KnownRegex),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for StringRulesOneOfWellKnown {
+    fn default() -> Self {
+        StringRulesOneOfWellKnown::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for StringRulesOneOfWellKnown {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
             Self::Unknown(_) => false,
             _ => true,
         }
-    }
-}
-impl Default for StringRulesOneOfWellKnown {
-    fn default() -> Self {
-        StringRulesOneOfWellKnown::Unknown(::core::marker::PhantomData)
     }
 }
 #[repr(C)]
@@ -5525,34 +5693,58 @@ impl binformat::Decodable for BytesRules {
                 buf = Format::<Fix>::decode(&mut self.ignore_empty, buf)?;
             }
             80u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = BytesRulesOneOfWellKnown::Ip(tmp);
+                if let BytesRulesOneOfWellKnown::Ip(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = BytesRulesOneOfWellKnown::Ip(tmp);
+                }
             }
             82u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = BytesRulesOneOfWellKnown::Ip(tmp);
+                if let BytesRulesOneOfWellKnown::Ip(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = BytesRulesOneOfWellKnown::Ip(tmp);
+                }
             }
             88u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = BytesRulesOneOfWellKnown::Ipv4(tmp);
+                if let BytesRulesOneOfWellKnown::Ipv4(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = BytesRulesOneOfWellKnown::Ipv4(tmp);
+                }
             }
             90u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = BytesRulesOneOfWellKnown::Ipv4(tmp);
+                if let BytesRulesOneOfWellKnown::Ipv4(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = BytesRulesOneOfWellKnown::Ipv4(tmp);
+                }
             }
             96u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = BytesRulesOneOfWellKnown::Ipv6(tmp);
+                if let BytesRulesOneOfWellKnown::Ipv6(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = BytesRulesOneOfWellKnown::Ipv6(tmp);
+                }
             }
             98u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Fix>::decode(&mut tmp, buf)?;
-                self.well_known = BytesRulesOneOfWellKnown::Ipv6(tmp);
+                if let BytesRulesOneOfWellKnown::Ipv6(tmp) = &mut self.well_known {
+                    buf = Format::<Fix>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Fix>::decode(&mut tmp, buf)?;
+                    self.well_known = BytesRulesOneOfWellKnown::Ipv6(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -5623,17 +5815,17 @@ pub enum BytesRulesOneOfWellKnown {
     Ipv6(bool),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for BytesRulesOneOfWellKnown {
+    fn default() -> Self {
+        BytesRulesOneOfWellKnown::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for BytesRulesOneOfWellKnown {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
             Self::Unknown(_) => false,
             _ => true,
         }
-    }
-}
-impl Default for BytesRulesOneOfWellKnown {
-    fn default() -> Self {
-        BytesRulesOneOfWellKnown::Unknown(::core::marker::PhantomData)
     }
 }
 #[repr(C)]
@@ -7033,45 +7225,35 @@ impl binformat::Encodable for TimestampRules {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum KnownRegex {
-    UNKNOWN,
-    HTTP_HEADER_NAME,
-    HTTP_HEADER_VALUE,
-    Unknown(u32),
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct KnownRegex(pub i32);
+impl KnownRegex {
+    pub const UNKNOWN: KnownRegex = KnownRegex(0i32);
+    pub const HTTP_HEADER_NAME: KnownRegex = KnownRegex(1i32);
+    pub const HTTP_HEADER_VALUE: KnownRegex = KnownRegex(2i32);
 }
 impl Default for KnownRegex {
     fn default() -> KnownRegex {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for KnownRegex {}
 impl binformat::ShouldEncode for KnownRegex {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for KnownRegex {
-    fn from(v: u32) -> KnownRegex {
-        match v {
-            0u32 => KnownRegex::UNKNOWN,
-            1u32 => KnownRegex::HTTP_HEADER_NAME,
-            2u32 => KnownRegex::HTTP_HEADER_VALUE,
-            other => KnownRegex::Unknown(other),
-        }
+impl From<i32> for KnownRegex {
+    fn from(v: i32) -> KnownRegex {
+        Self(v)
     }
 }
-impl From<KnownRegex> for u32 {
-    fn from(v: KnownRegex) -> u32 {
-        match v {
-            KnownRegex::UNKNOWN => 0u32,
-            KnownRegex::HTTP_HEADER_NAME => 1u32,
-            KnownRegex::HTTP_HEADER_VALUE => 2u32,
-            KnownRegex::Unknown(other) => other,
-        }
+impl From<KnownRegex> for i32 {
+    fn from(v: KnownRegex) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for KnownRegex {
@@ -7082,10 +7264,10 @@ impl textformat::Field for KnownRegex {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            KnownRegex::UNKNOWN => "UNKNOWN",
-            KnownRegex::HTTP_HEADER_NAME => "HTTP_HEADER_NAME",
-            KnownRegex::HTTP_HEADER_VALUE => "HTTP_HEADER_VALUE",
-            KnownRegex::Unknown(n) => {
+            KnownRegex(0i32) => "UNKNOWN",
+            KnownRegex(1i32) => "HTTP_HEADER_NAME",
+            KnownRegex(2i32) => "HTTP_HEADER_VALUE",
+            KnownRegex(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -7108,7 +7290,7 @@ impl textformat::Field for KnownRegex {
             textformat::ast::Literal::Identifier("HTTP_HEADER_VALUE") => {
                 *self = KnownRegex::HTTP_HEADER_VALUE;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())

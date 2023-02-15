@@ -5100,90 +5100,50 @@ impl binformat::Encodable for GeneratedCodeInfoAnnotation {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum FieldDescriptorProtoType {
-    TYPE_DOUBLE,
-    TYPE_FLOAT,
-    TYPE_INT64,
-    TYPE_UINT64,
-    TYPE_INT32,
-    TYPE_FIXED64,
-    TYPE_FIXED32,
-    TYPE_BOOL,
-    TYPE_STRING,
-    TYPE_GROUP,
-    TYPE_MESSAGE,
-    TYPE_BYTES,
-    TYPE_UINT32,
-    TYPE_ENUM,
-    TYPE_SFIXED32,
-    TYPE_SFIXED64,
-    TYPE_SINT32,
-    TYPE_SINT64,
-    Unknown(u32),
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct FieldDescriptorProtoType(pub i32);
+impl FieldDescriptorProtoType {
+    pub const TYPE_DOUBLE: FieldDescriptorProtoType = FieldDescriptorProtoType(1i32);
+    pub const TYPE_FLOAT: FieldDescriptorProtoType = FieldDescriptorProtoType(2i32);
+    pub const TYPE_INT64: FieldDescriptorProtoType = FieldDescriptorProtoType(3i32);
+    pub const TYPE_UINT64: FieldDescriptorProtoType = FieldDescriptorProtoType(4i32);
+    pub const TYPE_INT32: FieldDescriptorProtoType = FieldDescriptorProtoType(5i32);
+    pub const TYPE_FIXED64: FieldDescriptorProtoType = FieldDescriptorProtoType(6i32);
+    pub const TYPE_FIXED32: FieldDescriptorProtoType = FieldDescriptorProtoType(7i32);
+    pub const TYPE_BOOL: FieldDescriptorProtoType = FieldDescriptorProtoType(8i32);
+    pub const TYPE_STRING: FieldDescriptorProtoType = FieldDescriptorProtoType(9i32);
+    pub const TYPE_GROUP: FieldDescriptorProtoType = FieldDescriptorProtoType(10i32);
+    pub const TYPE_MESSAGE: FieldDescriptorProtoType = FieldDescriptorProtoType(11i32);
+    pub const TYPE_BYTES: FieldDescriptorProtoType = FieldDescriptorProtoType(12i32);
+    pub const TYPE_UINT32: FieldDescriptorProtoType = FieldDescriptorProtoType(13i32);
+    pub const TYPE_ENUM: FieldDescriptorProtoType = FieldDescriptorProtoType(14i32);
+    pub const TYPE_SFIXED32: FieldDescriptorProtoType = FieldDescriptorProtoType(15i32);
+    pub const TYPE_SFIXED64: FieldDescriptorProtoType = FieldDescriptorProtoType(16i32);
+    pub const TYPE_SINT32: FieldDescriptorProtoType = FieldDescriptorProtoType(17i32);
+    pub const TYPE_SINT64: FieldDescriptorProtoType = FieldDescriptorProtoType(18i32);
 }
 impl Default for FieldDescriptorProtoType {
     fn default() -> FieldDescriptorProtoType {
-        Self::from(0)
+        Self::from(1i32)
     }
 }
 impl binformat::format::ProtoEnum for FieldDescriptorProtoType {}
 impl binformat::ShouldEncode for FieldDescriptorProtoType {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(1i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for FieldDescriptorProtoType {
-    fn from(v: u32) -> FieldDescriptorProtoType {
-        match v {
-            1u32 => FieldDescriptorProtoType::TYPE_DOUBLE,
-            2u32 => FieldDescriptorProtoType::TYPE_FLOAT,
-            3u32 => FieldDescriptorProtoType::TYPE_INT64,
-            4u32 => FieldDescriptorProtoType::TYPE_UINT64,
-            5u32 => FieldDescriptorProtoType::TYPE_INT32,
-            6u32 => FieldDescriptorProtoType::TYPE_FIXED64,
-            7u32 => FieldDescriptorProtoType::TYPE_FIXED32,
-            8u32 => FieldDescriptorProtoType::TYPE_BOOL,
-            9u32 => FieldDescriptorProtoType::TYPE_STRING,
-            10u32 => FieldDescriptorProtoType::TYPE_GROUP,
-            11u32 => FieldDescriptorProtoType::TYPE_MESSAGE,
-            12u32 => FieldDescriptorProtoType::TYPE_BYTES,
-            13u32 => FieldDescriptorProtoType::TYPE_UINT32,
-            14u32 => FieldDescriptorProtoType::TYPE_ENUM,
-            15u32 => FieldDescriptorProtoType::TYPE_SFIXED32,
-            16u32 => FieldDescriptorProtoType::TYPE_SFIXED64,
-            17u32 => FieldDescriptorProtoType::TYPE_SINT32,
-            18u32 => FieldDescriptorProtoType::TYPE_SINT64,
-            other => FieldDescriptorProtoType::Unknown(other),
-        }
+impl From<i32> for FieldDescriptorProtoType {
+    fn from(v: i32) -> FieldDescriptorProtoType {
+        Self(v)
     }
 }
-impl From<FieldDescriptorProtoType> for u32 {
-    fn from(v: FieldDescriptorProtoType) -> u32 {
-        match v {
-            FieldDescriptorProtoType::TYPE_DOUBLE => 1u32,
-            FieldDescriptorProtoType::TYPE_FLOAT => 2u32,
-            FieldDescriptorProtoType::TYPE_INT64 => 3u32,
-            FieldDescriptorProtoType::TYPE_UINT64 => 4u32,
-            FieldDescriptorProtoType::TYPE_INT32 => 5u32,
-            FieldDescriptorProtoType::TYPE_FIXED64 => 6u32,
-            FieldDescriptorProtoType::TYPE_FIXED32 => 7u32,
-            FieldDescriptorProtoType::TYPE_BOOL => 8u32,
-            FieldDescriptorProtoType::TYPE_STRING => 9u32,
-            FieldDescriptorProtoType::TYPE_GROUP => 10u32,
-            FieldDescriptorProtoType::TYPE_MESSAGE => 11u32,
-            FieldDescriptorProtoType::TYPE_BYTES => 12u32,
-            FieldDescriptorProtoType::TYPE_UINT32 => 13u32,
-            FieldDescriptorProtoType::TYPE_ENUM => 14u32,
-            FieldDescriptorProtoType::TYPE_SFIXED32 => 15u32,
-            FieldDescriptorProtoType::TYPE_SFIXED64 => 16u32,
-            FieldDescriptorProtoType::TYPE_SINT32 => 17u32,
-            FieldDescriptorProtoType::TYPE_SINT64 => 18u32,
-            FieldDescriptorProtoType::Unknown(other) => other,
-        }
+impl From<FieldDescriptorProtoType> for i32 {
+    fn from(v: FieldDescriptorProtoType) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for FieldDescriptorProtoType {
@@ -5194,25 +5154,25 @@ impl textformat::Field for FieldDescriptorProtoType {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            FieldDescriptorProtoType::TYPE_DOUBLE => "TYPE_DOUBLE",
-            FieldDescriptorProtoType::TYPE_FLOAT => "TYPE_FLOAT",
-            FieldDescriptorProtoType::TYPE_INT64 => "TYPE_INT64",
-            FieldDescriptorProtoType::TYPE_UINT64 => "TYPE_UINT64",
-            FieldDescriptorProtoType::TYPE_INT32 => "TYPE_INT32",
-            FieldDescriptorProtoType::TYPE_FIXED64 => "TYPE_FIXED64",
-            FieldDescriptorProtoType::TYPE_FIXED32 => "TYPE_FIXED32",
-            FieldDescriptorProtoType::TYPE_BOOL => "TYPE_BOOL",
-            FieldDescriptorProtoType::TYPE_STRING => "TYPE_STRING",
-            FieldDescriptorProtoType::TYPE_GROUP => "TYPE_GROUP",
-            FieldDescriptorProtoType::TYPE_MESSAGE => "TYPE_MESSAGE",
-            FieldDescriptorProtoType::TYPE_BYTES => "TYPE_BYTES",
-            FieldDescriptorProtoType::TYPE_UINT32 => "TYPE_UINT32",
-            FieldDescriptorProtoType::TYPE_ENUM => "TYPE_ENUM",
-            FieldDescriptorProtoType::TYPE_SFIXED32 => "TYPE_SFIXED32",
-            FieldDescriptorProtoType::TYPE_SFIXED64 => "TYPE_SFIXED64",
-            FieldDescriptorProtoType::TYPE_SINT32 => "TYPE_SINT32",
-            FieldDescriptorProtoType::TYPE_SINT64 => "TYPE_SINT64",
-            FieldDescriptorProtoType::Unknown(n) => {
+            FieldDescriptorProtoType(1i32) => "TYPE_DOUBLE",
+            FieldDescriptorProtoType(2i32) => "TYPE_FLOAT",
+            FieldDescriptorProtoType(3i32) => "TYPE_INT64",
+            FieldDescriptorProtoType(4i32) => "TYPE_UINT64",
+            FieldDescriptorProtoType(5i32) => "TYPE_INT32",
+            FieldDescriptorProtoType(6i32) => "TYPE_FIXED64",
+            FieldDescriptorProtoType(7i32) => "TYPE_FIXED32",
+            FieldDescriptorProtoType(8i32) => "TYPE_BOOL",
+            FieldDescriptorProtoType(9i32) => "TYPE_STRING",
+            FieldDescriptorProtoType(10i32) => "TYPE_GROUP",
+            FieldDescriptorProtoType(11i32) => "TYPE_MESSAGE",
+            FieldDescriptorProtoType(12i32) => "TYPE_BYTES",
+            FieldDescriptorProtoType(13i32) => "TYPE_UINT32",
+            FieldDescriptorProtoType(14i32) => "TYPE_ENUM",
+            FieldDescriptorProtoType(15i32) => "TYPE_SFIXED32",
+            FieldDescriptorProtoType(16i32) => "TYPE_SFIXED64",
+            FieldDescriptorProtoType(17i32) => "TYPE_SINT32",
+            FieldDescriptorProtoType(18i32) => "TYPE_SINT64",
+            FieldDescriptorProtoType(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5280,51 +5240,47 @@ impl textformat::Field for FieldDescriptorProtoType {
             textformat::ast::Literal::Identifier("TYPE_SINT64") => {
                 *self = FieldDescriptorProtoType::TYPE_SINT64;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum FieldDescriptorProtoLabel {
-    LABEL_OPTIONAL,
-    LABEL_REQUIRED,
-    LABEL_REPEATED,
-    Unknown(u32),
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct FieldDescriptorProtoLabel(pub i32);
+impl FieldDescriptorProtoLabel {
+    pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        1i32,
+    );
+    pub const LABEL_REQUIRED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        2i32,
+    );
+    pub const LABEL_REPEATED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        3i32,
+    );
 }
 impl Default for FieldDescriptorProtoLabel {
     fn default() -> FieldDescriptorProtoLabel {
-        Self::from(0)
+        Self::from(1i32)
     }
 }
 impl binformat::format::ProtoEnum for FieldDescriptorProtoLabel {}
 impl binformat::ShouldEncode for FieldDescriptorProtoLabel {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(1i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for FieldDescriptorProtoLabel {
-    fn from(v: u32) -> FieldDescriptorProtoLabel {
-        match v {
-            1u32 => FieldDescriptorProtoLabel::LABEL_OPTIONAL,
-            2u32 => FieldDescriptorProtoLabel::LABEL_REQUIRED,
-            3u32 => FieldDescriptorProtoLabel::LABEL_REPEATED,
-            other => FieldDescriptorProtoLabel::Unknown(other),
-        }
+impl From<i32> for FieldDescriptorProtoLabel {
+    fn from(v: i32) -> FieldDescriptorProtoLabel {
+        Self(v)
     }
 }
-impl From<FieldDescriptorProtoLabel> for u32 {
-    fn from(v: FieldDescriptorProtoLabel) -> u32 {
-        match v {
-            FieldDescriptorProtoLabel::LABEL_OPTIONAL => 1u32,
-            FieldDescriptorProtoLabel::LABEL_REQUIRED => 2u32,
-            FieldDescriptorProtoLabel::LABEL_REPEATED => 3u32,
-            FieldDescriptorProtoLabel::Unknown(other) => other,
-        }
+impl From<FieldDescriptorProtoLabel> for i32 {
+    fn from(v: FieldDescriptorProtoLabel) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for FieldDescriptorProtoLabel {
@@ -5335,10 +5291,10 @@ impl textformat::Field for FieldDescriptorProtoLabel {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            FieldDescriptorProtoLabel::LABEL_OPTIONAL => "LABEL_OPTIONAL",
-            FieldDescriptorProtoLabel::LABEL_REQUIRED => "LABEL_REQUIRED",
-            FieldDescriptorProtoLabel::LABEL_REPEATED => "LABEL_REPEATED",
-            FieldDescriptorProtoLabel::Unknown(n) => {
+            FieldDescriptorProtoLabel(1i32) => "LABEL_OPTIONAL",
+            FieldDescriptorProtoLabel(2i32) => "LABEL_REQUIRED",
+            FieldDescriptorProtoLabel(3i32) => "LABEL_REPEATED",
+            FieldDescriptorProtoLabel(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5361,51 +5317,41 @@ impl textformat::Field for FieldDescriptorProtoLabel {
             textformat::ast::Literal::Identifier("LABEL_REPEATED") => {
                 *self = FieldDescriptorProtoLabel::LABEL_REPEATED;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum FileOptionsOptimizeMode {
-    SPEED,
-    CODE_SIZE,
-    LITE_RUNTIME,
-    Unknown(u32),
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct FileOptionsOptimizeMode(pub i32);
+impl FileOptionsOptimizeMode {
+    pub const SPEED: FileOptionsOptimizeMode = FileOptionsOptimizeMode(1i32);
+    pub const CODE_SIZE: FileOptionsOptimizeMode = FileOptionsOptimizeMode(2i32);
+    pub const LITE_RUNTIME: FileOptionsOptimizeMode = FileOptionsOptimizeMode(3i32);
 }
 impl Default for FileOptionsOptimizeMode {
     fn default() -> FileOptionsOptimizeMode {
-        Self::from(0)
+        Self::from(1i32)
     }
 }
 impl binformat::format::ProtoEnum for FileOptionsOptimizeMode {}
 impl binformat::ShouldEncode for FileOptionsOptimizeMode {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(1i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for FileOptionsOptimizeMode {
-    fn from(v: u32) -> FileOptionsOptimizeMode {
-        match v {
-            1u32 => FileOptionsOptimizeMode::SPEED,
-            2u32 => FileOptionsOptimizeMode::CODE_SIZE,
-            3u32 => FileOptionsOptimizeMode::LITE_RUNTIME,
-            other => FileOptionsOptimizeMode::Unknown(other),
-        }
+impl From<i32> for FileOptionsOptimizeMode {
+    fn from(v: i32) -> FileOptionsOptimizeMode {
+        Self(v)
     }
 }
-impl From<FileOptionsOptimizeMode> for u32 {
-    fn from(v: FileOptionsOptimizeMode) -> u32 {
-        match v {
-            FileOptionsOptimizeMode::SPEED => 1u32,
-            FileOptionsOptimizeMode::CODE_SIZE => 2u32,
-            FileOptionsOptimizeMode::LITE_RUNTIME => 3u32,
-            FileOptionsOptimizeMode::Unknown(other) => other,
-        }
+impl From<FileOptionsOptimizeMode> for i32 {
+    fn from(v: FileOptionsOptimizeMode) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for FileOptionsOptimizeMode {
@@ -5416,10 +5362,10 @@ impl textformat::Field for FileOptionsOptimizeMode {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            FileOptionsOptimizeMode::SPEED => "SPEED",
-            FileOptionsOptimizeMode::CODE_SIZE => "CODE_SIZE",
-            FileOptionsOptimizeMode::LITE_RUNTIME => "LITE_RUNTIME",
-            FileOptionsOptimizeMode::Unknown(n) => {
+            FileOptionsOptimizeMode(1i32) => "SPEED",
+            FileOptionsOptimizeMode(2i32) => "CODE_SIZE",
+            FileOptionsOptimizeMode(3i32) => "LITE_RUNTIME",
+            FileOptionsOptimizeMode(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5442,51 +5388,41 @@ impl textformat::Field for FileOptionsOptimizeMode {
             textformat::ast::Literal::Identifier("LITE_RUNTIME") => {
                 *self = FileOptionsOptimizeMode::LITE_RUNTIME;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum FieldOptionsCType {
-    STRING,
-    CORD,
-    STRING_PIECE,
-    Unknown(u32),
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct FieldOptionsCType(pub i32);
+impl FieldOptionsCType {
+    pub const STRING: FieldOptionsCType = FieldOptionsCType(0i32);
+    pub const CORD: FieldOptionsCType = FieldOptionsCType(1i32);
+    pub const STRING_PIECE: FieldOptionsCType = FieldOptionsCType(2i32);
 }
 impl Default for FieldOptionsCType {
     fn default() -> FieldOptionsCType {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for FieldOptionsCType {}
 impl binformat::ShouldEncode for FieldOptionsCType {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for FieldOptionsCType {
-    fn from(v: u32) -> FieldOptionsCType {
-        match v {
-            0u32 => FieldOptionsCType::STRING,
-            1u32 => FieldOptionsCType::CORD,
-            2u32 => FieldOptionsCType::STRING_PIECE,
-            other => FieldOptionsCType::Unknown(other),
-        }
+impl From<i32> for FieldOptionsCType {
+    fn from(v: i32) -> FieldOptionsCType {
+        Self(v)
     }
 }
-impl From<FieldOptionsCType> for u32 {
-    fn from(v: FieldOptionsCType) -> u32 {
-        match v {
-            FieldOptionsCType::STRING => 0u32,
-            FieldOptionsCType::CORD => 1u32,
-            FieldOptionsCType::STRING_PIECE => 2u32,
-            FieldOptionsCType::Unknown(other) => other,
-        }
+impl From<FieldOptionsCType> for i32 {
+    fn from(v: FieldOptionsCType) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for FieldOptionsCType {
@@ -5497,10 +5433,10 @@ impl textformat::Field for FieldOptionsCType {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            FieldOptionsCType::STRING => "STRING",
-            FieldOptionsCType::CORD => "CORD",
-            FieldOptionsCType::STRING_PIECE => "STRING_PIECE",
-            FieldOptionsCType::Unknown(n) => {
+            FieldOptionsCType(0i32) => "STRING",
+            FieldOptionsCType(1i32) => "CORD",
+            FieldOptionsCType(2i32) => "STRING_PIECE",
+            FieldOptionsCType(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5523,51 +5459,41 @@ impl textformat::Field for FieldOptionsCType {
             textformat::ast::Literal::Identifier("STRING_PIECE") => {
                 *self = FieldOptionsCType::STRING_PIECE;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum FieldOptionsJSType {
-    JS_NORMAL,
-    JS_STRING,
-    JS_NUMBER,
-    Unknown(u32),
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct FieldOptionsJSType(pub i32);
+impl FieldOptionsJSType {
+    pub const JS_NORMAL: FieldOptionsJSType = FieldOptionsJSType(0i32);
+    pub const JS_STRING: FieldOptionsJSType = FieldOptionsJSType(1i32);
+    pub const JS_NUMBER: FieldOptionsJSType = FieldOptionsJSType(2i32);
 }
 impl Default for FieldOptionsJSType {
     fn default() -> FieldOptionsJSType {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for FieldOptionsJSType {}
 impl binformat::ShouldEncode for FieldOptionsJSType {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for FieldOptionsJSType {
-    fn from(v: u32) -> FieldOptionsJSType {
-        match v {
-            0u32 => FieldOptionsJSType::JS_NORMAL,
-            1u32 => FieldOptionsJSType::JS_STRING,
-            2u32 => FieldOptionsJSType::JS_NUMBER,
-            other => FieldOptionsJSType::Unknown(other),
-        }
+impl From<i32> for FieldOptionsJSType {
+    fn from(v: i32) -> FieldOptionsJSType {
+        Self(v)
     }
 }
-impl From<FieldOptionsJSType> for u32 {
-    fn from(v: FieldOptionsJSType) -> u32 {
-        match v {
-            FieldOptionsJSType::JS_NORMAL => 0u32,
-            FieldOptionsJSType::JS_STRING => 1u32,
-            FieldOptionsJSType::JS_NUMBER => 2u32,
-            FieldOptionsJSType::Unknown(other) => other,
-        }
+impl From<FieldOptionsJSType> for i32 {
+    fn from(v: FieldOptionsJSType) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for FieldOptionsJSType {
@@ -5578,10 +5504,10 @@ impl textformat::Field for FieldOptionsJSType {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            FieldOptionsJSType::JS_NORMAL => "JS_NORMAL",
-            FieldOptionsJSType::JS_STRING => "JS_STRING",
-            FieldOptionsJSType::JS_NUMBER => "JS_NUMBER",
-            FieldOptionsJSType::Unknown(n) => {
+            FieldOptionsJSType(0i32) => "JS_NORMAL",
+            FieldOptionsJSType(1i32) => "JS_STRING",
+            FieldOptionsJSType(2i32) => "JS_NUMBER",
+            FieldOptionsJSType(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5604,51 +5530,47 @@ impl textformat::Field for FieldOptionsJSType {
             textformat::ast::Literal::Identifier("JS_NUMBER") => {
                 *self = FieldOptionsJSType::JS_NUMBER;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum MethodOptionsIdempotencyLevel {
-    IDEMPOTENCY_UNKNOWN,
-    NO_SIDE_EFFECTS,
-    IDEMPOTENT,
-    Unknown(u32),
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct MethodOptionsIdempotencyLevel(pub i32);
+impl MethodOptionsIdempotencyLevel {
+    pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        0i32,
+    );
+    pub const NO_SIDE_EFFECTS: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        1i32,
+    );
+    pub const IDEMPOTENT: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        2i32,
+    );
 }
 impl Default for MethodOptionsIdempotencyLevel {
     fn default() -> MethodOptionsIdempotencyLevel {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for MethodOptionsIdempotencyLevel {}
 impl binformat::ShouldEncode for MethodOptionsIdempotencyLevel {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for MethodOptionsIdempotencyLevel {
-    fn from(v: u32) -> MethodOptionsIdempotencyLevel {
-        match v {
-            0u32 => MethodOptionsIdempotencyLevel::IDEMPOTENCY_UNKNOWN,
-            1u32 => MethodOptionsIdempotencyLevel::NO_SIDE_EFFECTS,
-            2u32 => MethodOptionsIdempotencyLevel::IDEMPOTENT,
-            other => MethodOptionsIdempotencyLevel::Unknown(other),
-        }
+impl From<i32> for MethodOptionsIdempotencyLevel {
+    fn from(v: i32) -> MethodOptionsIdempotencyLevel {
+        Self(v)
     }
 }
-impl From<MethodOptionsIdempotencyLevel> for u32 {
-    fn from(v: MethodOptionsIdempotencyLevel) -> u32 {
-        match v {
-            MethodOptionsIdempotencyLevel::IDEMPOTENCY_UNKNOWN => 0u32,
-            MethodOptionsIdempotencyLevel::NO_SIDE_EFFECTS => 1u32,
-            MethodOptionsIdempotencyLevel::IDEMPOTENT => 2u32,
-            MethodOptionsIdempotencyLevel::Unknown(other) => other,
-        }
+impl From<MethodOptionsIdempotencyLevel> for i32 {
+    fn from(v: MethodOptionsIdempotencyLevel) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for MethodOptionsIdempotencyLevel {
@@ -5659,10 +5581,10 @@ impl textformat::Field for MethodOptionsIdempotencyLevel {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            MethodOptionsIdempotencyLevel::IDEMPOTENCY_UNKNOWN => "IDEMPOTENCY_UNKNOWN",
-            MethodOptionsIdempotencyLevel::NO_SIDE_EFFECTS => "NO_SIDE_EFFECTS",
-            MethodOptionsIdempotencyLevel::IDEMPOTENT => "IDEMPOTENT",
-            MethodOptionsIdempotencyLevel::Unknown(n) => {
+            MethodOptionsIdempotencyLevel(0i32) => "IDEMPOTENCY_UNKNOWN",
+            MethodOptionsIdempotencyLevel(1i32) => "NO_SIDE_EFFECTS",
+            MethodOptionsIdempotencyLevel(2i32) => "IDEMPOTENT",
+            MethodOptionsIdempotencyLevel(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -5685,7 +5607,7 @@ impl textformat::Field for MethodOptionsIdempotencyLevel {
             textformat::ast::Literal::Identifier("IDEMPOTENT") => {
                 *self = MethodOptionsIdempotencyLevel::IDEMPOTENT;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())

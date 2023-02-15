@@ -15,7 +15,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct FailureSet {
     pub failure: Vec<String>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl FailureSet {
     #[inline(always)]
@@ -100,7 +100,7 @@ pub struct ConformanceRequest {
     pub jspb_encoding_options: Option<Box<JspbEncodingConfig>>,
     pub print_unknown_fields: bool,
     pub payload: ConformanceRequestOneOfPayload,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl ConformanceRequest {
     #[inline(always)]
@@ -344,24 +344,48 @@ impl binformat::Decodable for ConformanceRequest {
                 buf = Format::<Fix>::decode(&mut self.print_unknown_fields, buf)?;
             }
             10u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.payload = ConformanceRequestOneOfPayload::ProtobufPayload(tmp);
+                if let ConformanceRequestOneOfPayload::ProtobufPayload(tmp)
+                    = &mut self.payload
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.payload = ConformanceRequestOneOfPayload::ProtobufPayload(tmp);
+                }
             }
             18u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.payload = ConformanceRequestOneOfPayload::JsonPayload(tmp);
+                if let ConformanceRequestOneOfPayload::JsonPayload(tmp)
+                    = &mut self.payload
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.payload = ConformanceRequestOneOfPayload::JsonPayload(tmp);
+                }
             }
             58u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.payload = ConformanceRequestOneOfPayload::JspbPayload(tmp);
+                if let ConformanceRequestOneOfPayload::JspbPayload(tmp)
+                    = &mut self.payload
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.payload = ConformanceRequestOneOfPayload::JspbPayload(tmp);
+                }
             }
             66u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.payload = ConformanceRequestOneOfPayload::TextPayload(tmp);
+                if let ConformanceRequestOneOfPayload::TextPayload(tmp)
+                    = &mut self.payload
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.payload = ConformanceRequestOneOfPayload::TextPayload(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -418,6 +442,11 @@ pub enum ConformanceRequestOneOfPayload {
     TextPayload(String),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for ConformanceRequestOneOfPayload {
+    fn default() -> Self {
+        ConformanceRequestOneOfPayload::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for ConformanceRequestOneOfPayload {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
@@ -426,16 +455,11 @@ impl binformat::ShouldEncode for ConformanceRequestOneOfPayload {
         }
     }
 }
-impl Default for ConformanceRequestOneOfPayload {
-    fn default() -> Self {
-        ConformanceRequestOneOfPayload::Unknown(::core::marker::PhantomData)
-    }
-}
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct ConformanceResponse {
     pub result: ConformanceResponseOneOfResult,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl ConformanceResponse {
     #[inline(always)]
@@ -663,49 +687,100 @@ impl binformat::Decodable for ConformanceResponse {
         use binformat::format::*;
         match tag {
             10u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::ParseError(tmp);
+                if let ConformanceResponseOneOfResult::ParseError(tmp) = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::ParseError(tmp);
+                }
             }
             50u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::SerializeError(tmp);
+                if let ConformanceResponseOneOfResult::SerializeError(tmp)
+                    = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::SerializeError(tmp);
+                }
             }
             74u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::TimeoutError(tmp);
+                if let ConformanceResponseOneOfResult::TimeoutError(tmp)
+                    = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::TimeoutError(tmp);
+                }
             }
             18u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::RuntimeError(tmp);
+                if let ConformanceResponseOneOfResult::RuntimeError(tmp)
+                    = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::RuntimeError(tmp);
+                }
             }
             26u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::ProtobufPayload(tmp);
+                if let ConformanceResponseOneOfResult::ProtobufPayload(tmp)
+                    = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::ProtobufPayload(tmp);
+                }
             }
             34u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::JsonPayload(tmp);
+                if let ConformanceResponseOneOfResult::JsonPayload(tmp)
+                    = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::JsonPayload(tmp);
+                }
             }
             42u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::Skipped(tmp);
+                if let ConformanceResponseOneOfResult::Skipped(tmp) = &mut self.result {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::Skipped(tmp);
+                }
             }
             58u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::JspbPayload(tmp);
+                if let ConformanceResponseOneOfResult::JspbPayload(tmp)
+                    = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::JspbPayload(tmp);
+                }
             }
             66u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.result = ConformanceResponseOneOfResult::TextPayload(tmp);
+                if let ConformanceResponseOneOfResult::TextPayload(tmp)
+                    = &mut self.result
+                {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.result = ConformanceResponseOneOfResult::TextPayload(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -767,6 +842,11 @@ pub enum ConformanceResponseOneOfResult {
     TextPayload(String),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for ConformanceResponseOneOfResult {
+    fn default() -> Self {
+        ConformanceResponseOneOfResult::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for ConformanceResponseOneOfResult {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
@@ -775,16 +855,11 @@ impl binformat::ShouldEncode for ConformanceResponseOneOfResult {
         }
     }
 }
-impl Default for ConformanceResponseOneOfResult {
-    fn default() -> Self {
-        ConformanceResponseOneOfResult::Unknown(::core::marker::PhantomData)
-    }
-}
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct JspbEncodingConfig {
     pub use_jspb_array_any_format: bool,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl JspbEncodingConfig {
     #[inline(always)]
@@ -867,51 +942,37 @@ impl binformat::Encodable for JspbEncodingConfig {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum WireFormat {
-    UNSPECIFIED,
-    PROTOBUF,
-    JSON,
-    JSPB,
-    TEXT_FORMAT,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct WireFormat(pub i32);
+impl WireFormat {
+    pub const UNSPECIFIED: WireFormat = WireFormat(0i32);
+    pub const PROTOBUF: WireFormat = WireFormat(1i32);
+    pub const JSON: WireFormat = WireFormat(2i32);
+    pub const JSPB: WireFormat = WireFormat(3i32);
+    pub const TEXT_FORMAT: WireFormat = WireFormat(4i32);
 }
 impl Default for WireFormat {
     fn default() -> WireFormat {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for WireFormat {}
 impl binformat::ShouldEncode for WireFormat {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for WireFormat {
-    fn from(v: u32) -> WireFormat {
-        match v {
-            0u32 => WireFormat::UNSPECIFIED,
-            1u32 => WireFormat::PROTOBUF,
-            2u32 => WireFormat::JSON,
-            3u32 => WireFormat::JSPB,
-            4u32 => WireFormat::TEXT_FORMAT,
-            other => WireFormat::Unknown(other),
-        }
+impl From<i32> for WireFormat {
+    fn from(v: i32) -> WireFormat {
+        Self(v)
     }
 }
-impl From<WireFormat> for u32 {
-    fn from(v: WireFormat) -> u32 {
-        match v {
-            WireFormat::UNSPECIFIED => 0u32,
-            WireFormat::PROTOBUF => 1u32,
-            WireFormat::JSON => 2u32,
-            WireFormat::JSPB => 3u32,
-            WireFormat::TEXT_FORMAT => 4u32,
-            WireFormat::Unknown(other) => other,
-        }
+impl From<WireFormat> for i32 {
+    fn from(v: WireFormat) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for WireFormat {
@@ -922,12 +983,12 @@ impl textformat::Field for WireFormat {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            WireFormat::UNSPECIFIED => "UNSPECIFIED",
-            WireFormat::PROTOBUF => "PROTOBUF",
-            WireFormat::JSON => "JSON",
-            WireFormat::JSPB => "JSPB",
-            WireFormat::TEXT_FORMAT => "TEXT_FORMAT",
-            WireFormat::Unknown(n) => {
+            WireFormat(0i32) => "UNSPECIFIED",
+            WireFormat(1i32) => "PROTOBUF",
+            WireFormat(2i32) => "JSON",
+            WireFormat(3i32) => "JSPB",
+            WireFormat(4i32) => "TEXT_FORMAT",
+            WireFormat(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -952,60 +1013,44 @@ impl textformat::Field for WireFormat {
             textformat::ast::Literal::Identifier("TEXT_FORMAT") => {
                 *self = WireFormat::TEXT_FORMAT;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-pub enum TestCategory {
-    UNSPECIFIED_TEST,
-    BINARY_TEST,
-    JSON_TEST,
-    JSON_IGNORE_UNKNOWN_PARSING_TEST,
-    JSPB_TEST,
-    TEXT_FORMAT_TEST,
-    Unknown(u32),
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct TestCategory(pub i32);
+impl TestCategory {
+    pub const UNSPECIFIED_TEST: TestCategory = TestCategory(0i32);
+    pub const BINARY_TEST: TestCategory = TestCategory(1i32);
+    pub const JSON_TEST: TestCategory = TestCategory(2i32);
+    pub const JSON_IGNORE_UNKNOWN_PARSING_TEST: TestCategory = TestCategory(3i32);
+    pub const JSPB_TEST: TestCategory = TestCategory(4i32);
+    pub const TEXT_FORMAT_TEST: TestCategory = TestCategory(5i32);
 }
 impl Default for TestCategory {
     fn default() -> TestCategory {
-        Self::from(0)
+        Self::from(0i32)
     }
 }
 impl binformat::format::ProtoEnum for TestCategory {}
 impl binformat::ShouldEncode for TestCategory {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
-            Self::Unknown(_) => false,
+            Self(0i32) => false,
             _ => true,
         }
     }
 }
-impl From<u32> for TestCategory {
-    fn from(v: u32) -> TestCategory {
-        match v {
-            0u32 => TestCategory::UNSPECIFIED_TEST,
-            1u32 => TestCategory::BINARY_TEST,
-            2u32 => TestCategory::JSON_TEST,
-            3u32 => TestCategory::JSON_IGNORE_UNKNOWN_PARSING_TEST,
-            4u32 => TestCategory::JSPB_TEST,
-            5u32 => TestCategory::TEXT_FORMAT_TEST,
-            other => TestCategory::Unknown(other),
-        }
+impl From<i32> for TestCategory {
+    fn from(v: i32) -> TestCategory {
+        Self(v)
     }
 }
-impl From<TestCategory> for u32 {
-    fn from(v: TestCategory) -> u32 {
-        match v {
-            TestCategory::UNSPECIFIED_TEST => 0u32,
-            TestCategory::BINARY_TEST => 1u32,
-            TestCategory::JSON_TEST => 2u32,
-            TestCategory::JSON_IGNORE_UNKNOWN_PARSING_TEST => 3u32,
-            TestCategory::JSPB_TEST => 4u32,
-            TestCategory::TEXT_FORMAT_TEST => 5u32,
-            TestCategory::Unknown(other) => other,
-        }
+impl From<TestCategory> for i32 {
+    fn from(v: TestCategory) -> i32 {
+        v.0
     }
 }
 impl textformat::Field for TestCategory {
@@ -1016,15 +1061,13 @@ impl textformat::Field for TestCategory {
         out: &mut String,
     ) -> ::std::fmt::Result {
         let str = match self {
-            TestCategory::UNSPECIFIED_TEST => "UNSPECIFIED_TEST",
-            TestCategory::BINARY_TEST => "BINARY_TEST",
-            TestCategory::JSON_TEST => "JSON_TEST",
-            TestCategory::JSON_IGNORE_UNKNOWN_PARSING_TEST => {
-                "JSON_IGNORE_UNKNOWN_PARSING_TEST"
-            }
-            TestCategory::JSPB_TEST => "JSPB_TEST",
-            TestCategory::TEXT_FORMAT_TEST => "TEXT_FORMAT_TEST",
-            TestCategory::Unknown(n) => {
+            TestCategory(0i32) => "UNSPECIFIED_TEST",
+            TestCategory(1i32) => "BINARY_TEST",
+            TestCategory(2i32) => "JSON_TEST",
+            TestCategory(3i32) => "JSON_IGNORE_UNKNOWN_PARSING_TEST",
+            TestCategory(4i32) => "JSPB_TEST",
+            TestCategory(5i32) => "TEXT_FORMAT_TEST",
+            TestCategory(n) => {
                 write!(out, "{n}")?;
                 return Ok(());
             }
@@ -1056,7 +1099,7 @@ impl textformat::Field for TestCategory {
             textformat::ast::Literal::Identifier("TEXT_FORMAT_TEST") => {
                 *self = TestCategory::TEXT_FORMAT_TEST;
             }
-            textformat::ast::Literal::Int(i) => *self = Self::from(*i as u32),
+            textformat::ast::Literal::Int(i) => *self = Self::from(*i as i32),
             other => textformat::bail!("Invalid enum value: {other:?}"),
         }
         Ok(())

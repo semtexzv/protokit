@@ -20,7 +20,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct DoubleValue {
     pub value: f64,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl DoubleValue {
     #[inline(always)]
@@ -103,7 +103,7 @@ impl binformat::Encodable for DoubleValue {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct FloatValue {
     pub value: f32,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl FloatValue {
     #[inline(always)]
@@ -186,7 +186,7 @@ impl binformat::Encodable for FloatValue {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Int64Value {
     pub value: i64,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Int64Value {
     #[inline(always)]
@@ -269,7 +269,7 @@ impl binformat::Encodable for Int64Value {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct UInt64Value {
     pub value: u64,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl UInt64Value {
     #[inline(always)]
@@ -352,7 +352,7 @@ impl binformat::Encodable for UInt64Value {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Int32Value {
     pub value: i32,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl Int32Value {
     #[inline(always)]
@@ -435,7 +435,7 @@ impl binformat::Encodable for Int32Value {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct UInt32Value {
     pub value: u32,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl UInt32Value {
     #[inline(always)]
@@ -518,7 +518,7 @@ impl binformat::Encodable for UInt32Value {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct BoolValue {
     pub value: bool,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl BoolValue {
     #[inline(always)]
@@ -601,7 +601,7 @@ impl binformat::Encodable for BoolValue {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct StringValue {
     pub value: String,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl StringValue {
     #[inline(always)]
@@ -681,7 +681,7 @@ impl binformat::Encodable for StringValue {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct BytesValue {
     pub value: Vec<u8>,
-    pub _unknown: (),
+    pub _unknown: binformat::UnknownFields,
 }
 impl BytesValue {
     #[inline(always)]

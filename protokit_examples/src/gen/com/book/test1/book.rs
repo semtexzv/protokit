@@ -364,19 +364,31 @@ impl binformat::Decodable for Book {
                 buf = Format::<Bytes>::decode(&mut self.extfield, buf)?;
             }
             8u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.id = BookOneOfId::Local(tmp);
+                if let BookOneOfId::Local(tmp) = &mut self.id {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self.id = BookOneOfId::Local(tmp);
+                }
             }
             10u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<VInt>::decode(&mut tmp, buf)?;
-                self.id = BookOneOfId::Local(tmp);
+                if let BookOneOfId::Local(tmp) = &mut self.id {
+                    buf = Format::<VInt>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<VInt>::decode(&mut tmp, buf)?;
+                    self.id = BookOneOfId::Local(tmp);
+                }
             }
             18u32 => {
-                let mut tmp = Default::default();
-                buf = Format::<Bytes>::decode(&mut tmp, buf)?;
-                self.id = BookOneOfId::Isbn(tmp);
+                if let BookOneOfId::Isbn(tmp) = &mut self.id {
+                    buf = Format::<Bytes>::decode(tmp, buf)?;
+                } else {
+                    let mut tmp = Default::default();
+                    buf = Format::<Bytes>::decode(&mut tmp, buf)?;
+                    self.id = BookOneOfId::Isbn(tmp);
+                }
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -443,17 +455,17 @@ pub enum BookOneOfId {
     Isbn(String),
     Unknown(::core::marker::PhantomData<()>),
 }
+impl Default for BookOneOfId {
+    fn default() -> Self {
+        BookOneOfId::Unknown(::core::marker::PhantomData)
+    }
+}
 impl binformat::ShouldEncode for BookOneOfId {
     fn should_encode(&self, proto3: bool) -> bool {
         match self {
             Self::Unknown(_) => false,
             _ => true,
         }
-    }
-}
-impl Default for BookOneOfId {
-    fn default() -> Self {
-        BookOneOfId::Unknown(::core::marker::PhantomData)
     }
 }
 #[repr(C)]

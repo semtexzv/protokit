@@ -46,7 +46,7 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
             ConformanceResponseOneOfResult::TextPayload(textformat::encode(&v, &reg).unwrap()),
         (_, WireFormat::JSON) => {
             ConformanceResponseOneOfResult::Skipped("No json".to_string())
-        },
+        }
         (Err(e), _) => {
             ConformanceResponseOneOfResult::ParseError(e.to_string())
         }
@@ -56,7 +56,7 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
 
 fn main() -> anyhow::Result<()> {
     loop {
-        let len = stdin().read_u32::<LittleEndian>().unwrap();
+        let len = stdin().read_u32::<LittleEndian>()?;
         let mut data = vec![0; len as usize];
         stdin().read_exact(&mut data).unwrap();
         let req = protokit::binformat::decode::<conformance::ConformanceRequest>(&data)?;
@@ -93,7 +93,13 @@ fn main() -> anyhow::Result<()> {
         stdout().write_u32::<LittleEndian>(out.len() as _).unwrap();
         stdout().write(&out).unwrap();
         stdout().flush().unwrap()
-        // return Ok(());
     }
     Ok(())
+}
+
+#[test]
+fn test1() {
+    let a = binformat::decode::<TestAllTypesProto3>(&[0o202, 0o007, 0o014, 0o022, 0o012, 0o010, 0o001, 0o020, 0o001, 0o310, 0o005, 0o001, 0o310, 0o005, 0o001]).unwrap();
+    let b = binformat::encode(&a).unwrap();
+    panic!("{a:#?}{b:#o}")
 }

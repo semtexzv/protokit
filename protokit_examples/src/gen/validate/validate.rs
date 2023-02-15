@@ -8,8 +8,8 @@ use ::protokit as root;
 use root::types::descriptor::*;
 use super::super::google::protobuf::duration::*;
 use root::types::timestamp::*;
-use root::types::timestamp::*;
 use super::super::google::protobuf::duration::*;
+use root::types::timestamp::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&FieldRules::default());
     registry.register(&FloatRules::default());

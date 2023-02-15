@@ -357,7 +357,7 @@ defer_opt_impl_complete! {VInt = VINT, SInt = VINT, Fix = FIX32}
 
 pub struct Enum;
 
-pub trait ProtoEnum: From<u32> + Into<u32> {}
+pub trait ProtoEnum: From<i32> + Into<i32> {}
 
 impl<T> Format<Enum> for T
     where
@@ -366,7 +366,7 @@ impl<T> Format<Enum> for T
     const WIRE_TYPE: u8 = VINT;
 
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
-        let t: u32 = self.clone().into();
+        let t: i32 = self.clone().into();
         Format::<RawVInt>::encode(&t, 0, buf)
     }
 
@@ -532,7 +532,7 @@ impl<T, F> Format<Pack<F>> for Vec<T>
             bail!("Not enough data")
         }
 
-        self.clear();
+        // self.clear();
         let (mut inner_buf, outer_buf) = buf.split_at(len);
         while !inner_buf.is_empty() {
             let mut it = T::default();
@@ -553,5 +553,5 @@ fn test_wrong() {
     assert_eq!(val, 1);
     let mut out = WriteBuffer::new();
     <i32 as Format<SInt>>::encode_val(&val, &mut out).unwrap();
-    assert_eq!(out[0], buf[0]);
+    assert_eq!(out[0], buf[0], "{buf:o?}");
 }
