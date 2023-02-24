@@ -9,6 +9,11 @@ anyhow = "1.0.66"
 byteorder = "1.4.3"
 protokit = { path = "../../protokit" }
 
+
+
+
 [build-dependencies]
-bindgen = "0.63.0"
+cmake = "0.1.49"
+bindgen = "0.64.0"
 protokit_build = { path = "../../protokit_build" }
+

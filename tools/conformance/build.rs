@@ -1,4 +1,11 @@
 fn main() {
+    cmake::Config::new("../../vendor/protobuf")
+        .define("protobuf_BUILD_CONFORMANCE", "ON")
+        .very_verbose(true)
+        .target("conformance_cpp")
+        .no_build_target(true)
+        .build();
+
     protokit_build::Build::new()
         .track_unknowns(true)
         .include("../../vendor/protobuf/conformance")

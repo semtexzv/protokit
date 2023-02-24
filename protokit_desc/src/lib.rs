@@ -25,7 +25,7 @@ pub const LOCAL_DEFID_SVC: LocalDefId = 0x20000000;
 pub const LOCAL_DEFID_EXT: LocalDefId = 0x10000000;
 
 // Top byte is reserved
-pub const LOCAL_ONLY_TYPE: LocalDefId = 0x00FFFFFF;
+pub const LOCAL_ONLY_TYPE: LocalDefId = 0xFF000000;
 pub const LOCAL_ONLY_ID: LocalDefId = 0x00FFFFFF;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -211,6 +211,7 @@ fn builtin_to_descriptor(bt: &BuiltinType) -> FieldDescriptorProtoType {
         BuiltinType::Bytes_ => FieldDescriptorProtoType::TYPE_BYTES,
     }
 }
+
 #[cfg(feature = "descriptors")]
 fn type_to_descriptor(typ: &DataType) -> FieldDescriptorProtoType {
     match typ {
@@ -386,7 +387,7 @@ impl FieldDef {
             DataType::Map(map) => {
                 let mut name = self.name.clone().to_string();
                 unsafe {
-                    name.as_bytes_mut()[.. 1].make_ascii_uppercase();
+                    name.as_bytes_mut()[..1].make_ascii_uppercase();
                 }
                 let map_entry_name = format!("{name}Entry");
                 fout.type_name = Some(format!(
@@ -1075,7 +1076,7 @@ fn try_resolve_within_scopes(names: &HashMap<ArcStr, LocalDefId>, mut scope: &st
         let qualified = format!("{scope}{scope_dot}{symbol}");
         match (names.get(qualified.as_str()), scope.rfind('.')) {
             (Some(v), _) => return Some(*v),
-            (None, Some(p)) => scope = &scope[.. p],
+            (None, Some(p)) => scope = &scope[..p],
             // Resolve globally without the prefix
             (None, None) => return names.get(symbol).copied(),
         }
@@ -1091,14 +1092,14 @@ fn try_resolve_symbol(
     if let Some(without_dot) = symbol.strip_prefix('.') {
         // We're searching for global symbol. If package prefix matches, we can search for the inner part of the symbol
         if let Some(without_package) = without_dot.strip_prefix(file_package) {
-            let localized_symbol = &without_package[1 ..];
+            let localized_symbol = &without_package[1..];
             return names.get(localized_symbol).cloned();
         } else {
             eprintln!("Package mismatch: {} within: {}", without_dot, &file_package);
             return None;
         }
     } else if let Some(localized) = symbol.strip_prefix(file_package) {
-        let localized_symbol = &localized[1 ..];
+        let localized_symbol = &localized[1..];
         return names.get(localized_symbol).cloned();
     }
 
@@ -1116,7 +1117,7 @@ fn try_resolve_symbol(
         ) {
             (Some(v), _) => return Some(v),
             // We need to remove subpackages, because name sections might be of nested messages, not package names
-            (None, Some(v)) => file_package = &file_package[.. v],
+            (None, Some(v)) => file_package = &file_package[..v],
             (None, None) => {
                 return try_resolve_within_scopes(names, "", symbol);
             }

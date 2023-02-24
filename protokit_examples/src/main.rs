@@ -1,12 +1,10 @@
-#![feature(const_ptr_offset_from, arbitrary_enum_discriminant)]
-
 use std::io::{stdin, BufRead};
-
-use crate::gen::com::book::test1::book::Book;
 
 pub mod gen {
     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
 }
+
+use crate::gen::com::book::test1::book::Book;
 
 fn main() {
     let mut stdin = stdin().lock();
