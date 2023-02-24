@@ -228,13 +228,13 @@ pub fn write_u32(mut v: u32) -> ([u8; 5], u8) {
 }
 
 #[inline]
-fn zigzag_encode(from: i64) -> u64 {
+pub fn zigzag_encode(from: i64) -> u64 {
     ((from << 1) ^ (from >> 63)) as u64
 }
 
 // see: http://stackoverflow.com/a/2211086/56332
 #[inline]
-fn zigzag_decode(from: u64) -> i64 {
+pub fn zigzag_decode(from: u64) -> i64 {
     ((from >> 1) ^ (-((from & 1) as i64)) as u64) as i64
 }
 

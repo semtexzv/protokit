@@ -17,33 +17,47 @@ pub mod gen {
 use gen::protobuf_test_messages::proto2::test_messages_proto2::TestAllTypesProto2;
 use gen::protobuf_test_messages::proto3::test_messages_proto3::TestAllTypesProto3;
 
+#[derive(Debug)]
 enum Output {
     Proto2(TestAllTypesProto2),
     Proto3(TestAllTypesProto3),
 }
 
+fn octal(d: &[u8]) -> String {
+    d.iter().map(|v| format!("\\{v:0>3o}")).collect::<Vec<_>>().join("")
+}
+
 fn input(payload: ConformanceRequestOneOfPayload, proto3: bool) -> anyhow::Result<Output> {
-    match (payload, proto3) {
+    let txt;
+    let out = match (&payload, proto3) {
         (ConformanceRequestOneOfPayload::ProtobufPayload(pb), false) => {
+            txt = octal(pb);
             Ok(Output::Proto2(binformat::decode::<TestAllTypesProto2>(&pb)?))
         }
         (ConformanceRequestOneOfPayload::ProtobufPayload(pb), true) => {
+            txt = octal(pb);
             Ok(Output::Proto3(binformat::decode::<TestAllTypesProto3>(&pb)?))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), false) => {
+            txt = pb.clone();
             Ok(Output::Proto2(textformat::decode::<TestAllTypesProto2>(
                 &pb,
                 &Registry::init(gen::register_types),
             )?))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), true) => {
-            Ok(Output::Proto3(textformat::decode::<TestAllTypesProto3>(
+            txt = pb.clone();
+
+            Ok::<_, anyhow::Error>(Output::Proto3(textformat::decode::<TestAllTypesProto3>(
                 &pb,
                 &Registry::init(gen::register_types),
             )?))
         }
         (other, _) => panic!("Unknown payload {other:?}"),
-    }
+    }?;
+
+    eprintln!("Req: {txt} => {out:?}");
+    Ok(out)
 }
 
 fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOneOfResult {
@@ -74,38 +88,36 @@ fn main() -> anyhow::Result<()> {
         let mut data = vec![0; len as usize];
         stdin().read_exact(&mut data).unwrap();
 
+        // eprintln!("D  {}  \n", data.iter().map(|v| format!("\\{v:03o}")).collect::<Vec<_>>().join(""));
         std::fs::write(format!("target/{}.bin", i), &data).unwrap();
         let req = protokit::binformat::decode::<conformance::ConformanceRequest>(&data)?;
-        eprintln!("Req: {req:?}");
 
         let out = if let ConformanceRequestOneOfPayload::JsonPayload(_) = req.payload {
-            let out = ConformanceResponse {
+            ConformanceResponse {
                 result: ConformanceResponseOneOfResult::Skipped("No json support".to_string()),
                 ..Default::default()
-            };
-            binformat::encode(&out).unwrap()
+            }
         } else if req.message_type.contains("Proto3") || req.message_type.contains("Proto2") {
             let out = input(req.payload, req.message_type.contains("Proto3"));
             let out = output(out, req.requested_output_format);
-            let out = ConformanceResponse {
+            ConformanceResponse {
                 result: out,
                 ..Default::default()
-            };
-            binformat::encode(&out).unwrap()
+            }
         } else if req.message_type.contains("FailureSet") {
             let fs = FailureSet {
                 failure: vec![],
                 ..Default::default()
             };
 
-            let resp = ConformanceResponse {
+            ConformanceResponse {
                 result: ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&fs).unwrap()),
                 ..Default::default()
-            };
-            binformat::encode(&resp).unwrap()
+            }
         } else {
             panic!()
         };
+        let out = binformat::encode(&out).unwrap();
         stdout().write_u32::<LittleEndian>(out.len() as _).unwrap();
         stdout().write(&out).unwrap();
         stdout().flush().unwrap()

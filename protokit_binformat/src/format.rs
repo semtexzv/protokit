@@ -393,6 +393,7 @@ impl Format<SInt> for i32 {
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
         let len = self.required_space();
         let oldlen = buf.len();
+
         buf.resize(buf.len() + len, 0);
         self.encode_var(&mut buf[oldlen ..]);
         Ok(())
@@ -531,7 +532,7 @@ where
             bail!("Not enough data")
         }
 
-        // self.clear();
+        self.clear();
         let (mut inner_buf, outer_buf) = buf.split_at(len);
         while !inner_buf.is_empty() {
             let mut it = T::default();
