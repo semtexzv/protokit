@@ -41,10 +41,7 @@ impl Any {
     }
 
     pub fn set(type_url: String, value: Vec<u8>) -> Self {
-        Self {
-            type_url,
-            value,
-        }
+        Self { type_url, value }
     }
 }
 

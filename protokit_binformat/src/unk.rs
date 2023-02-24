@@ -1,8 +1,8 @@
 use anyhow::{bail, Result};
 use integer_encoding::VarInt;
 
-use crate::{WriteBuffer, ReadBuffer, Decodable, Format, Encodable, Fix, VInt, format};
 use crate::ProtoValue::Bytes;
+use crate::{format, Decodable, Encodable, Fix, Format, ReadBuffer, VInt, WriteBuffer};
 
 pub(crate) const VINT: u8 = 0;
 pub(crate) const FIX64: u8 = 1;
@@ -47,7 +47,7 @@ impl Decodable for ProtoField {
             VINT => {
                 let (vint, len) = u64::decode_var(buf).unwrap();
                 self.value = ProtoValue::VInt(vint);
-                Ok(&buf[len..])
+                Ok(&buf[len ..])
             }
             FIX64 => {
                 let mut v = 0;
@@ -63,8 +63,8 @@ impl Decodable for ProtoField {
             }
             LENDELIM => {
                 let (datalen, vlen) = u64::decode_var(buf).unwrap();
-                self.value = ProtoValue::Bytes(Vec::from(&buf[vlen..datalen as usize + vlen]));
-                Ok(&buf[(datalen as usize) + vlen..])
+                self.value = ProtoValue::Bytes(Vec::from(&buf[vlen .. datalen as usize + vlen]));
+                Ok(&buf[(datalen as usize) + vlen ..])
             }
             other => bail!("Unknown wire type {other}"),
         }

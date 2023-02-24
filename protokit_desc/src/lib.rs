@@ -28,15 +28,12 @@ pub const LOCAL_DEFID_EXT: LocalDefId = 0x10000000;
 pub const LOCAL_ONLY_TYPE: LocalDefId = 0x00FFFFFF;
 pub const LOCAL_ONLY_ID: LocalDefId = 0x00FFFFFF;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Syntax {
     #[default]
     Proto2,
     Proto3,
 }
-
-
 
 impl FromStr for Syntax {
     type Err = String;
@@ -304,7 +301,12 @@ impl FieldDef {
     }
 
     #[cfg(feature = "descriptors")]
-    pub fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, _msg_desc: &DescriptorProto, desc: &FieldDescriptorProto) -> Self {
+    pub fn from_descriptor(
+        set: &mut FileSetDef,
+        file: &FileDescriptorProto,
+        _msg_desc: &DescriptorProto,
+        desc: &FieldDescriptorProto,
+    ) -> Self {
         // eprintln!("{:?}", desc);
         // TODO: Fix the packed attr to be default true in proto3
         let mut opts = desc.options.as_deref().cloned().unwrap_or_default();
@@ -805,7 +807,6 @@ impl FileDef {
     }
     pub fn resolve_extensions(&mut self, file_id: usize, prevs: &mut IndexMap<ArcStr, FileDef>) {
         for (i, m) in self.extensions.iter() {
-
             let name = resolve_name(
                 prevs,
                 &self.names,
@@ -868,14 +869,20 @@ impl FileDef {
             this.enums.insert(name, EnumDef::from_descriptor(set, desc));
         }
 
-        fn parse_msg(set: &mut FileSetDef, file: &FileDescriptorProto, this: &mut FileDef, parent: Option<&str>, desc: &DescriptorProto) {
+        fn parse_msg(
+            set: &mut FileSetDef,
+            file: &FileDescriptorProto,
+            this: &mut FileDef,
+            parent: Option<&str>,
+            desc: &DescriptorProto,
+        ) {
             let name = if let Some(parent) = parent {
                 set.cache(&format!("{}.{}", parent, desc.name.as_ref().unwrap()))
             } else {
                 set.cache(desc.name.as_ref().unwrap())
             };
             for desc in &desc.nested_type {
-                parse_msg(set,  file, this, Some(name.as_str()), desc)
+                parse_msg(set, file, this, Some(name.as_str()), desc)
             }
             for desc in &desc.enum_type {
                 parse_enum(set, this, Some(name.as_str()), desc);

@@ -81,7 +81,11 @@ where
 }
 
 impl binformat::Decodable for dyn AnyMessage {
-    fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: binformat::ReadBuffer<'b>) -> crate::Result<binformat::ReadBuffer<'b>> {
+    fn merge_field<'i, 'b>(
+        &'i mut self,
+        tag: u32,
+        buf: binformat::ReadBuffer<'b>,
+    ) -> crate::Result<binformat::ReadBuffer<'b>> {
         self.as_bin_decodable().merge_field(tag, buf)
     }
 }

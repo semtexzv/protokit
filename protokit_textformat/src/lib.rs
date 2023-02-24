@@ -45,8 +45,8 @@ pub trait Decodable {
 }
 
 impl<T> Decodable for Box<T>
-    where
-        T: Decodable,
+where
+    T: Decodable,
 {
     fn merge_field(&mut self, ctx: &Context, name: &FieldName, value: &FieldValue) -> Result<()> {
         self.deref_mut().merge_field(ctx, name, value)
@@ -58,8 +58,8 @@ pub trait Encodable {
 }
 
 impl<T> Encodable for Box<T>
-    where
-        T: Encodable,
+where
+    T: Encodable,
 {
     fn encode(&self, ctx: &Context, pad: usize, out: &mut String) -> Result<()> {
         self.deref().encode(ctx, pad, out)
@@ -90,8 +90,8 @@ pub trait Field {
 }
 
 impl<T> Field for Option<T>
-    where
-        T: Field + Default,
+where
+    T: Field + Default,
 {
     fn format(&self, ctx: &Context, pad: usize, out: &mut String) -> fmt::Result {
         if let Some(v) = self {
@@ -228,8 +228,8 @@ impl Field for f32 {
 }
 
 impl<T> Field for Vec<T>
-    where
-        T: Field + Default,
+where
+    T: Field + Default,
 {
     fn format(&self, ctx: &Context, pad: usize, out: &mut String) -> fmt::Result {
         if self.len() != 1 {
@@ -305,9 +305,9 @@ impl Field for Vec<u8> {
 }
 
 impl<K, V> Field for HashMap<K, V>
-    where
-        K: Field + Default + Hash + Eq,
-        V: Field + Default,
+where
+    K: Field + Default + Hash + Eq,
+    V: Field + Default,
 {
     #[cfg(feature = "map_syntax")]
     fn format(&self, ctx: &Context, pad: usize, out: &mut String) -> fmt::Result {
@@ -415,9 +415,9 @@ impl<K, V> Field for HashMap<K, V>
 }
 
 impl<K, V> Field for BTreeMap<K, V>
-    where
-        K: Field + Default + Ord + Eq,
-        V: Field + Default,
+where
+    K: Field + Default + Ord + Eq,
+    V: Field + Default,
 {
     fn format(&self, _ctx: &Context, _pad: usize, _out: &mut String) -> fmt::Result {
         todo!()
@@ -483,8 +483,8 @@ impl<K, V> Field for BTreeMap<K, V>
 }
 
 impl<M> Field for M
-    where
-        M: Decodable + Encodable + ?Sized,
+where
+    M: Decodable + Encodable + ?Sized,
 {
     fn format(&self, ctx: &Context, pad: usize, out: &mut String) -> fmt::Result {
         out.indent(pad);
@@ -523,7 +523,6 @@ pub fn decode<D: Default + Decodable>(i: &str, registry: &crate::reflect::Regist
     decode_into(i, registry, &mut out)?;
     Ok(out)
 }
-
 
 pub fn encode_into(o: &impl Encodable, reg: crate::reflect::Registry, out: &mut String) -> Result<()> {
     o.encode(&Context { registry: Some(&reg) }, 0, out)?;

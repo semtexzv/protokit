@@ -5,10 +5,10 @@ use std::str::FromStr;
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
 use protokit_binformat::Encodable;
+use protokit_desc::Syntax::Proto3;
 use protokit_proto::translate::TranslateCtx;
 use quote::__private::{Ident, TokenStream};
 use quote::{format_ident, quote};
-use protokit_desc::Syntax::Proto3;
 
 use crate::arcstr::ArcStr;
 use crate::deps::*;
@@ -88,7 +88,6 @@ pub fn type_marker(typ: BuiltinType) -> &'static str {
     }
 }
 
-
 #[derive(Debug, Default)]
 pub struct MessageParts {
     imports: HashSet<u32>,
@@ -143,7 +142,7 @@ impl CodeGenerator<'_> {
             BuiltinType::String_ => return self.options.string_type.clone(),
             BuiltinType::Bytes_ => return self.options.bytes_type.clone(),
         })
-            .unwrap()
+        .unwrap()
     }
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
         Ok(match typ {
@@ -680,12 +679,30 @@ impl CodeGenerator<'_> {
             file: field_file,
         } in field_iter.chain(ext_iter)
         {
-            self.message_field(&mut out, field_file, unit_id, unit, &msg_name, field_idx, def, pkg.as_ref());
+            self.message_field(
+                &mut out,
+                field_file,
+                unit_id,
+                unit,
+                &msg_name,
+                field_idx,
+                def,
+                pkg.as_ref(),
+            );
             normal_field_count = field_idx;
         }
 
         for (oneof_idx, (_oneof_name, oneof)) in unit.oneofs.iter().enumerate() {
-            self.message_oneof(&mut out, file, normal_field_count, unit_id, unit, &msg_name, oneof_idx, oneof)
+            self.message_oneof(
+                &mut out,
+                file,
+                normal_field_count,
+                unit_id,
+                unit,
+                &msg_name,
+                oneof_idx,
+                oneof,
+            )
         }
 
         let MessageParts {
@@ -859,7 +876,6 @@ impl CodeGenerator<'_> {
             quote! {}
         };
 
-
         let def = unit.variants.by_name.first().unwrap().1.num as i32;
 
         quote! {
@@ -945,21 +961,21 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, unit_id:
             }
 
             let their_name = if file.name.contains('/') {
-                &file.name.as_str()[file.name.rfind('/').unwrap() + 1..]
+                &file.name.as_str()[file.name.rfind('/').unwrap() + 1 ..]
             } else {
                 file.name.as_str()
             };
             let their_name = if their_name.contains('.') {
-                &their_name[..their_name.rfind('.').unwrap()]
+                &their_name[.. their_name.rfind('.').unwrap()]
             } else {
                 their_name
             };
             let mut our_module = unit.package.as_str();
             let mut that_module = file.package.as_str();
 
-            while !our_module.is_empty() && !that_module.is_empty() && our_module[..1] == that_module[..1] {
-                our_module = &our_module[1..];
-                that_module = &that_module[1..];
+            while !our_module.is_empty() && !that_module.is_empty() && our_module[.. 1] == that_module[.. 1] {
+                our_module = &our_module[1 ..];
+                that_module = &that_module[1 ..];
             }
             let mut path = String::new();
             path.push_str("super::");
@@ -1028,7 +1044,7 @@ pub fn generate_descriptor(ctx: &TranslateCtx, name: impl AsRef<Path>) {
     f.flush().unwrap();
 }
 
-pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item=&'s str>) {
+pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item = &'s str>) {
     let root = opts.import_root.clone();
     let files: Vec<_> = files
         .map(|v| {

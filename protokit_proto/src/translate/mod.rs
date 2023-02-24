@@ -4,7 +4,6 @@ use std::io;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 
-
 use protokit_desc::arcstr::ArcStr;
 use protokit_desc::{FileDef, FileSetDef};
 
@@ -111,9 +110,7 @@ impl TranslateCtx {
             Ok(parsed) => parsed,
             Err(e) => {
                 let mut s = String::new();
-                miette::GraphicalReportHandler::new()
-                    .render_report(&mut s, &e)
-                    .unwrap();
+                miette::GraphicalReportHandler::new().render_report(&mut s, &e).unwrap();
                 panic!("{s}");
             }
         };

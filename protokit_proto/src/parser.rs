@@ -1,4 +1,3 @@
-
 use lex_core::{parse_with_options, NumberFormatBuilder};
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_until, take_while};
@@ -8,12 +7,9 @@ use nom::error::{context, FromExternalError};
 use nom::multi::{many0, many0_count, many1, separated_list1};
 use nom::sequence::{delimited, pair, preceded, tuple};
 use nom::{Parser, Slice};
-
 use nom_supreme::error::GenericErrorTree;
-
 use nom_supreme::tag::TagError;
 use protokit_desc::{BuiltinType, FieldNum, Frequency, ImportType};
-
 
 use crate::ast::*;
 use crate::deps::*;
@@ -28,7 +24,7 @@ fn is_eol(c: char) -> bool {
 fn semicolon(i: Span) -> IResult<()> {
     match ws(tag(";"))(i) {
         Ok((i, _)) => Ok((i, ())),
-        Err(_e) =>  IResult::Err(nom::Err::Failure(MyParseError::from_tag(i, "Trailing semicolon"))),
+        Err(_e) => IResult::Err(nom::Err::Failure(MyParseError::from_tag(i, "Trailing semicolon"))),
     }
 }
 
@@ -100,12 +96,10 @@ where
 }
 
 fn ident(i: Span) -> IResult<Span> {
-    recognize(
-        pair(
-            alt((alpha1, tag("_"))),
-            many0_count(alt((alphanumeric1, tag("_"))))
-        )
-    )(i)
+    recognize(pair(
+        alt((alpha1, tag("_"))),
+        many0_count(alt((alphanumeric1, tag("_")))),
+    ))(i)
 }
 
 fn full_ident(i: Span) -> IResult<Span> {
@@ -298,28 +292,19 @@ fn option(i: Span) -> IResult<super::ast::Opt<'_>> {
 
 fn builtin(i: Span) -> IResult<BuiltinType> {
     let types = [
-        "double",
-        "float",
-        "int32",
-        "int64",
-        "uint32",
-        "uint64",
-        "sint32",
-        "sint64",
-        "fixed32",
-        "fixed64",
-        "sfixed32",
-        "sfixed64",
-        "bool",
-        "string",
-        "bytes",
+        "double", "float", "int32", "int64", "uint32", "uint64", "sint32", "sint64", "fixed32", "fixed64", "sfixed32",
+        "sfixed64", "bool", "string", "bytes",
     ];
     for t in types {
         if i.len() >= t.len() && i.starts_with(t) {
             return Ok((i.slice(t.len() ..), BuiltinType::from_str(&i[.. t.len()]).unwrap()));
         }
     }
-    Err(nom::Err::Error(GenericErrorTree::from_external_error(i,  nom::error::ErrorKind::Alpha, "builtin type")))
+    Err(nom::Err::Error(GenericErrorTree::from_external_error(
+        i,
+        nom::error::ErrorKind::Alpha,
+        "builtin type",
+    )))
 }
 
 fn ftype(i: Span) -> IResult<Type> {
@@ -350,7 +335,6 @@ fn frequency(i: Span) -> IResult<Frequency> {
     };
     Ok((i, freq))
 }
-
 
 fn field(i: Span) -> IResult<Field<'_>> {
     let (i, frequency) = ws(frequency)(i)?;
@@ -1265,22 +1249,19 @@ impl<'i> Parse<'i> for Proto<'i> {
 //         );
 //     }
 //
-    #[test]
-    fn test_proto_file() {
-        let input = r#"
+#[test]
+fn test_proto_file() {
+    let input = r#"
 syntax = "proto3";
 message Outer {
 Strict ival = 11;
 }"#;
-        match Proto::parse_format_error(input) {
-            Ok(_) => {},
-            Err(e) => {
-                let mut s = String::new();
-                miette::GraphicalReportHandler::new()
-                    .render_report(&mut s, &e)
-                    .unwrap();
-                println!("{s}");
-            }
-        };
-    }
-
+    match Proto::parse_format_error(input) {
+        Ok(_) => {}
+        Err(e) => {
+            let mut s = String::new();
+            miette::GraphicalReportHandler::new().render_report(&mut s, &e).unwrap();
+            println!("{s}");
+        }
+    };
+}

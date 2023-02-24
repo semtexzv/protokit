@@ -4,7 +4,9 @@ use std::io::{stdin, BufRead};
 
 use crate::gen::com::book::test1::book::Book;
 
-pub mod gen;
+pub mod gen {
+    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+}
 
 fn main() {
     let mut stdin = stdin().lock();
@@ -28,7 +30,7 @@ fn test_roundtrip() {
         extfield: "".to_string(),
         id: Default::default(),
         book: None,
-        _unknown: ()
+        _unknown: (),
     };
 
     let v = protokit::binformat::encode(&book).unwrap();

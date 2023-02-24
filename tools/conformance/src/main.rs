@@ -1,13 +1,20 @@
-use std::io::{Read, stdin, stdout, Write};
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use protokit::{binformat, textformat};
-use protokit::reflect::Registry;
-use crate::gen::conformance::conformance;
-use crate::gen::conformance::conformance::{ConformanceRequestOneOfPayload, ConformanceResponse, ConformanceResponseOneOfResult, FailureSet, WireFormat};
-use crate::gen::protobuf_test_messages::proto2::test_messages_proto2::TestAllTypesProto2;
-use crate::gen::protobuf_test_messages::proto3::test_messages_proto3::TestAllTypesProto3;
+use std::io::{stdin, stdout, Read, Write};
 
-pub mod gen;
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use protokit::reflect::Registry;
+use protokit::{binformat, textformat};
+
+use crate::gen::conformance::conformance;
+use crate::gen::conformance::conformance::{
+    ConformanceRequestOneOfPayload, ConformanceResponse, ConformanceResponseOneOfResult, FailureSet, WireFormat,
+};
+
+pub mod gen {
+    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+}
+
+use gen::protobuf_test_messages::proto2::test_messages_proto2::TestAllTypesProto2;
+use gen::protobuf_test_messages::proto3::test_messages_proto3::TestAllTypesProto3;
 
 enum Output {
     Proto2(TestAllTypesProto2),
@@ -23,10 +30,16 @@ fn input(payload: ConformanceRequestOneOfPayload, proto3: bool) -> anyhow::Resul
             Ok(Output::Proto3(binformat::decode::<TestAllTypesProto3>(&pb)?))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), false) => {
-            Ok(Output::Proto2(textformat::decode::<TestAllTypesProto2>(&pb, &Registry::init(gen::register_types))?))
+            Ok(Output::Proto2(textformat::decode::<TestAllTypesProto2>(
+                &pb,
+                &Registry::init(gen::register_types),
+            )?))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), true) => {
-            Ok(Output::Proto3(textformat::decode::<TestAllTypesProto3>(&pb, &Registry::init(gen::register_types))?))
+            Ok(Output::Proto3(textformat::decode::<TestAllTypesProto3>(
+                &pb,
+                &Registry::init(gen::register_types),
+            )?))
         }
         (other, _) => panic!("Unknown payload {other:?}"),
     }
@@ -36,20 +49,20 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
     let reg = Registry::init(gen::register_types);
 
     match (r, wire) {
-        (Ok(Output::Proto2(v)), WireFormat::PROTOBUF) =>
-            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap()),
-        (Ok(Output::Proto3(v)), WireFormat::PROTOBUF) =>
-            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap()),
-        (Ok(Output::Proto2(v)), WireFormat::TEXT_FORMAT) =>
-            ConformanceResponseOneOfResult::TextPayload(textformat::encode(&v, &reg).unwrap()),
-        (Ok(Output::Proto3(v)), WireFormat::TEXT_FORMAT) =>
-            ConformanceResponseOneOfResult::TextPayload(textformat::encode(&v, &reg).unwrap()),
-        (_, WireFormat::JSON) => {
-            ConformanceResponseOneOfResult::Skipped("No json".to_string())
+        (Ok(Output::Proto2(v)), WireFormat::PROTOBUF) => {
+            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap())
         }
-        (Err(e), _) => {
-            ConformanceResponseOneOfResult::ParseError(e.to_string())
+        (Ok(Output::Proto3(v)), WireFormat::PROTOBUF) => {
+            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap())
         }
+        (Ok(Output::Proto2(v)), WireFormat::TEXT_FORMAT) => {
+            ConformanceResponseOneOfResult::TextPayload(textformat::encode(&v, &reg).unwrap())
+        }
+        (Ok(Output::Proto3(v)), WireFormat::TEXT_FORMAT) => {
+            ConformanceResponseOneOfResult::TextPayload(textformat::encode(&v, &reg).unwrap())
+        }
+        (_, WireFormat::JSON) => ConformanceResponseOneOfResult::Skipped("No json".to_string()),
+        (Err(e), _) => ConformanceResponseOneOfResult::ParseError(e.to_string()),
         _ => panic!(),
     }
 }
@@ -99,7 +112,10 @@ fn main() -> anyhow::Result<()> {
 
 #[test]
 fn test1() {
-    let a = binformat::decode::<TestAllTypesProto3>(&[0o202, 0o007, 0o014, 0o022, 0o012, 0o010, 0o001, 0o020, 0o001, 0o310, 0o005, 0o001, 0o310, 0o005, 0o001]).unwrap();
+    let a = binformat::decode::<TestAllTypesProto3>(&[
+        0o202, 0o007, 0o014, 0o022, 0o012, 0o010, 0o001, 0o020, 0o001, 0o310, 0o005, 0o001, 0o310, 0o005, 0o001,
+    ])
+        .unwrap();
     let b = binformat::encode(&a).unwrap();
-    panic!("{a:#?}{b:#o}")
+    // panic!("{a:#?}{b:#o}")
 }

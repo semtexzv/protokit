@@ -1,13 +1,7 @@
 fn main() {
     protokit_build::Build::new()
         .include("../proto")
-        // .include("../vendor/protobuf/src")
-        .out_dir("src/gen")
         .textformat(true)
-        // .string_type("Box<str>")
-        // .bytes_type("Box<[u8]>")
-        // .compile("google/protobuf/struct.proto")
-        // .unwrap()
         .compile("google/protobuf/descriptor.proto")
         .unwrap()
         .compile("google/protobuf/api.proto")

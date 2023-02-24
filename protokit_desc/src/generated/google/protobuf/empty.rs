@@ -3,8 +3,9 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-use crate::*;
+
 use crate as root;
+use crate::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Empty::default());
 }
@@ -28,12 +29,7 @@ impl textformat::Decodable for Empty {
     }
 }
 impl textformat::Encodable for Empty {
-    fn encode(
-        &self,
-        ctx: &textformat::Context,
-        pad: usize,
-        out: &mut std::string::String,
-    ) -> textformat::Result<()> {
+    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
         Ok(())
     }
 }

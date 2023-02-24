@@ -1,6 +1,5 @@
 #![allow(dead_code)]
-pub use protokit_desc::BuiltinType;
-pub use protokit_desc::{FieldNum, Frequency, ImportType, Syntax};
+pub use protokit_desc::{BuiltinType, FieldNum, Frequency, ImportType, Syntax};
 
 pub type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 

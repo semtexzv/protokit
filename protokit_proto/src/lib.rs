@@ -1,12 +1,12 @@
 #![feature(entry_insert)]
 
-
 use miette::Diagnostic;
 use nom::combinator::all_consuming;
 use nom::Finish;
 use nom_locate::LocatedSpan;
 use nom_supreme::error::{BaseErrorKind, ErrorTree, GenericErrorTree, StackContext};
 use thiserror::Error;
+
 use crate::ast::Span;
 
 pub mod ast;
@@ -40,10 +40,8 @@ pub struct FormattedErrorContext<'b> {
     context: StackContext<&'b str>,
 }
 
-
 pub type MyParseError<'a> = ErrorTree<Span<'a>>;
 pub type IResult<'a, T> = nom::IResult<Span<'a>, T, MyParseError<'a>>;
-
 
 pub fn format_parse_error<'a>(input: &'a str, e: MyParseError<'a>) -> FormattedError<'a> {
     match e {
@@ -102,4 +100,3 @@ pub trait Parse<'a>: Sized {
         }
     }
 }
-

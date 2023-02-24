@@ -158,22 +158,22 @@ pub fn opts<T: protokit_textformat::Decodable + Default>(ctx: &mut TranslateCtx,
 //             }),
 //         ],
 //     };
-    // assert_eq!(
-    //     opts(&mut TranslateCtx::new(), &mut ast)
-    //         .values()
-    //         .collect::<Vec<_>>(),
-    //     vec![&Value::Int(0)]
-    // );
-    // assert_eq!(
-    //     opts(&mut TranslateCtx::new(), &mut ast.items[1])
-    //         .values()
-    //         .collect::<Vec<_>>(),
-    //     vec![&Value::Int(1)]
-    // );
-    // assert_eq!(
-    //     opts(&mut TranslateCtx::new(), &mut ast.items[2])
-    //         .values()
-    //         .collect::<Vec<_>>(),
-    //     vec![&Value::Int(2)]
-    // );
+// assert_eq!(
+//     opts(&mut TranslateCtx::new(), &mut ast)
+//         .values()
+//         .collect::<Vec<_>>(),
+//     vec![&Value::Int(0)]
+// );
+// assert_eq!(
+//     opts(&mut TranslateCtx::new(), &mut ast.items[1])
+//         .values()
+//         .collect::<Vec<_>>(),
+//     vec![&Value::Int(1)]
+// );
+// assert_eq!(
+//     opts(&mut TranslateCtx::new(), &mut ast.items[2])
+//         .values()
+//         .collect::<Vec<_>>(),
+//     vec![&Value::Int(2)]
+// );
 // }

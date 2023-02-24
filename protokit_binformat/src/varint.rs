@@ -195,7 +195,7 @@ pub fn write_u64(mut v: u64) -> ([u8; 10], u8) {
     let mut out = [0; 10];
     let mut len = 0u8;
     if v == 0 {
-        return (out, 1)
+        return (out, 1);
     }
     while v > 0 && len < 10 {
         if v >= 128 {
@@ -209,12 +209,11 @@ pub fn write_u64(mut v: u64) -> ([u8; 10], u8) {
     (out, len)
 }
 
-
 pub fn write_u32(mut v: u32) -> ([u8; 5], u8) {
     let mut out = [0; 5];
     let mut len = 0u8;
     if v == 0 {
-        return (out, 1)
+        return (out, 1);
     }
     while v > 0 && len < 5 {
         if v >= 128 {
