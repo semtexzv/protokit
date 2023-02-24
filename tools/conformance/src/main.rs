@@ -1,3 +1,4 @@
+use std::fs::File;
 use std::io::{stdin, stdout, Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -68,10 +69,12 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
 }
 
 fn main() -> anyhow::Result<()> {
-a    loop {
+    for i in 0 .. {
         let len = stdin().read_u32::<LittleEndian>()?;
         let mut data = vec![0; len as usize];
         stdin().read_exact(&mut data).unwrap();
+
+        std::fs::write(format!("target/{}.bin", i), &data).unwrap();
         let req = protokit::binformat::decode::<conformance::ConformanceRequest>(&data)?;
         eprintln!("Req: {req:?}");
 
@@ -109,6 +112,9 @@ a    loop {
     }
     Ok(())
 }
+
+// #[no_mangle]
+// extern "C" fn run(data: *mut u8, len: usize, done: fn)
 
 #[test]
 fn test1() {

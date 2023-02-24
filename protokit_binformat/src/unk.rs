@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
 use integer_encoding::VarInt;
 
 use crate::ProtoValue::Bytes;
@@ -45,7 +45,7 @@ impl Decodable for ProtoField {
         self.tag = tag >> 3;
         match (tag & 0b111) as u8 {
             VINT => {
-                let (vint, len) = u64::decode_var(buf).unwrap();
+                let (vint, len) = u64::decode_var(buf).ok_or_else(|| anyhow!("Data"))?;
                 self.value = ProtoValue::VInt(vint);
                 Ok(&buf[len ..])
             }
@@ -62,7 +62,10 @@ impl Decodable for ProtoField {
                 Ok(buf)
             }
             LENDELIM => {
-                let (datalen, vlen) = u64::decode_var(buf).unwrap();
+                let (datalen, vlen) = u64::decode_var(buf).ok_or_else(|| anyhow!("Data"))?;
+                if datalen.saturating_add(vlen as u64) >= buf.len() as u64 {
+                    bail!("Data2")
+                }
                 self.value = ProtoValue::Bytes(Vec::from(&buf[vlen .. datalen as usize + vlen]));
                 Ok(&buf[(datalen as usize) + vlen ..])
             }

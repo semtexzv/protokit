@@ -1,11 +1,10 @@
-fn main() {
-    cmake::Config::new("../../vendor/protobuf")
-        .define("protobuf_BUILD_CONFORMANCE", "ON")
-        .very_verbose(true)
-        .target("conformance_cpp")
-        .no_build_target(true)
-        .build();
+#![feature(exit_status_error)]
 
+use std::env::var;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
+
+fn main() {
     protokit_build::Build::new()
         .track_unknowns(true)
         .include("../../vendor/protobuf/conformance")
