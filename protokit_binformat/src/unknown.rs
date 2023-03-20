@@ -91,6 +91,9 @@ impl Encodable for ProtoField {
 
 impl Decodable for UnknownFields {
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        if tag >> 3 == 0 {
+            bail!("Field num 0 is illegal")
+        }
         let fields = self.fields.get_or_insert_with(Default::default);
         let mut field = ProtoField::default();
         buf = field.merge_field(tag, buf)?;

@@ -67,6 +67,7 @@ pub fn tabular_parser(ctx: &TranslateCtx, opts: &Options, f: &FieldDef, i: usize
         other => bail!("Unknown: {other:?}"),
     })
 }
+
 // let tabular_fields = tabular_fields.values();
 // let tabular_format = if cfg!(feature = "tabular") {
 //     quote! {

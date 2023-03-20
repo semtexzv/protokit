@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["map_syntax"]
+default = []
 map_syntax = []
 
 [dependencies.binformat]
@@ -12,7 +12,11 @@ package = "protokit_binformat"
 path = "../protokit_binformat"
 
 [dependencies]
+snailquote = "0.3.1"
 anyhow = "1.0.57"
 nom = "7.1.1"
+
 lex_core = { package = "lexical-core", version = "*", features = ["parse-integers", "power-of-two"] }
 lex_float = { package = "minimal-lexical", version = "*" }
+
+miette = { version = "5.5.0", features = ["fancy"]}

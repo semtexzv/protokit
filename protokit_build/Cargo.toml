@@ -7,11 +7,6 @@ edition = "2021"
 default = ["descriptors"]
 descriptors = ["protokit_proto/descriptors", "protokit_desc/descriptors"]
 
-#[dependencies.protokit]
-#path = "../protokit"
-#version = "0.0.1"
-#default-features = false
-
 [dependencies.protokit_binformat]
 path = "../protokit_binformat"
 
@@ -26,5 +21,6 @@ anyhow = "1.0.57"
 quote = "1.0.18"
 
 syn = { version = "1.0.98", default-features = false, features = ["parsing", "proc-macro"]}
+proc-macro2 = "1.0.51"
 prettyplease = { version = "0.1.15", features = ["verbatim"]}
 convert_case = "0.6.0"

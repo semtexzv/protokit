@@ -1,8 +1,3 @@
-#![feature(exit_status_error)]
-
-use std::env::var;
-use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 
 fn main() {
     protokit_build::Build::new()

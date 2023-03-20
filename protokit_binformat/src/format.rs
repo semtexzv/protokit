@@ -5,8 +5,9 @@ use std::marker::PhantomData;
 use anyhow::bail;
 use integer_encoding::VarInt;
 
-use crate::unk::{FIX32, FIX64, LENDELIM, VINT};
+use crate::unknown::{FIX32, FIX64, LENDELIM, VINT};
 use crate::{Decodable, Encodable, ReadBuffer, Result, WriteBuffer};
+use crate::varint::{zigzag_decode64, zigzag_decode32};
 
 pub trait BytesLike {
     fn _clear(&mut self);
@@ -16,8 +17,8 @@ pub trait BytesLike {
 }
 
 impl<T> BytesLike for Option<T>
-where
-    T: BytesLike + Default,
+    where
+        T: BytesLike + Default,
 {
     fn _clear(&mut self) {
         if let Some(v) = self {
@@ -123,8 +124,8 @@ pub trait Format<M> {
 pub struct Bytes;
 
 impl<B> Format<Bytes> for B
-where
-    B: BytesLike,
+    where
+        B: BytesLike,
 {
     const WIRE_TYPE: u8 = LENDELIM;
 
@@ -140,16 +141,16 @@ where
         if buf.len() < dlen + len {
             return Err(anyhow::Error::msg("Mising data <bytes2>"));
         }
-        self.extend_from_bytes(&buf[len .. dlen + len])?;
-        Ok(&buf[len + dlen ..])
+        self.extend_from_bytes(&buf[len..dlen + len])?;
+        Ok(&buf[len + dlen..])
     }
 }
 
 pub struct Repeat<D>(PhantomData<D>);
 
 impl<T, D> Format<Repeat<D>> for Vec<T>
-where
-    T: Format<D> + Default,
+    where
+        T: Format<D> + Default,
 {
     const WIRE_TYPE: u8 = T::WIRE_TYPE;
 
@@ -239,14 +240,14 @@ impl Format<RawVInt> for u64 {
         let len = self.required_space();
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
-        self.encode_var(&mut buf[olen ..]);
+        self.encode_var(&mut buf[olen..]);
         Ok(())
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let (d, len) = u64::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
         *self = d;
-        Ok(&buf[len ..])
+        Ok(&buf[len..])
     }
 }
 
@@ -262,7 +263,7 @@ impl Format<RawVInt> for i64 {
         let len = target.required_space();
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
-        target.encode_var(&mut buf[olen ..]);
+        target.encode_var(&mut buf[olen..]);
         Ok(())
     }
 
@@ -271,7 +272,7 @@ impl Format<RawVInt> for i64 {
         unsafe {
             *self = std::mem::transmute(d);
         }
-        Ok(&buf[len ..])
+        Ok(&buf[len..])
     }
 }
 
@@ -307,8 +308,8 @@ impl_rawint! {
 pub struct VInt;
 
 impl<T> Format<VInt> for T
-where
-    T: Format<RawVInt>,
+    where
+        T: Format<RawVInt>,
 {
     const WIRE_TYPE: u8 = VINT;
 
@@ -359,8 +360,8 @@ pub struct Enum;
 pub trait ProtoEnum: From<i32> + Into<i32> {}
 
 impl<T> Format<Enum> for T
-where
-    T: Clone + ProtoEnum,
+    where
+        T: Clone + ProtoEnum,
 {
     const WIRE_TYPE: u8 = VINT;
 
@@ -378,8 +379,8 @@ where
 }
 
 impl<T> Format<Enum> for Option<T>
-where
-    T: Clone + ProtoEnum + Default,
+    where
+        T: Clone + ProtoEnum + Default,
 {
     const WIRE_TYPE: u8 = VINT;
     defer_opt_impl_body! {Enum}
@@ -395,14 +396,17 @@ impl Format<SInt> for i32 {
         let oldlen = buf.len();
 
         buf.resize(buf.len() + len, 0);
-        self.encode_var(&mut buf[oldlen ..]);
+        self.encode_var(&mut buf[oldlen..]);
         Ok(())
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-        let (d, len) = Self::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
-        *self = d;
-        Ok(&buf[len ..])
+        let (v, len) = crate::varint::decode::<u32>(buf);
+        if len == 0 {
+            bail!("Missing data for varint");
+        }
+        *self = zigzag_decode32(v);
+        Ok(&buf[len as usize..])
     }
 }
 
@@ -413,14 +417,14 @@ impl Format<SInt> for i64 {
         let len = self.required_space();
         let oldlen = buf.len();
         buf.resize(buf.len() + len, 0);
-        self.encode_var(&mut buf[oldlen ..]);
+        self.encode_var(&mut buf[oldlen..]);
         Ok(())
     }
 
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let (d, len) = i64::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
         *self = d;
-        Ok(&buf[len ..])
+        Ok(&buf[len..])
     }
 }
 
@@ -438,8 +442,13 @@ impl Format<Fix> for bool {
         if buf.len() == 0 {
             bail!("Missing data")
         }
-        *self = buf[0] != 0;
-        Ok(&buf[1 ..])
+        // bool can be encoded as any length varint
+        let (v, l) = crate::varint::decode::<u64>(buf);
+        if l == 0 {
+            bail!("Missing data bool");
+        }
+        *self = v != 0;
+        Ok(&buf[l as usize..])
     }
 }
 
@@ -475,8 +484,8 @@ impl_fix! {
 pub struct Nest;
 
 impl<T> Format<Nest> for T
-where
-    T: Decodable + Encodable + Default,
+    where
+        T: Decodable + Encodable + Default,
 {
     const WIRE_TYPE: u8 = LENDELIM;
 
@@ -489,28 +498,15 @@ where
     }
 
     fn decode<'b>(&mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-        let mut len = 0;
-        let mut tag = 0xFF;
-
-        buf = Format::<RawVInt>::decode(&mut len, buf)?;
-        if buf.len() < len {
-            bail!("Not enough data")
-        }
-        let (mut inner_buf, outer_buf) = buf.split_at(len);
-        while !inner_buf.is_empty() {
-            inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
-            inner_buf = self.merge_field(tag, inner_buf)?;
-        }
-
-        Ok(outer_buf)
+        Decodable::decode(self, buf)
     }
 }
 
 pub struct Pack<F>(F);
 
 impl<T, F> Format<Pack<F>> for Vec<T>
-where
-    T: Format<F> + Default,
+    where
+        T: Format<F> + Default,
 {
     const WIRE_TYPE: u8 = LENDELIM;
 

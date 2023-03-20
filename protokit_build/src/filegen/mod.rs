@@ -4,17 +4,15 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
+use proc_macro2::{Ident, TokenStream};
 use protokit_binformat::Encodable;
 use protokit_desc::Syntax::Proto3;
 use protokit_proto::translate::TranslateCtx;
-use quote::__private::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 use crate::arcstr::ArcStr;
 use crate::deps::*;
-
 pub mod grpc;
-// pub mod tabular;
 
 #[derive(Debug)]
 pub struct Options {
@@ -202,7 +200,9 @@ impl CodeGenerator<'_> {
             }
             DataType::Enum(e) => {
                 let _en = self.resolve_name(*e).unwrap();
-                Ok(if f.is_repeated() {
+                Ok(if f.is_packed() || (f.is_repeated() && force_packed) {
+                    quote! { Pack::<Enum> }
+                } else if f.is_repeated() {
                     quote! { Repeat::<Enum> }
                 } else {
                     quote! { Enum }
@@ -502,8 +502,10 @@ impl CodeGenerator<'_> {
         out.bin_decoders.push(quote! {
             #normal_tag => {
                 if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
+                    eprintln!("Decoding merge");
                     buf = #decode_fn(tmp, buf)?;
                 } else {
+                    eprintln!("Decoding new");
                     let mut tmp = Default::default();
                     buf = #decode_fn(&mut tmp, buf)?;
                     self.#oneof_name = #oneof_type::#variant_name(tmp);
@@ -519,7 +521,7 @@ impl CodeGenerator<'_> {
 
             out.bin_decoders.push(quote! {
                 #packed_tag => {
-                     if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
+                    if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
                         buf = #decode_fn(tmp, buf)?;
                     } else {
                         let mut tmp = Default::default();

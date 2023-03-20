@@ -23,7 +23,7 @@ fn compound_ident(istart: Span) -> IResult<Span, Span> {
     let (i, _) = ident(istart)?;
     let (iend, _) = many0(preceded(char('.'), ident))(i)?;
     let pos = istart.offset(iend);
-    Ok((iend, istart.slice(.. pos)))
+    Ok((iend, istart.slice(..pos)))
 }
 
 fn dec_lit(i: Span) -> IResult<Span, Span> {
@@ -71,6 +71,9 @@ fn float_lit(i: Span) -> IResult<Span, f64> {
         map(tuple((dec_lit, fract, exp, opt(suffix))), |(d, f, e, _)| {
             lex_float::parse_float(d.as_bytes().iter(), f.as_bytes().iter(), e)
         }),
+        map(tuple((dec_lit, fract, opt(suffix))), |(d, f, _)| {
+            lex_float::parse_float(d.as_bytes().iter(), f.as_bytes().iter(), 1)
+        }),
         map(tuple((dec_lit, exp, suffix)), |(d, e, _)| {
             lex_float::parse_float(d.as_bytes().iter(), b"".iter(), e)
         }),
@@ -103,24 +106,41 @@ fn escape_contents(i: &str) -> IResult<&str, &str> {
     ))(i)
 }
 
-fn str_char(i: &str) -> IResult<&str, char> {
-    none_of("\\\0\n\"")(i)
+fn str_char_squote(i: &str) -> IResult<&str, char> {
+    none_of("\\\0\'")(i)
 }
 
-fn str_escaped(i: Span) -> IResult<Span, Span> {
-    escaped(str_char, '\\', escape_contents)(i)
+
+fn str_char_dquote(i: &str) -> IResult<&str, char> {
+    none_of("\\\0\"")(i)
 }
+
+fn str_escaped_squote(i: Span) -> IResult<Span, Span> {
+    escaped(str_char_squote, '\\', escape_contents)(i)
+}
+
+fn str_escaped_dquote(i: Span) -> IResult<Span, Span> {
+    escaped(str_char_dquote, '\\', escape_contents)(i)
+}
+
 
 fn str_lit(i: &str) -> IResult<&str, Vec<&str>> {
     many1(alt((
-        delimited(char('"'), str_escaped, char('"')),
-        delimited(char('\''), str_escaped, char('\'')),
+        ws(delimited(char('"'), str_escaped_dquote, char('"'))),
+        ws(delimited(char('\''), str_escaped_squote, char('\''))),
     )))(i)
 }
 
+#[test]
+fn test_str_lit() {
+    let o = str_lit(r#"'first line\nsecond line'"#).unwrap();
+    assert_eq!(o.0, "");
+    assert_eq!(o.1, vec![r#"first line\nsecond line"#]);
+}
+
 fn ws<'a, F: 'a, O>(mut inner: F) -> impl FnMut(Span<'a>) -> IResult<Span<'a>, O>
-where
-    F: FnMut(Span<'a>) -> IResult<Span<'a>, O>,
+    where
+        F: FnMut(Span<'a>) -> IResult<Span<'a>, O>,
 {
     move |i: Span| {
         let (i, _) = many0(alt((comment, multispace1)))(i)?;
@@ -202,6 +222,9 @@ fn field_name(i: Span) -> IResult<Span, FieldName> {
 
 fn field(i: Span) -> IResult<Span, Field> {
     let (i, name) = ws(field_name)(i)?;
+    if i.contains("second line") {
+        print!("aa");
+    }
     let (i, value) = alt((scalar_field, message_field))(i)?;
 
     Ok((i, Field { name, value }))
@@ -311,7 +334,7 @@ pub fn textproto(i: Span) -> IResult<Span, TextProto> {
     let mut proto_message = None;
     // let (i, lines) = many0(multispace1)(i)?;
     let (i, comments) = many0(delimited(multispace0, comment, multispace0))(i)?;
-    dbg!(&comments);
+    dbg!(&i, &comments);
     for c in &comments {
         if let Ok((_j, pf)) = _proto_file_comment(c) {
             proto_file = Some(pf);

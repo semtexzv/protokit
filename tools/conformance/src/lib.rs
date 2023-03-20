@@ -1,7 +1,5 @@
-use std::fs::File;
-use std::io::{stdin, stdout, Read, Write};
+use std::slice::{from_raw_parts_mut, from_raw_parts};
 
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use protokit::reflect::Registry;
 use protokit::{binformat, textformat};
 
@@ -71,10 +69,14 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
             ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap())
         }
         (Ok(Output::Proto2(v)), WireFormat::TEXT_FORMAT) => {
-            ConformanceResponseOneOfResult::TextPayload(textformat::encode(&v, &reg).unwrap())
+            let out = textformat::encode(&v, &Registry::default()).unwrap();
+            println!("OUT: {out}");
+            ConformanceResponseOneOfResult::TextPayload(out)
         }
         (Ok(Output::Proto3(v)), WireFormat::TEXT_FORMAT) => {
-            ConformanceResponseOneOfResult::TextPayload(textformat::encode(&v, &reg).unwrap())
+            let out = textformat::encode(&v, &Registry::default()).unwrap();
+            println!("OUT: {out}");
+            ConformanceResponseOneOfResult::TextPayload(out)
         }
         (_, WireFormat::JSON) => ConformanceResponseOneOfResult::Skipped("No json".to_string()),
         (Err(e), _) => ConformanceResponseOneOfResult::ParseError(e.to_string()),
@@ -82,58 +84,50 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    for i in 0 .. {
-        let len = stdin().read_u32::<LittleEndian>()?;
-        let mut data = vec![0; len as usize];
-        stdin().read_exact(&mut data).unwrap();
+#[no_mangle]
+pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, olen: u32) -> u32 {
+    let data = from_raw_parts(data, len as usize);
 
-        // eprintln!("D  {}  \n", data.iter().map(|v| format!("\\{v:03o}")).collect::<Vec<_>>().join(""));
-        std::fs::write(format!("target/{}.bin", i), &data).unwrap();
-        let req = protokit::binformat::decode::<conformance::ConformanceRequest>(&data)?;
+    let req = protokit::binformat::decode::<conformance::ConformanceRequest>(&data).unwrap();
 
-        let out = if let ConformanceRequestOneOfPayload::JsonPayload(_) = req.payload {
-            ConformanceResponse {
-                result: ConformanceResponseOneOfResult::Skipped("No json support".to_string()),
-                ..Default::default()
-            }
-        } else if req.message_type.contains("Proto3") || req.message_type.contains("Proto2") {
-            let out = input(req.payload, req.message_type.contains("Proto3"));
-            let out = output(out, req.requested_output_format);
-            ConformanceResponse {
-                result: out,
-                ..Default::default()
-            }
-        } else if req.message_type.contains("FailureSet") {
-            let fs = FailureSet {
-                failure: vec![],
-                ..Default::default()
-            };
+    let out = if let ConformanceRequestOneOfPayload::JsonPayload(_) = req.payload {
+        ConformanceResponse {
+            result: ConformanceResponseOneOfResult::Skipped("No json support".to_string()),
+            ..Default::default()
+        }
+    } else if req.message_type.contains("Proto3") || req.message_type.contains("Proto2") {
+        let out = input(req.payload, req.message_type.contains("Proto3"));
+        let data_out = output(out, req.requested_output_format);
+        ConformanceResponse {
+            result: data_out,
+            ..Default::default()
+        }
+    } else if req.message_type.contains("FailureSet") {
+        let fs = FailureSet {
+            failure: vec![],
 
-            ConformanceResponse {
-                result: ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&fs).unwrap()),
-                ..Default::default()
-            }
-        } else {
-            panic!()
+            ..Default::default()
         };
-        let out = binformat::encode(&out).unwrap();
-        stdout().write_u32::<LittleEndian>(out.len() as _).unwrap();
-        stdout().write(&out).unwrap();
-        stdout().flush().unwrap()
-    }
-    Ok(())
-}
 
-// #[no_mangle]
-// extern "C" fn run(data: *mut u8, len: usize, done: fn)
+        ConformanceResponse {
+            result: ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&fs).unwrap()),
+            ..Default::default()
+        }
+    } else {
+        panic!()
+    };
+    let out = binformat::encode(&out).unwrap();
+    let outslice = from_raw_parts_mut(odata, olen as usize);
+    outslice[0..out.len()].copy_from_slice(&out);
+    return out.len() as u32;
+}
 
 #[test]
 fn test1() {
     let a = binformat::decode::<TestAllTypesProto3>(&[
         0o202, 0o007, 0o014, 0o022, 0o012, 0o010, 0o001, 0o020, 0o001, 0o310, 0o005, 0o001, 0o310, 0o005, 0o001,
     ])
-    .unwrap();
+        .unwrap();
     let b = binformat::encode(&a).unwrap();
     // panic!("{a:#?}{b:#o}")
 }

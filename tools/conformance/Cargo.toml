@@ -4,23 +4,14 @@ version = "0.1.0"
 edition = "2021"
 build = "build.rs"
 
+[lib]
+crate-type = ["staticlib"]
+
 [dependencies]
 anyhow = "1.0.66"
 byteorder = "1.4.3"
 protokit = { path = "../../protokit" }
 
-
-cxx = "1.0.91"
-autocxx = "0.24.0"
-
-
-
 [build-dependencies]
-cc = "1.0.79"
-cmake = "0.1.49"
-autocxx-build = "0.24.0"
-cxx-build = "1.0"
-
-bindgen = "0.64.0"
 protokit_build = { path = "../../protokit_build" }
 

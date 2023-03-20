@@ -90,9 +90,7 @@ impl textformat::Decodable for Any {
                     self.type_url = format!("type.googleapis.com/{}", newmsg.qualified_name());
 
                     Field::merge(newmsg.as_mut(), ctx, value)?;
-                    println!("Inner message {:#?}", newmsg.as_debug());
                     newmsg.as_bin_encodable().encode(&mut self.value)?;
-                    println!("Encoded to: {:?}", &self.value);
                     return Ok(());
                 } else {
                     bail!("Could not find {msg_name} in internal type regitry: {:?}", ctx)
@@ -115,7 +113,7 @@ impl textformat::Encodable for Any {
                 binformat::decode_into(&self.value, msg.as_bin_decodable())?;
                 msg.as_text_encodable().encode(ctx, pad + INDENT, out)?;
                 out.indent(pad);
-                out.push_str("}\n");
+                writeln!(out, "}}")?;
                 return Ok(());
             }
         }

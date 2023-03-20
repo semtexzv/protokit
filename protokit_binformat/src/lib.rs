@@ -9,7 +9,7 @@ pub use anyhow::Result;
 use anyhow::{anyhow, bail};
 use format::*;
 use integer_encoding::VarInt;
-pub use unk::*;
+pub use unknown::*;
 
 use crate::format::Format;
 
@@ -17,16 +17,31 @@ mod buffer;
 #[doc(hidden)]
 pub mod format;
 #[doc(hidden)]
-pub mod unk;
+pub mod unknown;
 pub mod varint;
 
 pub trait Decodable {
+    fn decode<'i, 'b>(&'i mut self, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        let mut len = 0;
+        let mut tag = 0xFF;
+
+        buf = Format::<RawVInt>::decode(&mut len, buf)?;
+        if buf.len() < len {
+            bail!("Not enough data")
+        }
+        let (mut inner_buf, outer_buf) = buf.split_at(len);
+        while !inner_buf.is_empty() {
+            inner_buf = Format::<RawVInt>::decode(&mut tag, inner_buf)?;
+            inner_buf = self.merge_field(tag, inner_buf)?;
+        }
+        Ok(outer_buf)
+    }
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>>;
 }
 
 impl<T> Decodable for Box<T>
-where
-    T: Decodable,
+    where
+        T: Decodable,
 {
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         self.deref_mut().merge_field(tag, buf)
@@ -34,9 +49,15 @@ where
 }
 
 impl<T> Decodable for Option<Box<T>>
-where
-    T: Decodable + Default,
+    where
+        T: Decodable + Default,
 {
+    // Initialization needed here (zero-sized nested messages must be initialized to Some if present)
+    fn decode<'i, 'b>(&'i mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        self.get_or_insert_with(Default::default)
+            .deref_mut()
+            .decode(buf)
+    }
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         self.get_or_insert_with(Default::default)
             .deref_mut()
@@ -54,8 +75,8 @@ pub trait Encodable {
 }
 
 impl<T> Encodable for Box<T>
-where
-    T: Encodable,
+    where
+        T: Encodable,
 {
     fn qualified_name(&self) -> &'static str {
         self.deref().qualified_name()
@@ -67,8 +88,8 @@ where
 }
 
 impl<T> Encodable for Option<Box<T>>
-where
-    T: Encodable + Default,
+    where
+        T: Encodable + Default,
 {
     fn qualified_name(&self) -> &'static str {
         T::default().qualified_name()
@@ -101,10 +122,13 @@ impl Encodable for () {
 impl Decodable for () {
     #[inline(never)]
     fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
+        if tag >> 3 == 0 {
+            bail!("Field num 0 is illegal")
+        }
         match (tag & 0b111) as u8 {
             VINT => {
                 let (_vint, len) = u64::decode_var(buf).ok_or_else(|| anyhow!("reading uint"))?;
-                Ok(&buf[len ..])
+                Ok(&buf[len..])
             }
             FIX64 => {
                 let mut v = 0;
@@ -122,7 +146,7 @@ impl Decodable for () {
                 if buf.len() < (datalen as usize).saturating_add(vlen) {
                     return Err(anyhow::Error::msg("Mising data"));
                 }
-                Ok(&buf[(datalen as usize) + vlen ..])
+                Ok(&buf[(datalen as usize) + vlen..])
             }
             other => bail!("Unknown wire type {other}"),
         }
