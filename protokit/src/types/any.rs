@@ -69,8 +69,8 @@ impl binformat::Encodable for Any {
 
     fn encode(&self, buf: &mut binformat::WriteBuffer) -> Result<()> {
         use crate::binformat::format::*;
-        Format::<Bytes>::encode(&self.type_url, 10u32, buf)?;
-        Format::<Bytes>::encode(&self.value, 18u32, buf)?;
+        Format::<Bytes>::encode(&self.type_url, 10u32 >> 3, buf)?;
+        Format::<Bytes>::encode(&self.value, 18u32 >> 3, buf)?;
         Ok(())
     }
 }

@@ -75,17 +75,11 @@ pub trait Field {
         match value {
             FieldValue::Scalar(s) => self.merge_scalar(ctx, s),
             FieldValue::Message(ml) => self.merge_message(ctx, ml),
-            #[cfg(feature = "map_syntax")]
-            FieldValue::Map(m) => self.merge_map(ctx, m),
             _other => bail!("Unimplemented default merge method for compound structures"),
         }
     }
     fn merge_scalar(&mut self, _ctx: &Context, _value: &Literal) -> Result<()> {
         panic!("Unexpected scalar: {}", std::any::type_name::<Self>())
-    }
-    #[cfg(feature = "map_syntax")]
-    fn merge_map(&mut self, _ctx: &Context, _value: &[ast::MapField]) -> Result<()> {
-        bail!("Unexpected map")
     }
     fn merge_message(&mut self, _ctx: &Context, _value: &[ast::Field]) -> Result<()> {
         bail!("Unexpected literal")
@@ -257,9 +251,6 @@ impl<T> Field for Vec<T>
                 self.push(target);
             }
 
-            #[cfg(feature = "map_syntax")]
-            val @ FieldValue::Map(_) => target.merge(ctx, val)?,
-
             FieldValue::ScalarList(sl) => {
                 for lit in sl {
                     target.merge_scalar(ctx, lit)?;
@@ -269,13 +260,6 @@ impl<T> Field for Vec<T>
             FieldValue::MessageList(ml) => {
                 for lit in ml {
                     target.merge_message(ctx, lit)?;
-                    self.push(std::mem::take(&mut target));
-                }
-            }
-            #[cfg(feature = "map_syntax")]
-            FieldValue::MapList(ml) => {
-                for map in ml {
-                    target.merge_map(ctx, map)?;
                     self.push(std::mem::take(&mut target));
                 }
             }
@@ -294,6 +278,23 @@ pub fn escape_bytes_to(bytes: &[u8], buf: &mut String) {
             b'\'' => buf.push_str("\\\'"),
             b'"' => buf.push_str("\\\""),
             b'\\' => buf.push_str(r"\\"),
+            7 => buf.push_str("\\a"),
+            8 => buf.push_str("\\b"),
+
+            12 => buf.push_str("\\f"),
+            10 => buf.push_str("\\n"),
+
+            13 => buf.push_str("\\r"),
+            9 => buf.push_str("\\t"),
+
+            11 => buf.push_str("\\v"),
+            63 => buf.push_str("\\?"),
+
+            92 => buf.push_str("\\\\"),
+            39 => buf.push_str("\\'"),
+
+            34 => buf.push_str("\\\""),
+
             b'\x20'..=b'\x7e' => buf.push(c as char),
             _ => {
                 buf.push('\\');
@@ -304,165 +305,89 @@ pub fn escape_bytes_to(bytes: &[u8], buf: &mut String) {
         }
     }
 }
-//
-// fn escape(data: &[u8]) -> String {
-//     let mut out = String::new();
-//     for b in data {
-//         match b {
-//             b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'`' => {
-//                 out.push(*b as char)
-//             }
-//             7 => out.push_str("\\a"),
-//             8 => out.push_str("\\b"),
-//
-//             12 => out.push_str("\\f"),
-//             10 => out.push_str("\\n"),
-//
-//             13 => out.push_str("\\r"),
-//             9 => out.push_str("\\t"),
-//
-//             11 => out.push_str("\\v"),
-//             63 => out.push_str("\\?"),
-//
-//             92 => out.push_str("\\\\"),
-//             39 => out.push_str("\\'"),
-//
-//             34 => out.push_str("\\\""),
-//             o => write!(out, "\\x{o:x}").unwrap(),
-//         }
-//     }
-//     println!("ESCAPED: {out:?}");
-//     out
-// }
 
-#[inline(never)]
-fn unescape(s: &str) -> String {
-    let mut out = String::new();
-    let mut escaping = false;
-    let mut hex_escaping = false;
-    let mut const_value = 0u64;
-    let mut iter = s.chars().peekable();
-    while iter.peek().is_some() {
-        let c = iter.next().unwrap();
-        if c == '\\' {
-            escaping = true;
-            continue;
+fn unescape_to_bytes(s: &str, out: &mut Vec<u8>) {
+    let mut iter = s.bytes().peekable();
+    loop {
+        let Some(c) = iter.next() else { return; };
+        if c != b'\\' {
+            out.push(c as u8);
         }
-        if escaping && !hex_escaping {
-            let c = match c {
-                'a' => 7.into(),
-                'b' => 8.into(),
-                'f' => 12.into(),
-                'n' => '\n',
-                't' => '\t',
-                'v' => 11.into(),
-                '?' => '?',
-                '\\' => '\\',
-                '\'' => '\'',
-                '\"' => '\"',
-                x @ '0'..='7' => {
-                    const_value = const_value << 3 | (x as u64 - '0' as u64);
-                    for i in 0..2 {
-                        match iter.peek() {
-                            Some('0'..='7') => {
-                                const_value = const_value << 3 | (x as u64 - '0' as u64);
-                                let _ = iter.next();
-                            }
-                            _ => break,
+        let Some(c1) = iter.next() else { return; };
+        let mut value = 0;
+        match c1 {
+            b'a' => out.push(7),
+            b'b' => out.push(8),
+            b't' => out.push(9),
+            b'n' => out.push(10),
+            b'v' => out.push(11),
+            b'f' => out.push(12),
+            b'r' => out.push(13),
+            b'"' => out.push(34),
+            b'\'' => out.push(39),
+            b'?' => out.push(63),
+            b'\\' => out.push(92),
+
+            b'x' => {
+                for _ in 0..2 {
+                    match iter.peek() {
+                        Some(x @ b'0'..=b'9') => {
+                            value = value << 4 | (*x as u64 - '0' as u64);
+                            let _ = iter.next();
                         }
-                    }
-                    out.push(std::char::from_u32(const_value as u32).unwrap());
-                    const_value = 0;
-                    continue;
-                }
-                'x' => {
-                    for i in 0..2 {
-                        match iter.peek() {
-                            Some(x @ '0'..='9') => {
-                                const_value = const_value << 4 | (*x as u64 - '0' as u64);
-                                let _ = iter.next();
-                            }
-                            Some(x @ 'a'..='f') => {
-                                const_value = const_value << 4 | (*x as u64 - 'a' as u64);
-                                let _ = iter.next();
-                            }
-                            Some(x @ 'A'..='F') => {
-                                const_value = const_value << 4 | (*x as u64 - 'a' as u64);
-                                let _ = iter.next();
-                            }
-                            _ => break,
+                        Some(x @ b'a'..=b'f') => {
+                            value = value << 4 | (*x as u64 - 'a' as u64);
+                            let _ = iter.next();
                         }
-                    }
-                    out.push(std::char::from_u32(const_value as u32).unwrap());
-                    const_value = 0;
-                    continue;
-                }
-                'u' => {
-                    for i in 0..4 {
-                        match iter.peek() {
-                            Some(x @ '0'..='9') => {
-                                const_value = const_value << 4 | (*x as u64 - '0' as u64);
-                                let _ = iter.next();
-                            }
-                            Some(x @ 'a'..='f') => {
-                                const_value = const_value << 4 | ((*x as u64 - 'a' as u64) + 10);
-                                let _ = iter.next();
-                            }
-                            Some(x @ 'A'..='F') => {
-                                const_value = const_value << 4 | ((*x as u64 - 'A' as u64) + 10);
-                                let _ = iter.next();
-                            }
-                            _ => panic!(),
+                        Some(x @ b'A'..=b'F') => {
+                            value = value << 4 | (*x as u64 - 'A' as u64);
+                            let _ = iter.next();
                         }
+                        _ => break,
                     }
-                    unsafe { out.push(from_u32_unchecked(const_value as u32)); }
-                    const_value = 0;
-                    continue;
                 }
-                'U' => {
-                    for i in 0..8 {
-                        match iter.peek() {
-                            Some(x @ '0'..='9') => {
-                                const_value = const_value << 4 | (*x as u64 - '0' as u64);
-                                let _ = iter.next();
-                            }
-                            Some(x @ 'a'..='f') => {
-                                const_value = const_value << 4 | ((*x as u64 - 'a' as u64) + 10);
-                                let _ = iter.next();
-                            }
-                            Some(x @ 'A'..='F') => {
-                                const_value = const_value << 4 | ((*x as u64 - 'A' as u64) + 10);
-                                let _ = iter.next();
-                            }
-                            _ => break,
+                out.push(value as u8);
+                value = 0;
+            }
+            b'u' => {
+                for _ in 0..4 {
+                    match iter.peek() {
+                        Some(x @ b'0'..=b'9') => {
+                            value = value << 4 | (*x as u64 - '0' as u64);
+                            let _ = iter.next();
                         }
+                        Some(x @ b'a'..=b'f') => {
+                            value = value << 4 | ((*x as u64 - 'a' as u64) + 10);
+                            let _ = iter.next();
+                        }
+                        Some(x @ b'A'..=b'F') => {
+                            value = value << 4 | ((*x as u64 - 'A' as u64) + 10);
+                            let _ = iter.next();
+                        }
+                        _ => panic!(),
                     }
-                    if const_value > u32::MAX as u64 {
-                        unsafe { out.push(from_u32_unchecked((const_value >> 32) as u32)); }
-                    }
-                    unsafe { out.push(from_u32_unchecked(const_value as u32)); }
-                    const_value = 0;
-                    continue;
                 }
-                o => o,
-            };
-            escaping = false;
-            out.push(c);
+                out.push(value as u8);
+                value = 0;
+            }
+            b'U' => {}
+            first @ b'0'..=b'7' => {
+                value = value << 3 | (first as u64 - '0' as u64);
+                for i in 0..2 {
+                    match iter.peek() {
+                        Some(x @ b'0'..=b'7') => {
+                            value = value << 3 | (*x as u64 - '0' as u64);
+                            let _ = iter.next();
+                        }
+                        _ => break,
+                    }
+                }
+                out.push(value as u8);
+                value = 0;
+            }
+            _ => {}
         }
     }
-    out
-}
-
-#[test]
-fn test_escape() {
-    assert_eq!(unescape(r"\a"), "\x07");
-    assert_eq!(unescape(r"\x32"), "\u{000032}");
-    assert_eq!(unescape(r"\u0032"), "\u{000032}");
-    assert_eq!(unescape(r"\U00000032"), "\u{000032}");
-    assert_eq!(unescape(r"\U00100032"), "\u{100032}");
-    assert_eq!(unescape(r"\U0010FFFF"), "\u{10FFFF}");
-    assert_eq!(unescape(r#"\271"#), "\u{92}");
-    assert_eq!(unescape(r#"\b\271`"#), "\u{8}\u{92}`")
 }
 
 impl Field for Vec<u8> {
@@ -476,7 +401,7 @@ impl Field for Vec<u8> {
         match _value {
             Literal::String(_s) => {
                 for s in _s {
-                    self.extend_from_slice(unescape(s).as_bytes());
+                    unescape_to_bytes(s, self);
                 }
                 Ok(())
             }
@@ -490,25 +415,6 @@ impl<K, V> Field for HashMap<K, V>
         K: Field + Default + Hash + Eq + Debug,
         V: Field + Default + Debug,
 {
-    #[cfg(feature = "map_syntax")]
-    fn format(&self, ctx: &Context, pad: usize, out: &mut String) -> fmt::Result {
-        out.indent(pad);
-        out.push_str("{\n");
-
-        for (key, _val) in self.iter() {
-            out.indent(pad);
-            Field::format(key, ctx, pad, out)?;
-            out.push_str(": ");
-            Field::format(key, ctx, pad, out)?;
-            out.push('\n');
-        }
-
-        out.indent(pad);
-        out.push_str("}\n");
-        Ok(())
-    }
-
-    #[cfg(not(feature = "map_syntax"))]
     fn format(&self, ctx: &Context, pad: usize, out: &mut String) -> fmt::Result {
         if self.len() > 1 {
             out.indent(pad);
@@ -551,33 +457,7 @@ impl<K, V> Field for HashMap<K, V>
                     self.merge_message(ctx, m)?
                 }
             }
-            #[cfg(feature = "map_syntax")]
-            FieldValue::Map(map) => self.merge_map(ctx, map)?,
-            #[cfg(feature = "map_syntax")]
-            FieldValue::MapList(ml) => {
-                for it in ml {
-                    self.merge_map(ctx, it)?;
-                }
-            }
-
             other => bail!("HashMap can't deserialize {other:?} "),
-        }
-        Ok(())
-    }
-    #[cfg(feature = "map_syntax")]
-    fn merge_map(&mut self, ctx: &Context, value: &[ast::MapField]) -> Result<()> {
-        for field in value {
-            if value.len() > 2 {
-                bail!("Unknown fields found in map")
-            }
-
-            let mut key = K::default();
-            let mut val = V::default();
-
-            key.merge_scalar(ctx, &field.key)?;
-            val.merge(ctx, &field.value)?;
-
-            self.insert(key, val);
         }
         Ok(())
     }
@@ -597,7 +477,6 @@ impl<K, V> Field for HashMap<K, V>
         val.merge(ctx, &vfield.value)?;
 
         self.insert(key, val);
-        println!("XXXX: {kfield:?}  => {vfield:?} => {self:?}");
         Ok(())
     }
 }
@@ -619,35 +498,7 @@ impl<K, V> Field for BTreeMap<K, V>
                     self.merge_message(ctx, m)?
                 }
             }
-
-            #[cfg(feature = "map_syntax")]
-            FieldValue::Map(map) => self.merge_map(ctx, map)?,
-            #[cfg(feature = "map_syntax")]
-            FieldValue::MapList(ml) => {
-                for it in ml {
-                    self.merge_map(ctx, it)?;
-                }
-            }
-
             other => bail!("HashMap can't deserialize {other:?} "),
-        }
-        Ok(())
-    }
-
-    #[cfg(feature = "map_syntax")]
-    fn merge_map(&mut self, ctx: &Context, value: &[ast::MapField]) -> Result<()> {
-        for field in value {
-            if value.len() > 2 {
-                bail!("Unknown fields found in map")
-            }
-
-            let mut key = K::default();
-            let mut val = V::default();
-
-            key.merge_scalar(ctx, &field.key)?;
-            val.merge(ctx, &field.value)?;
-
-            self.insert(key, val);
         }
         Ok(())
     }

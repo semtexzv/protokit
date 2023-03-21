@@ -37,6 +37,16 @@ impl Visitor for FieldVisitor<'_> {
             options: opts(self.ctx, item),
         })
     }
+    fn visit_group(&mut self, item: &mut Group) {
+        let name = self.ctx.def.cache(*item.name);
+        self.fields.insert(FieldDef {
+            name: name.clone(),
+            frequency: Default::default(),
+            typ: DataType::Unresolved(name),
+            num: item.number,
+            options: Default::default(),
+        })
+    }
     fn visit_field(&mut self, item: &mut Field) {
         let dtyp = match &item.typ {
             Type::Builtin(b) => DataType::Builtin(*b),

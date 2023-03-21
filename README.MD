@@ -2,4 +2,6 @@
 
 
 ## TODO:
-1. Packed/unpacked serialization does not conform to standard.
+1. Replace serializaiton with a stream containing common impls.
+2. Replace parsing with stream containing common impls.
+3. 

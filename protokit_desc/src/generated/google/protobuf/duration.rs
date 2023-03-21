@@ -3,9 +3,8 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-
-use crate as root;
 use crate::*;
+use crate as root;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&Duration::default());
 }
@@ -58,7 +57,12 @@ impl textformat::Decodable for Duration {
     }
 }
 impl textformat::Encodable for Duration {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.seconds != <i64 as Default>::default() {
             out.indent(pad);
             out.push_str("seconds: ");

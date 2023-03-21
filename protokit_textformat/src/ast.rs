@@ -22,23 +22,12 @@ pub struct Field<'i> {
     pub value: FieldValue<'i>,
 }
 
-#[cfg(feature = "map_syntax")]
-#[derive(Debug, Clone, PartialEq)]
-pub struct MapField<'i> {
-    pub key: Literal<'i>,
-    pub value: FieldValue<'i>,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum FieldValue<'i> {
     Scalar(Literal<'i>),
     ScalarList(Vec<Literal<'i>>),
     Message(Vec<Field<'i>>),
     MessageList(Vec<Vec<Field<'i>>>),
-    #[cfg(feature = "map_syntax")]
-    Map(Vec<MapField<'i>>),
-    #[cfg(feature = "map_syntax")]
-    MapList(Vec<Vec<MapField<'i>>>),
 }
 
 impl FieldValue<'_> {

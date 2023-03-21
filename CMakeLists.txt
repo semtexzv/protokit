@@ -5,8 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(protobuf_VERBOSE ON CACHE BOOL "enable verbose mode" FORCE)
 set(protobuf_BUILD_CONFORMANCE ON CACHE BOOL "enable conformance" FORCE)
 set(protobuf_BUILD_LIBPROTOC ON CACHE BOOL "enable libprotoc" FORCE)
+SET(protobuf_SOURCE_DIR "vendor/protobuf" CACHE BOOL "vendor/protobuf" FORCE)
 
 add_subdirectory(vendor/protobuf)
 
@@ -21,8 +23,19 @@ FetchContent_MakeAvailable(Corrosion)
 
 # Import targets defined in a package or workspace manifest `Cargo.toml` file
 corrosion_import_crate(
-    MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tools/conformance/Cargo.toml
-    CRATES conformance
+        MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tools/conformance/Cargo.toml
+        CRATES conformance
+)
+
+set_source_files_properties(
+        ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
+        ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
+        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
+        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
+        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
+        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
+
+        PROPERTIES GENERATED TRUE
 )
 
 add_executable(rust_conformance_runner
@@ -49,4 +62,9 @@ target_include_directories(rust_conformance_runner PUBLIC
         vendor/protobuf/third_party/jsoncpp/include
         )
 
-target_link_libraries(rust_conformance_runner PUBLIC libprotobuf ${protobuf_ABSL_USED_TARGETS} jsoncpp_lib conformance)
+target_link_libraries(rust_conformance_runner
+        PUBLIC
+        libprotobuf
+        ${protobuf_ABSL_USED_TARGETS}
+        jsoncpp_lib conformance
+        )

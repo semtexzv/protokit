@@ -3,9 +3,8 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-
-use crate as root;
 use crate::*;
+use crate as root;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&FieldMask::default());
 }
@@ -44,7 +43,12 @@ impl textformat::Decodable for FieldMask {
     }
 }
 impl textformat::Encodable for FieldMask {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.paths != <Vec<String> as Default>::default() {
             out.indent(pad);
             out.push_str("paths: ");
@@ -63,7 +67,7 @@ impl binformat::Decodable for FieldMask {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Format::<Repeat<Bytes>>::decode(&mut self.paths, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.paths, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -78,7 +82,7 @@ impl binformat::Encodable for FieldMask {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.paths.should_encode(true) {
-            Format::<Repeat<Bytes>>::encode(&self.paths, 1u32, buf)?;
+            Format::<Repeat::<Bytes>>::encode(&self.paths, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())

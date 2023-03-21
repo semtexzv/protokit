@@ -502,10 +502,9 @@ impl CodeGenerator<'_> {
         out.bin_decoders.push(quote! {
             #normal_tag => {
                 if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
-                    eprintln!("Decoding merge");
+
                     buf = #decode_fn(tmp, buf)?;
                 } else {
-                    eprintln!("Decoding new");
                     let mut tmp = Default::default();
                     buf = #decode_fn(&mut tmp, buf)?;
                     self.#oneof_name = #oneof_type::#variant_name(tmp);
@@ -623,7 +622,6 @@ impl CodeGenerator<'_> {
         let qualified_name = format!("{pkg}.{proto_name}");
 
         let msg_types = vec![msg_name.clone()];
-
         let mut out = MessageParts::default();
 
         struct TmpField<'a> {

@@ -3,10 +3,9 @@
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
 use std::fmt::Write;
-
-use super::super::super::validate::validate::*;
-use crate as root;
 use crate::*;
+use crate as root;
+use super::super::super::validate::validate::*;
 pub fn register_types(registry: &mut reflect::Registry) {
     registry.register(&FileDescriptorSet::default());
     registry.register(&FileDescriptorProto::default());
@@ -71,7 +70,12 @@ impl textformat::Decodable for FileDescriptorSet {
     }
 }
 impl textformat::Encodable for FileDescriptorSet {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.file != <Vec<FileDescriptorProto> as Default>::default() {
             out.indent(pad);
             out.push_str("file ");
@@ -90,7 +94,7 @@ impl binformat::Decodable for FileDescriptorSet {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.file, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.file, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -105,7 +109,7 @@ impl binformat::Encodable for FileDescriptorSet {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.file.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.file, 1u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.file, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -300,7 +304,12 @@ impl textformat::Decodable for FileDescriptorProto {
     }
 }
 impl textformat::Encodable for FileDescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -391,31 +400,35 @@ impl binformat::Decodable for FileDescriptorProto {
                 buf = Format::<Bytes>::decode(&mut self.package, buf)?;
             }
             26u32 => {
-                buf = Format::<Repeat<Bytes>>::decode(&mut self.dependency, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.dependency, buf)?;
             }
             80u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.public_dependency, buf)?;
+                buf = Format::<
+                    Repeat::<VInt>,
+                >::decode(&mut self.public_dependency, buf)?;
             }
             82u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.public_dependency, buf)?;
+                buf = Format::<
+                    Repeat::<VInt>,
+                >::decode(&mut self.public_dependency, buf)?;
             }
             88u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.weak_dependency, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.weak_dependency, buf)?;
             }
             90u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.weak_dependency, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.weak_dependency, buf)?;
             }
             34u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.message_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.message_type, buf)?;
             }
             42u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.enum_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.enum_type, buf)?;
             }
             50u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.service, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.service, buf)?;
             }
             58u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.extension, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.extension, buf)?;
             }
             66u32 => {
                 buf = Format::<Nest>::decode(&mut self.options, buf)?;
@@ -445,25 +458,25 @@ impl binformat::Encodable for FileDescriptorProto {
             Format::<Bytes>::encode(&self.package, 2u32, buf)?;
         }
         if self.dependency.should_encode(false) {
-            Format::<Repeat<Bytes>>::encode(&self.dependency, 3u32, buf)?;
+            Format::<Repeat::<Bytes>>::encode(&self.dependency, 3u32, buf)?;
         }
         if self.public_dependency.should_encode(false) {
-            Format::<Repeat<VInt>>::encode(&self.public_dependency, 10u32, buf)?;
+            Format::<Repeat::<VInt>>::encode(&self.public_dependency, 10u32, buf)?;
         }
         if self.weak_dependency.should_encode(false) {
-            Format::<Repeat<VInt>>::encode(&self.weak_dependency, 11u32, buf)?;
+            Format::<Repeat::<VInt>>::encode(&self.weak_dependency, 11u32, buf)?;
         }
         if self.message_type.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.message_type, 4u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.message_type, 4u32, buf)?;
         }
         if self.enum_type.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.enum_type, 5u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.enum_type, 5u32, buf)?;
         }
         if self.service.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.service, 6u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.service, 6u32, buf)?;
         }
         if self.extension.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.extension, 7u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.extension, 7u32, buf)?;
         }
         if self.options.should_encode(false) {
             Format::<Nest>::encode(&self.options, 8u32, buf)?;
@@ -550,7 +563,10 @@ impl DescriptorProto {
         self
     }
     #[inline(always)]
-    pub fn r#add_extension_range(&mut self, it: DescriptorProtoExtensionRange) -> &mut Self {
+    pub fn r#add_extension_range(
+        &mut self,
+        it: DescriptorProtoExtensionRange,
+    ) -> &mut Self {
         self.extension_range.push(it);
         self
     }
@@ -580,7 +596,10 @@ impl DescriptorProto {
         self
     }
     #[inline(always)]
-    pub fn r#add_reserved_range(&mut self, it: DescriptorProtoReservedRange) -> &mut Self {
+    pub fn r#add_reserved_range(
+        &mut self,
+        it: DescriptorProtoReservedRange,
+    ) -> &mut Self {
         self.reserved_range.push(it);
         self
     }
@@ -639,7 +658,12 @@ impl textformat::Decodable for DescriptorProto {
     }
 }
 impl textformat::Encodable for DescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -670,7 +694,9 @@ impl textformat::Encodable for DescriptorProto {
             textformat::Field::format(&self.enum_type, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.extension_range != <Vec<DescriptorProtoExtensionRange> as Default>::default() {
+        if self.extension_range
+            != <Vec<DescriptorProtoExtensionRange> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("extension_range ");
             textformat::Field::format(&self.extension_range, ctx, pad, out)?;
@@ -688,7 +714,9 @@ impl textformat::Encodable for DescriptorProto {
             textformat::Field::format(&self.options, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.reserved_range != <Vec<DescriptorProtoReservedRange> as Default>::default() {
+        if self.reserved_range
+            != <Vec<DescriptorProtoReservedRange> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("reserved_range ");
             textformat::Field::format(&self.reserved_range, ctx, pad, out)?;
@@ -715,31 +743,31 @@ impl binformat::Decodable for DescriptorProto {
                 buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.field, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.field, buf)?;
             }
             50u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.extension, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.extension, buf)?;
             }
             26u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.nested_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.nested_type, buf)?;
             }
             34u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.enum_type, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.enum_type, buf)?;
             }
             42u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.extension_range, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.extension_range, buf)?;
             }
             66u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.oneof_decl, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.oneof_decl, buf)?;
             }
             58u32 => {
                 buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             74u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.reserved_range, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.reserved_range, buf)?;
             }
             82u32 => {
-                buf = Format::<Repeat<Bytes>>::decode(&mut self.reserved_name, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.reserved_name, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -757,31 +785,31 @@ impl binformat::Encodable for DescriptorProto {
             Format::<Bytes>::encode(&self.name, 1u32, buf)?;
         }
         if self.field.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.field, 2u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.field, 2u32, buf)?;
         }
         if self.extension.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.extension, 6u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.extension, 6u32, buf)?;
         }
         if self.nested_type.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.nested_type, 3u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.nested_type, 3u32, buf)?;
         }
         if self.enum_type.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.enum_type, 4u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.enum_type, 4u32, buf)?;
         }
         if self.extension_range.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.extension_range, 5u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.extension_range, 5u32, buf)?;
         }
         if self.oneof_decl.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.oneof_decl, 8u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.oneof_decl, 8u32, buf)?;
         }
         if self.options.should_encode(false) {
             Format::<Nest>::encode(&self.options, 7u32, buf)?;
         }
         if self.reserved_range.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.reserved_range, 9u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.reserved_range, 9u32, buf)?;
         }
         if self.reserved_name.should_encode(false) {
-            Format::<Repeat<Bytes>>::encode(&self.reserved_name, 10u32, buf)?;
+            Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 10u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -850,7 +878,12 @@ impl textformat::Decodable for DescriptorProtoExtensionRange {
     }
 }
 impl textformat::Encodable for DescriptorProtoExtensionRange {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.start != <Option<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("start: ");
@@ -969,7 +1002,12 @@ impl textformat::Decodable for DescriptorProtoReservedRange {
     }
 }
 impl textformat::Encodable for DescriptorProtoReservedRange {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.start != <Option<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("start: ");
@@ -1062,8 +1100,14 @@ impl textformat::Decodable for ExtensionRangeOptions {
     }
 }
 impl textformat::Encodable for ExtensionRangeOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -1081,7 +1125,9 @@ impl binformat::Decodable for ExtensionRangeOptions {
         use binformat::format::*;
         match tag {
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1096,7 +1142,7 @@ impl binformat::Encodable for ExtensionRangeOptions {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -1277,7 +1323,12 @@ impl textformat::Decodable for FieldDescriptorProto {
     }
 }
 impl textformat::Encodable for FieldDescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -1501,7 +1552,12 @@ impl textformat::Decodable for OneofDescriptorProto {
     }
 }
 impl textformat::Encodable for OneofDescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -1595,12 +1651,18 @@ impl EnumDescriptorProto {
         self
     }
     #[inline(always)]
-    pub fn r#with_reserved_range(mut self, it: EnumDescriptorProtoEnumReservedRange) -> Self {
+    pub fn r#with_reserved_range(
+        mut self,
+        it: EnumDescriptorProtoEnumReservedRange,
+    ) -> Self {
         self.r#add_reserved_range(it);
         self
     }
     #[inline(always)]
-    pub fn r#add_reserved_range(&mut self, it: EnumDescriptorProtoEnumReservedRange) -> &mut Self {
+    pub fn r#add_reserved_range(
+        &mut self,
+        it: EnumDescriptorProtoEnumReservedRange,
+    ) -> &mut Self {
         self.reserved_range.push(it);
         self
     }
@@ -1644,7 +1706,12 @@ impl textformat::Decodable for EnumDescriptorProto {
     }
 }
 impl textformat::Encodable for EnumDescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -1663,7 +1730,9 @@ impl textformat::Encodable for EnumDescriptorProto {
             textformat::Field::format(&self.options, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.reserved_range != <Vec<EnumDescriptorProtoEnumReservedRange> as Default>::default() {
+        if self.reserved_range
+            != <Vec<EnumDescriptorProtoEnumReservedRange> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("reserved_range ");
             textformat::Field::format(&self.reserved_range, ctx, pad, out)?;
@@ -1690,16 +1759,16 @@ impl binformat::Decodable for EnumDescriptorProto {
                 buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.value, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.value, buf)?;
             }
             26u32 => {
                 buf = Format::<Nest>::decode(&mut self.options, buf)?;
             }
             34u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.reserved_range, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.reserved_range, buf)?;
             }
             42u32 => {
-                buf = Format::<Repeat<Bytes>>::decode(&mut self.reserved_name, buf)?;
+                buf = Format::<Repeat::<Bytes>>::decode(&mut self.reserved_name, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -1717,16 +1786,16 @@ impl binformat::Encodable for EnumDescriptorProto {
             Format::<Bytes>::encode(&self.name, 1u32, buf)?;
         }
         if self.value.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.value, 2u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.value, 2u32, buf)?;
         }
         if self.options.should_encode(false) {
             Format::<Nest>::encode(&self.options, 3u32, buf)?;
         }
         if self.reserved_range.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.reserved_range, 4u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.reserved_range, 4u32, buf)?;
         }
         if self.reserved_name.should_encode(false) {
-            Format::<Repeat<Bytes>>::encode(&self.reserved_name, 5u32, buf)?;
+            Format::<Repeat::<Bytes>>::encode(&self.reserved_name, 5u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -1781,7 +1850,12 @@ impl textformat::Decodable for EnumDescriptorProtoEnumReservedRange {
     }
 }
 impl textformat::Encodable for EnumDescriptorProtoEnumReservedRange {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.start != <Option<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("start: ");
@@ -1902,7 +1976,12 @@ impl textformat::Decodable for EnumValueDescriptorProto {
     }
 }
 impl textformat::Encodable for EnumValueDescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -2032,7 +2111,12 @@ impl textformat::Decodable for ServiceDescriptorProto {
     }
 }
 impl textformat::Encodable for ServiceDescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -2066,7 +2150,7 @@ impl binformat::Decodable for ServiceDescriptorProto {
                 buf = Format::<Bytes>::decode(&mut self.name, buf)?;
             }
             18u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.method, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.method, buf)?;
             }
             26u32 => {
                 buf = Format::<Nest>::decode(&mut self.options, buf)?;
@@ -2087,7 +2171,7 @@ impl binformat::Encodable for ServiceDescriptorProto {
             Format::<Bytes>::encode(&self.name, 1u32, buf)?;
         }
         if self.method.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.method, 2u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.method, 2u32, buf)?;
         }
         if self.options.should_encode(false) {
             Format::<Nest>::encode(&self.options, 3u32, buf)?;
@@ -2201,7 +2285,12 @@ impl textformat::Decodable for MethodDescriptorProto {
     }
 }
 impl textformat::Encodable for MethodDescriptorProto {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("name: ");
@@ -2563,7 +2652,11 @@ impl textformat::Decodable for FileOptions {
                 textformat::Field::merge(&mut self.java_multiple_files, ctx, value)?;
             }
             textformat::ast::FieldName::Normal("java_generate_equals_and_hash") => {
-                textformat::Field::merge(&mut self.java_generate_equals_and_hash, ctx, value)?;
+                textformat::Field::merge(
+                    &mut self.java_generate_equals_and_hash,
+                    ctx,
+                    value,
+                )?;
             }
             textformat::ast::FieldName::Normal("java_string_check_utf8") => {
                 textformat::Field::merge(&mut self.java_string_check_utf8, ctx, value)?;
@@ -2622,7 +2715,12 @@ impl textformat::Decodable for FileOptions {
     }
 }
 impl textformat::Encodable for FileOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.java_package != <Option<String> as Default>::default() {
             out.indent(pad);
             out.push_str("java_package: ");
@@ -2644,7 +2742,12 @@ impl textformat::Encodable for FileOptions {
         if self.java_generate_equals_and_hash != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("java_generate_equals_and_hash: ");
-            textformat::Field::format(&self.java_generate_equals_and_hash, ctx, pad, out)?;
+            textformat::Field::format(
+                &self.java_generate_equals_and_hash,
+                ctx,
+                pad,
+                out,
+            )?;
             out.push('\n');
         }
         if self.java_string_check_utf8 != <Option<bool> as Default>::default() {
@@ -2743,7 +2846,8 @@ impl textformat::Encodable for FileOptions {
             textformat::Field::format(&self.ruby_package, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -2773,10 +2877,14 @@ impl binformat::Decodable for FileOptions {
                 buf = Format::<Fix>::decode(&mut self.java_multiple_files, buf)?;
             }
             160u32 => {
-                buf = Format::<Fix>::decode(&mut self.java_generate_equals_and_hash, buf)?;
+                buf = Format::<
+                    Fix,
+                >::decode(&mut self.java_generate_equals_and_hash, buf)?;
             }
             162u32 => {
-                buf = Format::<Fix>::decode(&mut self.java_generate_equals_and_hash, buf)?;
+                buf = Format::<
+                    Fix,
+                >::decode(&mut self.java_generate_equals_and_hash, buf)?;
             }
             216u32 => {
                 buf = Format::<Fix>::decode(&mut self.java_string_check_utf8, buf)?;
@@ -2851,7 +2959,9 @@ impl binformat::Decodable for FileOptions {
                 buf = Format::<Bytes>::decode(&mut self.ruby_package, buf)?;
             }
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -2926,7 +3036,7 @@ impl binformat::Encodable for FileOptions {
             Format::<Bytes>::encode(&self.ruby_package, 45u32, buf)?;
         }
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3028,7 +3138,11 @@ impl textformat::Decodable for MessageOptions {
                 textformat::Field::merge(&mut self.message_set_wire_format, ctx, value)?;
             }
             textformat::ast::FieldName::Normal("no_standard_descriptor_accessor") => {
-                textformat::Field::merge(&mut self.no_standard_descriptor_accessor, ctx, value)?;
+                textformat::Field::merge(
+                    &mut self.no_standard_descriptor_accessor,
+                    ctx,
+                    value,
+                )?;
             }
             textformat::ast::FieldName::Normal("deprecated") => {
                 textformat::Field::merge(&mut self.deprecated, ctx, value)?;
@@ -3051,7 +3165,12 @@ impl textformat::Decodable for MessageOptions {
     }
 }
 impl textformat::Encodable for MessageOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.message_set_wire_format != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("message_set_wire_format: ");
@@ -3061,7 +3180,12 @@ impl textformat::Encodable for MessageOptions {
         if self.no_standard_descriptor_accessor != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("no_standard_descriptor_accessor: ");
-            textformat::Field::format(&self.no_standard_descriptor_accessor, ctx, pad, out)?;
+            textformat::Field::format(
+                &self.no_standard_descriptor_accessor,
+                ctx,
+                pad,
+                out,
+            )?;
             out.push('\n');
         }
         if self.deprecated != <Option<bool> as Default>::default() {
@@ -3076,7 +3200,8 @@ impl textformat::Encodable for MessageOptions {
             textformat::Field::format(&self.map_entry, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -3112,10 +3237,14 @@ impl binformat::Decodable for MessageOptions {
                 buf = Format::<Fix>::decode(&mut self.message_set_wire_format, buf)?;
             }
             16u32 => {
-                buf = Format::<Fix>::decode(&mut self.no_standard_descriptor_accessor, buf)?;
+                buf = Format::<
+                    Fix,
+                >::decode(&mut self.no_standard_descriptor_accessor, buf)?;
             }
             18u32 => {
-                buf = Format::<Fix>::decode(&mut self.no_standard_descriptor_accessor, buf)?;
+                buf = Format::<
+                    Fix,
+                >::decode(&mut self.no_standard_descriptor_accessor, buf)?;
             }
             24u32 => {
                 buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
@@ -3130,7 +3259,9 @@ impl binformat::Decodable for MessageOptions {
                 buf = Format::<Fix>::decode(&mut self.map_entry, buf)?;
             }
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             8568u32 => {
                 buf = Format::<Fix>::decode(&mut self.disabled, buf)?;
@@ -3169,7 +3300,7 @@ impl binformat::Encodable for MessageOptions {
             Format::<Fix>::encode(&self.map_entry, 7u32, buf)?;
         }
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         if self.disabled.should_encode(false) {
             Format::<Fix>::encode(&self.disabled, 1071u32, buf)?;
@@ -3314,7 +3445,12 @@ impl textformat::Decodable for FieldOptions {
     }
 }
 impl textformat::Encodable for FieldOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.ctype != <Option<FieldOptionsCType> as Default>::default() {
             out.indent(pad);
             out.push_str("ctype: ");
@@ -3351,7 +3487,8 @@ impl textformat::Encodable for FieldOptions {
             textformat::Field::format(&self.weak, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -3411,7 +3548,9 @@ impl binformat::Decodable for FieldOptions {
                 buf = Format::<Fix>::decode(&mut self.weak, buf)?;
             }
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             8570u32 => {
                 buf = Format::<Nest>::decode(&mut self.rules, buf)?;
@@ -3447,7 +3586,7 @@ impl binformat::Encodable for FieldOptions {
             Format::<Fix>::encode(&self.weak, 10u32, buf)?;
         }
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         if self.rules.should_encode(false) {
             Format::<Nest>::encode(&self.rules, 1071u32, buf)?;
@@ -3505,8 +3644,14 @@ impl textformat::Decodable for OneofOptions {
     }
 }
 impl textformat::Encodable for OneofOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -3530,7 +3675,9 @@ impl binformat::Decodable for OneofOptions {
         use binformat::format::*;
         match tag {
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             8568u32 => {
                 buf = Format::<Fix>::decode(&mut self.required, buf)?;
@@ -3551,7 +3698,7 @@ impl binformat::Encodable for OneofOptions {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         if self.required.should_encode(false) {
             Format::<Fix>::encode(&self.required, 1071u32, buf)?;
@@ -3623,7 +3770,12 @@ impl textformat::Decodable for EnumOptions {
     }
 }
 impl textformat::Encodable for EnumOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.allow_alias != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("allow_alias: ");
@@ -3636,7 +3788,8 @@ impl textformat::Encodable for EnumOptions {
             textformat::Field::format(&self.deprecated, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -3666,7 +3819,9 @@ impl binformat::Decodable for EnumOptions {
                 buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3687,7 +3842,7 @@ impl binformat::Encodable for EnumOptions {
             Format::<Fix>::encode(&self.deprecated, 3u32, buf)?;
         }
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3742,14 +3897,20 @@ impl textformat::Decodable for EnumValueOptions {
     }
 }
 impl textformat::Encodable for EnumValueOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.deprecated != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("deprecated: ");
             textformat::Field::format(&self.deprecated, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -3773,7 +3934,9 @@ impl binformat::Decodable for EnumValueOptions {
                 buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3791,7 +3954,7 @@ impl binformat::Encodable for EnumValueOptions {
             Format::<Fix>::encode(&self.deprecated, 1u32, buf)?;
         }
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3846,14 +4009,20 @@ impl textformat::Decodable for ServiceOptions {
     }
 }
 impl textformat::Encodable for ServiceOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.deprecated != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("deprecated: ");
             textformat::Field::format(&self.deprecated, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -3877,7 +4046,9 @@ impl binformat::Decodable for ServiceOptions {
                 buf = Format::<Fix>::decode(&mut self.deprecated, buf)?;
             }
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -3895,7 +4066,7 @@ impl binformat::Encodable for ServiceOptions {
             Format::<Fix>::encode(&self.deprecated, 33u32, buf)?;
         }
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -3921,12 +4092,18 @@ impl MethodOptions {
         self
     }
     #[inline(always)]
-    pub fn r#with_idempotency_level(mut self, it: MethodOptionsIdempotencyLevel) -> Self {
+    pub fn r#with_idempotency_level(
+        mut self,
+        it: MethodOptionsIdempotencyLevel,
+    ) -> Self {
         self.r#set_idempotency_level(it);
         self
     }
     #[inline(always)]
-    pub fn r#set_idempotency_level(&mut self, it: MethodOptionsIdempotencyLevel) -> &mut Self {
+    pub fn r#set_idempotency_level(
+        &mut self,
+        it: MethodOptionsIdempotencyLevel,
+    ) -> &mut Self {
         self.idempotency_level = it.into();
         self
     }
@@ -3964,20 +4141,28 @@ impl textformat::Decodable for MethodOptions {
     }
 }
 impl textformat::Encodable for MethodOptions {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.deprecated != <Option<bool> as Default>::default() {
             out.indent(pad);
             out.push_str("deprecated: ");
             textformat::Field::format(&self.deprecated, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.idempotency_level != <Option<MethodOptionsIdempotencyLevel> as Default>::default() {
+        if self.idempotency_level
+            != <Option<MethodOptionsIdempotencyLevel> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("idempotency_level: ");
             textformat::Field::format(&self.idempotency_level, ctx, pad, out)?;
             out.push('\n');
         }
-        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default() {
+        if self.uninterpreted_option != <Vec<UninterpretedOption> as Default>::default()
+        {
             out.indent(pad);
             out.push_str("uninterpreted_option ");
             textformat::Field::format(&self.uninterpreted_option, ctx, pad, out)?;
@@ -4007,7 +4192,9 @@ impl binformat::Decodable for MethodOptions {
                 buf = Format::<Enum>::decode(&mut self.idempotency_level, buf)?;
             }
             7994u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.uninterpreted_option, buf)?;
+                buf = Format::<
+                    Repeat::<Nest>,
+                >::decode(&mut self.uninterpreted_option, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4028,7 +4215,7 @@ impl binformat::Encodable for MethodOptions {
             Format::<Enum>::encode(&self.idempotency_level, 34u32, buf)?;
         }
         if self.uninterpreted_option.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.uninterpreted_option, 999u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -4153,7 +4340,12 @@ impl textformat::Decodable for UninterpretedOption {
     }
 }
 impl textformat::Encodable for UninterpretedOption {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name != <Vec<UninterpretedOptionNamePart> as Default>::default() {
             out.indent(pad);
             out.push_str("name ");
@@ -4208,7 +4400,7 @@ impl binformat::Decodable for UninterpretedOption {
         use binformat::format::*;
         match tag {
             18u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.name, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.name, buf)?;
             }
             26u32 => {
                 buf = Format::<Bytes>::decode(&mut self.identifier_value, buf)?;
@@ -4250,7 +4442,7 @@ impl binformat::Encodable for UninterpretedOption {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.name.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.name, 2u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.name, 2u32, buf)?;
         }
         if self.identifier_value.should_encode(false) {
             Format::<Bytes>::encode(&self.identifier_value, 3u32, buf)?;
@@ -4323,7 +4515,12 @@ impl textformat::Decodable for UninterpretedOptionNamePart {
     }
 }
 impl textformat::Encodable for UninterpretedOptionNamePart {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.name_part != <String as Default>::default() {
             out.indent(pad);
             out.push_str("name_part: ");
@@ -4413,7 +4610,12 @@ impl textformat::Decodable for SourceCodeInfo {
     }
 }
 impl textformat::Encodable for SourceCodeInfo {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.location != <Vec<SourceCodeInfoLocation> as Default>::default() {
             out.indent(pad);
             out.push_str("location ");
@@ -4432,7 +4634,7 @@ impl binformat::Decodable for SourceCodeInfo {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.location, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.location, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4447,7 +4649,7 @@ impl binformat::Encodable for SourceCodeInfo {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.location.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.location, 1u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.location, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -4536,7 +4738,11 @@ impl textformat::Decodable for SourceCodeInfoLocation {
                 textformat::Field::merge(&mut self.trailing_comments, ctx, value)?;
             }
             textformat::ast::FieldName::Normal("leading_detached_comments") => {
-                textformat::Field::merge(&mut self.leading_detached_comments, ctx, value)?;
+                textformat::Field::merge(
+                    &mut self.leading_detached_comments,
+                    ctx,
+                    value,
+                )?;
             }
             other => textformat::bail!("{other:?} was not recognized"),
         }
@@ -4544,7 +4750,12 @@ impl textformat::Decodable for SourceCodeInfoLocation {
     }
 }
 impl textformat::Encodable for SourceCodeInfoLocation {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.path != <Vec<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("path: ");
@@ -4587,16 +4798,16 @@ impl binformat::Decodable for SourceCodeInfoLocation {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             10u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             16u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.span, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.span, buf)?;
             }
             18u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.span, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.span, buf)?;
             }
             26u32 => {
                 buf = Format::<Bytes>::decode(&mut self.leading_comments, buf)?;
@@ -4605,7 +4816,9 @@ impl binformat::Decodable for SourceCodeInfoLocation {
                 buf = Format::<Bytes>::decode(&mut self.trailing_comments, buf)?;
             }
             50u32 => {
-                buf = Format::<Repeat<Bytes>>::decode(&mut self.leading_detached_comments, buf)?;
+                buf = Format::<
+                    Repeat::<Bytes>,
+                >::decode(&mut self.leading_detached_comments, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4620,10 +4833,10 @@ impl binformat::Encodable for SourceCodeInfoLocation {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.path.should_encode(false) {
-            Format::<Repeat<VInt>>::encode(&self.path, 1u32, buf)?;
+            Format::<Repeat::<VInt>>::encode(&self.path, 1u32, buf)?;
         }
         if self.span.should_encode(false) {
-            Format::<Repeat<VInt>>::encode(&self.span, 2u32, buf)?;
+            Format::<Repeat::<VInt>>::encode(&self.span, 2u32, buf)?;
         }
         if self.leading_comments.should_encode(false) {
             Format::<Bytes>::encode(&self.leading_comments, 3u32, buf)?;
@@ -4632,7 +4845,9 @@ impl binformat::Encodable for SourceCodeInfoLocation {
             Format::<Bytes>::encode(&self.trailing_comments, 4u32, buf)?;
         }
         if self.leading_detached_comments.should_encode(false) {
-            Format::<Repeat<Bytes>>::encode(&self.leading_detached_comments, 6u32, buf)?;
+            Format::<
+                Repeat::<Bytes>,
+            >::encode(&self.leading_detached_comments, 6u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -4673,7 +4888,12 @@ impl textformat::Decodable for GeneratedCodeInfo {
     }
 }
 impl textformat::Encodable for GeneratedCodeInfo {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.annotation != <Vec<GeneratedCodeInfoAnnotation> as Default>::default() {
             out.indent(pad);
             out.push_str("annotation ");
@@ -4692,7 +4912,7 @@ impl binformat::Decodable for GeneratedCodeInfo {
         use binformat::format::*;
         match tag {
             10u32 => {
-                buf = Format::<Repeat<Nest>>::decode(&mut self.annotation, buf)?;
+                buf = Format::<Repeat::<Nest>>::decode(&mut self.annotation, buf)?;
             }
             other => buf = self._unknown.merge_field(tag, buf)?,
         }
@@ -4707,7 +4927,7 @@ impl binformat::Encodable for GeneratedCodeInfo {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.annotation.should_encode(false) {
-            Format::<Repeat<Nest>>::encode(&self.annotation, 1u32, buf)?;
+            Format::<Repeat::<Nest>>::encode(&self.annotation, 1u32, buf)?;
         }
         binformat::Encodable::encode(&self._unknown, buf)?;
         Ok(())
@@ -4790,7 +5010,12 @@ impl textformat::Decodable for GeneratedCodeInfoAnnotation {
     }
 }
 impl textformat::Encodable for GeneratedCodeInfoAnnotation {
-    fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
+    fn encode(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut std::string::String,
+    ) -> textformat::Result<()> {
         if self.path != <Vec<i32> as Default>::default() {
             out.indent(pad);
             out.push_str("path: ");
@@ -4827,10 +5052,10 @@ impl binformat::Decodable for GeneratedCodeInfoAnnotation {
         use binformat::format::*;
         match tag {
             8u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             10u32 => {
-                buf = Format::<Repeat<VInt>>::decode(&mut self.path, buf)?;
+                buf = Format::<Repeat::<VInt>>::decode(&mut self.path, buf)?;
             }
             18u32 => {
                 buf = Format::<Bytes>::decode(&mut self.source_file, buf)?;
@@ -4860,7 +5085,7 @@ impl binformat::Encodable for GeneratedCodeInfoAnnotation {
         use binformat::format::*;
         use binformat::ShouldEncode;
         if self.path.should_encode(false) {
-            Format::<Repeat<VInt>>::encode(&self.path, 1u32, buf)?;
+            Format::<Repeat::<VInt>>::encode(&self.path, 1u32, buf)?;
         }
         if self.source_file.should_encode(false) {
             Format::<Bytes>::encode(&self.source_file, 2u32, buf)?;
@@ -4875,7 +5100,7 @@ impl binformat::Encodable for GeneratedCodeInfoAnnotation {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct FieldDescriptorProtoType(pub i32);
 impl FieldDescriptorProtoType {
     pub const TYPE_DOUBLE: FieldDescriptorProtoType = FieldDescriptorProtoType(1i32);
@@ -4922,7 +5147,12 @@ impl From<FieldDescriptorProtoType> for i32 {
     }
 }
 impl textformat::Field for FieldDescriptorProtoType {
-    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
+    fn format(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut String,
+    ) -> ::std::fmt::Result {
         let str = match self {
             FieldDescriptorProtoType(1i32) => "TYPE_DOUBLE",
             FieldDescriptorProtoType(2i32) => "TYPE_FLOAT",
@@ -4950,7 +5180,11 @@ impl textformat::Field for FieldDescriptorProtoType {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
+    fn merge_scalar(
+        &mut self,
+        _ctx: &textformat::Context,
+        v: &textformat::ast::Literal,
+    ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("TYPE_DOUBLE") => {
                 *self = FieldDescriptorProtoType::TYPE_DOUBLE;
@@ -5012,12 +5246,18 @@ impl textformat::Field for FieldDescriptorProtoType {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct FieldDescriptorProtoLabel(pub i32);
 impl FieldDescriptorProtoLabel {
-    pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(1i32);
-    pub const LABEL_REQUIRED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(2i32);
-    pub const LABEL_REPEATED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(3i32);
+    pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        1i32,
+    );
+    pub const LABEL_REQUIRED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        2i32,
+    );
+    pub const LABEL_REPEATED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        3i32,
+    );
 }
 impl Default for FieldDescriptorProtoLabel {
     fn default() -> FieldDescriptorProtoLabel {
@@ -5044,7 +5284,12 @@ impl From<FieldDescriptorProtoLabel> for i32 {
     }
 }
 impl textformat::Field for FieldDescriptorProtoLabel {
-    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
+    fn format(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut String,
+    ) -> ::std::fmt::Result {
         let str = match self {
             FieldDescriptorProtoLabel(1i32) => "LABEL_OPTIONAL",
             FieldDescriptorProtoLabel(2i32) => "LABEL_REQUIRED",
@@ -5057,7 +5302,11 @@ impl textformat::Field for FieldDescriptorProtoLabel {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
+    fn merge_scalar(
+        &mut self,
+        _ctx: &textformat::Context,
+        v: &textformat::ast::Literal,
+    ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("LABEL_OPTIONAL") => {
                 *self = FieldDescriptorProtoLabel::LABEL_OPTIONAL;
@@ -5074,7 +5323,7 @@ impl textformat::Field for FieldDescriptorProtoLabel {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct FileOptionsOptimizeMode(pub i32);
 impl FileOptionsOptimizeMode {
     pub const SPEED: FileOptionsOptimizeMode = FileOptionsOptimizeMode(1i32);
@@ -5106,7 +5355,12 @@ impl From<FileOptionsOptimizeMode> for i32 {
     }
 }
 impl textformat::Field for FileOptionsOptimizeMode {
-    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
+    fn format(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut String,
+    ) -> ::std::fmt::Result {
         let str = match self {
             FileOptionsOptimizeMode(1i32) => "SPEED",
             FileOptionsOptimizeMode(2i32) => "CODE_SIZE",
@@ -5119,7 +5373,11 @@ impl textformat::Field for FileOptionsOptimizeMode {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
+    fn merge_scalar(
+        &mut self,
+        _ctx: &textformat::Context,
+        v: &textformat::ast::Literal,
+    ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("SPEED") => {
                 *self = FileOptionsOptimizeMode::SPEED;
@@ -5136,7 +5394,7 @@ impl textformat::Field for FileOptionsOptimizeMode {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct FieldOptionsCType(pub i32);
 impl FieldOptionsCType {
     pub const STRING: FieldOptionsCType = FieldOptionsCType(0i32);
@@ -5168,7 +5426,12 @@ impl From<FieldOptionsCType> for i32 {
     }
 }
 impl textformat::Field for FieldOptionsCType {
-    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
+    fn format(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut String,
+    ) -> ::std::fmt::Result {
         let str = match self {
             FieldOptionsCType(0i32) => "STRING",
             FieldOptionsCType(1i32) => "CORD",
@@ -5181,7 +5444,11 @@ impl textformat::Field for FieldOptionsCType {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
+    fn merge_scalar(
+        &mut self,
+        _ctx: &textformat::Context,
+        v: &textformat::ast::Literal,
+    ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("STRING") => {
                 *self = FieldOptionsCType::STRING;
@@ -5198,7 +5465,7 @@ impl textformat::Field for FieldOptionsCType {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct FieldOptionsJSType(pub i32);
 impl FieldOptionsJSType {
     pub const JS_NORMAL: FieldOptionsJSType = FieldOptionsJSType(0i32);
@@ -5230,7 +5497,12 @@ impl From<FieldOptionsJSType> for i32 {
     }
 }
 impl textformat::Field for FieldOptionsJSType {
-    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
+    fn format(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut String,
+    ) -> ::std::fmt::Result {
         let str = match self {
             FieldOptionsJSType(0i32) => "JS_NORMAL",
             FieldOptionsJSType(1i32) => "JS_STRING",
@@ -5243,7 +5515,11 @@ impl textformat::Field for FieldOptionsJSType {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
+    fn merge_scalar(
+        &mut self,
+        _ctx: &textformat::Context,
+        v: &textformat::ast::Literal,
+    ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("JS_NORMAL") => {
                 *self = FieldOptionsJSType::JS_NORMAL;
@@ -5260,12 +5536,18 @@ impl textformat::Field for FieldOptionsJSType {
         Ok(())
     }
 }
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct MethodOptionsIdempotencyLevel(pub i32);
 impl MethodOptionsIdempotencyLevel {
-    pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(0i32);
-    pub const NO_SIDE_EFFECTS: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(1i32);
-    pub const IDEMPOTENT: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(2i32);
+    pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        0i32,
+    );
+    pub const NO_SIDE_EFFECTS: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        1i32,
+    );
+    pub const IDEMPOTENT: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        2i32,
+    );
 }
 impl Default for MethodOptionsIdempotencyLevel {
     fn default() -> MethodOptionsIdempotencyLevel {
@@ -5292,7 +5574,12 @@ impl From<MethodOptionsIdempotencyLevel> for i32 {
     }
 }
 impl textformat::Field for MethodOptionsIdempotencyLevel {
-    fn format(&self, ctx: &textformat::Context, pad: usize, out: &mut String) -> ::std::fmt::Result {
+    fn format(
+        &self,
+        ctx: &textformat::Context,
+        pad: usize,
+        out: &mut String,
+    ) -> ::std::fmt::Result {
         let str = match self {
             MethodOptionsIdempotencyLevel(0i32) => "IDEMPOTENCY_UNKNOWN",
             MethodOptionsIdempotencyLevel(1i32) => "NO_SIDE_EFFECTS",
@@ -5305,7 +5592,11 @@ impl textformat::Field for MethodOptionsIdempotencyLevel {
         out.push_str(str);
         Ok(())
     }
-    fn merge_scalar(&mut self, _ctx: &textformat::Context, v: &textformat::ast::Literal) -> textformat::Result<()> {
+    fn merge_scalar(
+        &mut self,
+        _ctx: &textformat::Context,
+        v: &textformat::ast::Literal,
+    ) -> textformat::Result<()> {
         match v {
             textformat::ast::Literal::Identifier("IDEMPOTENCY_UNKNOWN") => {
                 *self = MethodOptionsIdempotencyLevel::IDEMPOTENCY_UNKNOWN;

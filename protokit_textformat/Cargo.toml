@@ -5,7 +5,6 @@ edition = "2021"
 
 [features]
 default = []
-map_syntax = []
 
 [dependencies.binformat]
 package = "protokit_binformat"

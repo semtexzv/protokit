@@ -31,7 +31,7 @@ class rust_runner : public google::protobuf::ConformanceTestRunner {
                        const std::string& input,
                        std::string* output) {
 
-    if (test_name == "Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_0") {
+    if (test_name == "Required.Proto3.TextFormatInput.AnyFieldWithRawBytes.ProtobufOutput") {
       printf("TEST");
     }
     uint8_t data[8192];

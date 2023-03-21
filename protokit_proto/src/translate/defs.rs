@@ -61,6 +61,29 @@ impl Visitor for FillDefinitions<'_> {
         item.accept(self);
         self.path = before;
     }
+    fn visit_group(&mut self, item: &mut Group) {
+        let name = self.ctx.def.cache(*item.name);
+
+        let before = self.path.clone();
+        let (_name, qualified_name) = self.qualify(*item.name);
+
+        let name = self.ctx.def.cache(&qualified_name);
+        self.unit.messages.insert(
+            name.clone(),
+            MessageDef {
+                name,
+                fields: fields(self.ctx, item),
+
+                #[cfg(feature = "descriptors")]
+                options: opts(self.ctx, item),
+                oneofs: oneofs(self.ctx, item),
+                is_virtual_map: false,
+            }
+        );
+        self.path = qualified_name;
+        item.accept(self);
+        self.path = before;
+    }
     fn visit_extend(&mut self, item: &mut Extension) {
         let name = self.ctx.def.cache(*item.name);
         self.unit.extensions.insert(
