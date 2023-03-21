@@ -159,7 +159,7 @@ impl CodeGenerator<'_> {
         })
     }
     pub fn field_type(&self, typ: &FieldDef) -> Result<TokenStream> {
-        let mut base = self.base_type(&typ.typ)?;
+        let base = self.base_type(&typ.typ)?;
         let is_msg = match typ.typ {
             DataType::Message(_) => true,
             _ => false,
