@@ -1,6 +1,6 @@
-use std::slice::{from_raw_parts_mut, from_raw_parts};
+use std::slice::{from_raw_parts, from_raw_parts_mut};
 
-use protokit::reflect::Registry;
+use protokit::textformat::reflect::Registry;
 use protokit::{binformat, textformat};
 
 use crate::gen::conformance::conformance;
@@ -54,7 +54,7 @@ fn input(payload: ConformanceRequestOneOfPayload, proto3: bool) -> anyhow::Resul
         (other, _) => panic!("Unknown payload {other:?}"),
     }?;
 
-    eprintln!("Req: {txt} => {out:?}");
+    // eprintln!("Req: {txt} => {out:?}");
     Ok(out)
 }
 
@@ -70,12 +70,12 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
         }
         (Ok(Output::Proto2(v)), WireFormat::TEXT_FORMAT) => {
             let out = textformat::encode(&v, &Registry::default()).unwrap();
-            println!("OUT: {out}");
+            // println!("OUT: {out}");
             ConformanceResponseOneOfResult::TextPayload(out)
         }
         (Ok(Output::Proto3(v)), WireFormat::TEXT_FORMAT) => {
             let out = textformat::encode(&v, &Registry::default()).unwrap();
-            println!("OUT: {out}");
+            // println!("OUT: {out}");
             ConformanceResponseOneOfResult::TextPayload(out)
         }
         (_, WireFormat::JSON) => ConformanceResponseOneOfResult::Skipped("No json".to_string()),
@@ -90,16 +90,16 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
 
     let req = protokit::binformat::decode::<conformance::ConformanceRequest>(&data).unwrap();
 
-    let out = if let ConformanceRequestOneOfPayload::JsonPayload(_) = req.payload {
+    let out = if let Some(ConformanceRequestOneOfPayload::JsonPayload(_)) = req.payload {
         ConformanceResponse {
-            result: ConformanceResponseOneOfResult::Skipped("No json support".to_string()),
+            result: Some(ConformanceResponseOneOfResult::Skipped("No json support".to_string())),
             ..Default::default()
         }
     } else if req.message_type.contains("Proto3") || req.message_type.contains("Proto2") {
-        let out = input(req.payload, req.message_type.contains("Proto3"));
+        let out = input(req.payload.unwrap(), req.message_type.contains("Proto3"));
         let data_out = output(out, req.requested_output_format);
         ConformanceResponse {
-            result: data_out,
+            result: Some(data_out),
             ..Default::default()
         }
     } else if req.message_type.contains("FailureSet") {
@@ -110,7 +110,9 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
         };
 
         ConformanceResponse {
-            result: ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&fs).unwrap()),
+            result: Some(ConformanceResponseOneOfResult::ProtobufPayload(
+                binformat::encode(&fs).unwrap(),
+            )),
             ..Default::default()
         }
     } else {
@@ -118,7 +120,7 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
     };
     let out = binformat::encode(&out).unwrap();
     let outslice = from_raw_parts_mut(odata, olen as usize);
-    outslice[0..out.len()].copy_from_slice(&out);
+    outslice[0 .. out.len()].copy_from_slice(&out);
     return out.len() as u32;
 }
 
@@ -127,7 +129,7 @@ fn test1() {
     let a = binformat::decode::<TestAllTypesProto3>(&[
         0o202, 0o007, 0o014, 0o022, 0o012, 0o010, 0o001, 0o020, 0o001, 0o310, 0o005, 0o001, 0o310, 0o005, 0o001,
     ])
-        .unwrap();
+    .unwrap();
     let b = binformat::encode(&a).unwrap();
     // panic!("{a:#?}{b:#o}")
 }

@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2021"
 
 [features]
-default = ["descriptors"]
+default = []
 descriptors = ["protokit_proto/descriptors", "protokit_desc/descriptors"]
 
 [dependencies.protokit_binformat]
@@ -18,9 +18,9 @@ path = "../protokit_proto"
 
 [dependencies]
 anyhow = "1.0.57"
-quote = "1.0.18"
+quote = "1.0.26"
 
-syn = { version = "1.0.98", default-features = false, features = ["parsing", "proc-macro"]}
+syn = { version = "2.0.9", default-features = false, features = ["parsing", "proc-macro"]}
 proc-macro2 = "1.0.51"
-prettyplease = { version = "0.1.15", features = ["verbatim"]}
+prettyplease = { version = "0.2.1", features = ["verbatim"]}
 convert_case = "0.6.0"

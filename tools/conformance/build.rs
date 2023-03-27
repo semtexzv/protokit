@@ -1,4 +1,3 @@
-
 fn main() {
     protokit_build::Build::new()
         .track_unknowns(true)

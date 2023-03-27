@@ -1,0 +1,19 @@
+[package]
+name = "protokit_derive"
+version = "0.0.0"
+authors = ["Michal Hornický <semtexzv@gmail.com>"]
+description = "A `cargo generate` template for quick-starting a procedural macro crate"
+keywords = ["template", "proc_macro", "procmacro"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["full"]}
+quote = "1"
+proc-macro2 = "1.0"
+proc-macro-error = "1.0.4"
+
+
+convert_case = "0.6.0"

@@ -1,7 +1,7 @@
 use protokit_desc::{BuiltinType, DataType, EnumFields, FieldDef, MessageFields, VariantDef};
 
 use crate::ast::*;
-use crate::translate::opts::opts;
+// use crate::translate::opts::opts;
 use crate::translate::TranslateCtx;
 
 struct FieldVisitor<'tcx> {
@@ -44,7 +44,7 @@ impl Visitor for FieldVisitor<'_> {
             frequency: Default::default(),
             typ: DataType::Unresolved(name),
             num: item.number,
-            options: Default::default(),
+            // options: Default::default(),
         })
     }
     fn visit_field(&mut self, item: &mut Field) {

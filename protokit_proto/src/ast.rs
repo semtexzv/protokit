@@ -17,7 +17,7 @@ pub enum Const<'i> {
     Str(&'i str),
     Int(i128),
     Float(f64),
-    Compound(Vec<protokit_textformat::ast::Field<'i>>),
+    // Compound(Vec<protokit_textformat::ast::Field<'i>>),
 }
 
 impl AstNode for Const<'_> {

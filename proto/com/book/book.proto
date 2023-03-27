@@ -4,10 +4,6 @@ package com.book.test1;
 import "google/protobuf/any.proto";
 import "google/protobuf/empty.proto";
 
-extend Book {
-  string extfield = 66;
-}
-
 enum Category {
   ADULT = 0;
   CHILDREN = 1;

@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 pub use async_trait::async_trait;
-use binformat::WriteBuffer;
 use bytes::Buf;
 pub use futures::future::LocalBoxFuture;
 pub use futures::stream::Stream;
@@ -24,8 +23,8 @@ impl<E, D> Default for TonicCodec<E, D> {
 
 impl<E, D> Codec for TonicCodec<E, D>
 where
-    E: binformat::Encodable + Send + 'static,
-    D: binformat::Decodable + Default + Send + 'static,
+    E: binformat::BinProto + Send + 'static,
+    D: binformat::BinProto + Default + Send + 'static,
 {
     type Encode = E;
     type Decode = D;
@@ -46,18 +45,19 @@ where
 #[derive(Debug, Clone, Default)]
 pub struct TonicEncoder<T>(PhantomData<T>);
 
-impl<T: binformat::Encodable> Encoder for TonicEncoder<T> {
+impl<T: binformat::BinProto> Encoder for TonicEncoder<T> {
     type Item = T;
     type Error = Status;
 
     fn encode(&mut self, item: Self::Item, buf: &mut EncodeBuf<'_>) -> Result<(), Self::Error> {
-        use bytes::BufMut;
-
-        let mut tmp = WriteBuffer::new();
-        item.encode(&mut tmp).expect("Message only errors if not enough space");
-        buf.put_slice(&tmp);
-
-        Ok(())
+        todo!()
+        // use bytes::BufMut;
+        //
+        // let mut tmp = WriteBuffer::new();
+        // item.encode(&mut tmp).expect("Message only errors if not enough space");
+        // buf.put_slice(&tmp);
+        //
+        // Ok(())
     }
 }
 
@@ -65,17 +65,18 @@ impl<T: binformat::Encodable> Encoder for TonicEncoder<T> {
 #[derive(Debug, Clone, Default)]
 pub struct TonicDecoder<D>(PhantomData<D>);
 
-impl<D: binformat::Decodable + Default> Decoder for TonicDecoder<D> {
+impl<D: binformat::BinProto + Default> Decoder for TonicDecoder<D> {
     type Item = D;
     type Error = Status;
 
     fn decode(&mut self, buf: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
-        let b = buf.chunk();
-        let mut item = D::default();
-        let left = binformat::decode_into(b, &mut item).map_err(from_decode_error)?;
-
-        buf.advance(b.len() - left.len());
-        Ok(Some(item))
+        todo!()
+        // let b = buf.chunk();
+        // let mut item = D::default();
+        // let left = binformat::decode_into(b, &mut item).map_err(from_decode_error)?;
+        //
+        // buf.advance(b.len() - left.len());
+        // Ok(Some(item))
     }
 }
 

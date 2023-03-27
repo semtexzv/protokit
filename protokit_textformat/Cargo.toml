@@ -11,11 +11,8 @@ package = "protokit_binformat"
 path = "../protokit_binformat"
 
 [dependencies]
-snailquote = "0.3.1"
-anyhow = "1.0.57"
-nom = "7.1.1"
-
 lex_core = { package = "lexical-core", version = "*", features = ["parse-integers", "power-of-two"] }
 lex_float = { package = "minimal-lexical", version = "*" }
 
-miette = { version = "5.5.0", features = ["fancy"]}
+thiserror = "1.0.40"
+logos = "0.12.1"

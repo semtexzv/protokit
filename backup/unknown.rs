@@ -1,8 +1,8 @@
 use anyhow::{anyhow, bail, Result};
 use integer_encoding::VarInt;
 
-use crate::{format, Decodable, Encodable, Fix, Format, ReadBuffer, WriteBuffer};
 use crate::format::RawVInt;
+use crate::{format, Decodable, Encodable, Fix, Format, ReadBuffer, WriteBuffer};
 
 pub(crate) const VINT: u8 = 0;
 pub(crate) const FIX64: u8 = 1;
@@ -49,7 +49,7 @@ impl Decodable for ProtoField {
             VINT => {
                 let (vint, len) = u64::decode_var(buf).ok_or_else(|| anyhow!("Data"))?;
                 self.value = ProtoValue::VInt(vint);
-                Ok(&buf[len..])
+                Ok(&buf[len ..])
             }
             FIX64 => {
                 let mut v = 0;
@@ -68,26 +68,24 @@ impl Decodable for ProtoField {
                 loop {
                     let (vtag, vlen) = crate::varint::decode(buf);
                     if vlen == 0 {
-                        return Ok(buf)
+                        return Ok(buf);
                     }
-                     if (vtag & 7) as u8 == EGRP && vtag == tag {
-                        return Ok(&buf[vlen as usize..]);
+                    if (vtag & 7) as u8 == EGRP && vtag == tag {
+                        return Ok(&buf[vlen as usize ..]);
                     }
                     let mut out = ProtoField::default();
-                    buf = out.merge_field(vtag, &buf[vlen as usize..])?;
+                    buf = out.merge_field(vtag, &buf[vlen as usize ..])?;
                     fields.push(out);
                 }
             }
-            EGRP => {
-                return Ok(buf)
-            },
+            EGRP => return Ok(buf),
             LENDELIM => {
                 let (datalen, vlen) = u64::decode_var(buf).ok_or_else(|| anyhow!("Data"))?;
                 if datalen.saturating_add(vlen as u64) >= buf.len() as u64 {
                     bail!("Data2")
                 }
-                self.value = ProtoValue::Bytes(Vec::from(&buf[vlen..datalen as usize + vlen]));
-                Ok(&buf[(datalen as usize) + vlen..])
+                self.value = ProtoValue::Bytes(Vec::from(&buf[vlen .. datalen as usize + vlen]));
+                Ok(&buf[(datalen as usize) + vlen ..])
             }
             other => bail!("Unknown wire type {other}"),
         }

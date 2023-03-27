@@ -9,6 +9,7 @@ members = [
     "protokit_textformat",
     "protokit_binformat",
     "protokit_examples",
+    "protokit_derive",
 ]
 
 exclude = ["tools/gendesc", "tools/fuzz"]

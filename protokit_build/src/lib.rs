@@ -10,11 +10,11 @@ mod deps;
 mod filegen;
 
 const REMAPS: &[(&str, &str)] = &[
-    ("google/protobuf/any.proto", "root::types::any"),
-    ("google/protobuf/empty.proto", "root::types::empty"),
-    ("google/protobuf/timestamp.proto", "root::types::timestamp"),
-    ("google/protobuf/field_mask.proto", "root::types::field_mask"),
-    ("google/protobuf/descriptor.proto", "root::types::descriptor"),
+    // ("google/protobuf/any.proto", "root::types::any"),
+    // ("google/protobuf/empty.proto", "root::types::empty"),
+    // ("google/protobuf/timestamp.proto", "root::types::timestamp"),
+    // ("google/protobuf/field_mask.proto", "root::types::field_mask"),
+    // ("google/protobuf/descriptor.proto", "root::types::descriptor"),
 ];
 
 #[must_use]
@@ -97,7 +97,7 @@ impl Build {
                 file.package.replace('.', "/") + "/" + path.with_extension("rs").file_name().unwrap().to_str().unwrap();
             let out_name = out_dir.join(&file_name);
             generated_names.push(file_name.clone());
-            filegen::generate_file(&self.ctx, &self.options, out_name, file_idx, file);
+            filegen::generate_file(&self.ctx, &self.options, out_name, file_idx, file)?;
         }
 
         let dirs: Vec<Vec<&str>> = generated_names.iter().map(|v| v.split('/').collect()).collect();

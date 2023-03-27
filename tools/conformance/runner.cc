@@ -31,7 +31,9 @@ class rust_runner : public google::protobuf::ConformanceTestRunner {
                        const std::string& input,
                        std::string* output) {
 
-    if (test_name == "Required.Proto3.TextFormatInput.AnyFieldWithRawBytes.ProtobufOutput") {
+      // 0xE1, 0x88, 0xB4
+      // 0x12, 0x34
+    if (test_name == "Required.Proto3.TextFormatInput.StringLiteralOctalEscapesString.ProtobufOutput") {
       printf("TEST");
     }
     uint8_t data[8192];

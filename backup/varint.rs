@@ -1,7 +1,9 @@
+#![allow(unused_parens)]
 use std::ops::{BitOrAssign, Shl};
 
 pub fn decode<T>(buf: &[u8]) -> (T, u8)
-    where T: Default + From<u8> + Shl<u8, Output=T> + BitOrAssign
+where
+    T: Default + From<u8> + Shl<u8, Output = T> + BitOrAssign,
 {
     let mut result: T = T::default();
     let mut shift = 0;
@@ -23,24 +25,6 @@ pub fn decode<T>(buf: &[u8]) -> (T, u8)
     } else {
         (result, 0)
     }
-}
-
-pub fn write_u64(mut v: u64) -> ([u8; 10], u8) {
-    let mut out = [0; 10];
-    let mut len = 0u8;
-    if v == 0 {
-        return (out, 1);
-    }
-    while v > 0 && len < 10 {
-        if v >= 128 {
-            out[len as usize] = (v as u8 & 0x7F) | 0x80;
-        } else {
-            out[len as usize] = (v as u8 & 0x7F);
-        }
-        v >>= 7;
-        len += 1;
-    }
-    (out, len)
 }
 
 pub fn write_u32(mut v: u32) -> ([u8; 5], u8) {

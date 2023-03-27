@@ -25,6 +25,10 @@ package = "protokit_grpc"
 path = "../protokit_grpc"
 optional = true
 
+[dependencies.derive]
+package = "protokit_derive"
+path = "../protokit_derive"
+
 [dependencies]
 anyhow = "1.0.57"
 

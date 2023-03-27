@@ -4,7 +4,7 @@ use protokit_desc::{DataType, EnumDef, ExtendDef, FileDef, ImportDef, MessageDef
 use crate::ast::*;
 use crate::deps::*;
 use crate::translate::fields::{enum_fields, fields};
-use crate::translate::opts::opts;
+// use crate::translate::opts::opts;
 use crate::translate::TranslateCtx;
 
 pub struct FillDefinitions<'tcx> {
@@ -55,6 +55,7 @@ impl Visitor for FillDefinitions<'_> {
                 options: opts(self.ctx, item),
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
+                is_group: false,
             },
         );
         self.path = qualified_name;
@@ -78,7 +79,8 @@ impl Visitor for FillDefinitions<'_> {
                 options: opts(self.ctx, item),
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
-            }
+                is_group: true,
+            },
         );
         self.path = qualified_name;
         item.accept(self);

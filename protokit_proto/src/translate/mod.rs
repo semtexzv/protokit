@@ -33,9 +33,9 @@ impl Default for TranslateCtx {
 
 impl TranslateCtx {
     pub fn new() -> Self {
-        #[cfg(feature = "descriptors")]
-        let def = FileSetDef::from_bytes(include_bytes!("../../../protokit_desc/src/generated/descriptor.bin"));
-        #[cfg(not(feature = "descriptors"))]
+        // #[cfg(feature = "descriptors")]
+        // let def = FileSetDef::from_bytes(include_bytes!("../../../protokit_desc/src/generated/descriptor.bin"));
+        // #[cfg(not(feature = "descriptors"))]
         let def = FileSetDef::default();
 
         TranslateCtx {
@@ -91,6 +91,7 @@ impl TranslateCtx {
         if !self.def.files.contains_key(name.as_str()) {
             return self.do_compile_file(path, name);
         }
+
         if let Some(f) = self.def.files.get(name.as_str()) {
             Ok(f)
         } else {
