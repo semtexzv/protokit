@@ -87,20 +87,6 @@ pub fn builtin_type_marker(typ: BuiltinType) -> &'static str {
     }
 }
 
-#[derive(Debug, Default)]
-pub struct MessageParts {
-    imports: HashSet<u32>,
-    builders: Vec<TokenStream>,
-    fields: Vec<TokenStream>,
-    tabular_fields: BTreeMap<u32, TokenStream>,
-    text_decoders: Vec<TokenStream>,
-    text_encoders: Vec<TokenStream>,
-    bin_encoders: Vec<TokenStream>,
-    bin_decoders: Vec<TokenStream>,
-
-    oneof_defs: Vec<TokenStream>,
-}
-
 pub struct CodeGenerator<'a> {
     context: &'a TranslateCtx,
     options: &'a Options,
@@ -117,7 +103,7 @@ impl CodeGenerator<'_> {
             return Ok(rustify_name(en.name.as_str()));
         } else {
             bail!(
-                "Unresolved {} {} {:b} files:{}: {:#?}",
+                "Could not resolve {} {} {:b} files:{}: {:#?}",
                 id,
                 id >> 32,
                 id & 0xFFFFFFFF,
@@ -225,7 +211,7 @@ impl CodeGenerator<'_> {
             .collect::<Result<Vec<_>>>()?;
 
         self.output.push(quote! {
-            #[derive(Debug, Default, Clone, Proto)]
+            #[derive(Debug, Default, Clone, PartialEq, Proto)]
             pub struct #ident {
                 #(#fields,)*
                 #(#oneofs,)*
@@ -272,7 +258,7 @@ impl CodeGenerator<'_> {
         }
 
         self.output.push(quote! {
-            #[derive(Debug, Clone, Proto)]
+            #[derive(Debug, Clone, PartialEq, Proto)]
             pub enum #oneof_type {
                 #(#vars)*
             }
@@ -316,6 +302,7 @@ impl CodeGenerator<'_> {
 
         let kind = self.type_marker(&def.typ);
         let freq = TokenStream::from_str(match def.frequency {
+            Frequency::Singular if def.typ.is_message() => "optional",
             Frequency::Singular => "singular",
             Frequency::Optional => "optional",
             Frequency::Repeated if def.is_packed() => "packed",
@@ -336,381 +323,6 @@ struct FileOutput {
     messages: Vec<Ident>,
     imports: HashSet<usize>,
 }
-
-// pub fn message_field(
-//     &self,
-//     out: &mut MessageParts,
-//     file: &FileDef,
-//     unit_id: u64,
-//     _unit: &MessageDef,
-//     msg_name: &Ident,
-//     field_idx: usize,
-//     field: &FieldDef,
-//     ext_pkg: Option<&ArcStr>,
-// ) {
-//     let field_raw_name = field.name.as_str();
-//     // Find out if we need to add additional import
-//     match field.typ {
-//         DataType::Message(m) if (m >> 32) != unit_id >> 32 => {
-//             out.imports.insert((m >> 32) as u32);
-//         }
-//         _ => {}
-//     }
-//     let field_name = format_ident!("{}", rustify_name(field.name.as_str()));
-//
-//     let field_item_type = self
-//         .base_type(&field.typ)
-//         .with_context(|| format!("{msg_name}.{field_raw_name} in {:?}", file.name))
-//         .expect("Resolving name");
-//
-//     let field_type = self.field_methods(out, &field_name, field, field_raw_name, &field_item_type);
-//     out.fields.push(quote! { pub #field_name: #field_type });
-//     if self.options.generate_textformat {
-//         self.field_textformat(out, &field_name, field, field_raw_name, &field_type, ext_pkg);
-//     }
-//     self.field_binformat(out, file, msg_name, &field_name, field_idx, field);
-// }
-//
-// pub fn oneof_variant(
-//     &self,
-//     out: &mut MessageParts,
-//     file: &FileDef,
-//     variant_encoders: &mut Vec<TokenStream>,
-//     variant_text_encoders: &mut Vec<TokenStream>,
-//     oneof: &OneOfDef,
-//     oneof_name: &Ident,
-//     oneof_type: &Ident,
-//     variant: &FieldDef,
-// ) {
-//     let oneof_proto_name = oneof.name.as_str();
-//     let variant_proto_name = variant.name.as_str();
-//
-//     let variant_name = format_ident!("{}", variant_proto_name.to_case(Case::Pascal));
-//     let variant_textformat_key = match variant.typ {
-//         DataType::Builtin(_) | DataType::Enum(_) => {
-//             format!("{variant_proto_name}: ")
-//         }
-//         _ => {
-//             format!("{variant_proto_name} ")
-//         }
-//     };
-//
-//     let var_typ = self
-//         .base_type(&variant.typ)
-//         // .with_context(|| format!("{}", name))
-//         .expect("Resolving name");
-//
-//     out.text_decoders.push(quote! {
-//         textformat::ast::FieldName::Normal(#variant_proto_name) => {
-//             let mut target = Default::default();
-//             textformat::Field::merge(&mut target, ctx, value)?;
-//             self.#oneof_name = #oneof_type::#variant_name(target);
-//         }
-//     });
-//
-//     let (normal, packed) = variant.wire_types();
-//     let encode_fn = self.type_to_encoder(variant, file.syntax == Proto3).unwrap();
-//     let decode_fn = self.type_to_decoder(variant).unwrap();
-//     let field_num = variant.num as u32;
-//
-//     let normal_tag = field_num << 3 | normal as u32;
-//
-//     variant_encoders.push(quote! {
-//         #oneof_type::#variant_name(value) => {
-//             #encode_fn(value, #field_num, buf)?;
-//         }
-//     });
-//
-//     out.bin_decoders.push(quote! {
-//         #normal_tag => {
-//             if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
-//
-//                 buf = #decode_fn(tmp, buf)?;
-//             } else {
-//                 let mut tmp = Default::default();
-//                 buf = #decode_fn(&mut tmp, buf)?;
-//                 self.#oneof_name = #oneof_type::#variant_name(tmp);
-//             }
-//         }
-//     });
-//
-//     if let Some(packed) = packed {
-//         let packed_tag = field_num << 3 | packed as u32;
-//         let mut variant = variant.clone();
-//         variant.set_packed(true);
-//         let decode_fn = self.type_to_decoder(&variant).unwrap();
-//
-//         out.bin_decoders.push(quote! {
-//             #packed_tag => {
-//                 if let #oneof_type::#variant_name(tmp) = &mut self.#oneof_name {
-//                     buf = #decode_fn(tmp, buf)?;
-//                 } else {
-//                     let mut tmp = Default::default();
-//                     buf = #decode_fn(&mut tmp, buf)?;
-//                     self.#oneof_name = #oneof_type::#variant_name(tmp);
-//                 }
-//             }
-//         });
-//     }
-//
-//     variant_text_encoders.push(quote! {
-//         #oneof_type::#variant_name(value) => {
-//             out.indent(pad);
-//             out.push_str(#variant_textformat_key);
-//             textformat::Field::format(value, ctx, pad, out)?;
-//             out.push('\n');
-//         }
-//     });
-//
-//     let set_name = format_ident!("r#set_{oneof_proto_name}_{variant_proto_name}");
-//     let with_name = format_ident!("r#with_{oneof_proto_name}_{variant_proto_name}");
-//
-//     out.builders.push(quote! {
-//         #[inline(always)]
-//         pub fn #with_name(mut self, it: #var_typ) -> Self {
-//             self.#oneof_name = #oneof_type::#variant_name(it);
-//             self
-//         }
-//         #[inline(always)]
-//         pub fn #set_name(&mut self, it: #var_typ) -> &mut Self {
-//             self.#oneof_name = #oneof_type::#variant_name(it);
-//             self
-//         }
-//
-//     });
-// }
-
-// pub fn message_oneof(
-//     &self,
-//     out: &mut MessageParts,
-//     file: &FileDef,
-//     normal_field_count: usize,
-//     _msg_id: u64,
-//     _msg: &MessageDef,
-//     msg_name: &Ident,
-//     oneof_idx: usize,
-//     oneof: &OneOfDef,
-// ) {
-//     let _oneof_idx = normal_field_count + oneof_idx;
-//     let _oneof_bin_decoders: Vec<TokenStream> = vec![];
-//
-//     let oneof: &OneOfDef = oneof;
-//     let oneof_raw_name = oneof.name.as_str();
-//     let oneof_name = format_ident!("{}", rustify_name(oneof_raw_name));
-//     let oneof_type = format_ident!("{msg_name}OneOf{}", oneof.name.as_str().to_case(Case::Pascal));
-//
-//     let mut variant_encoders = vec![];
-//     let mut variant_text_encoders = vec![];
-//
-//     out.oneof_defs.push(self.generate_oneof(msg_name, oneof, &oneof_type));
-//     out.fields.push(quote! { pub #oneof_name: #oneof_type });
-//     for (_vname, var_num) in oneof.fields.by_name.iter() {
-//         let variant = &oneof.fields.by_number[var_num];
-//         self.oneof_variant(
-//             out,
-//             file,
-//             &mut variant_encoders,
-//             &mut variant_text_encoders,
-//             oneof,
-//             &oneof_name,
-//             &oneof_type,
-//             variant,
-//         );
-//     }
-//     out.bin_encoders.push(quote! {
-//         match &self.#oneof_name {
-//             #(#variant_encoders)*
-//             #oneof_type::Unknown(..) => {},
-//         }
-//     });
-//     out.text_encoders.push(quote! {
-//         match &self.#oneof_name {
-//             #(#variant_text_encoders)*
-//             #oneof_type::Unknown(..) => {},
-//         }
-//     });
-// }
-
-// pub fn generate_msg(
-//     &self,
-//     set: &FileSetDef,
-//     file: &FileDef,
-//     unit_id: DefId,
-//     unit: &MessageDef,
-// ) -> (TokenStream, Vec<Ident>, HashSet<usize>) {
-//     let proto_name = unit.name.as_str();
-//     let msg_name = format_ident!("{}", rustify_name(proto_name));
-//     let pkg = &file.package;
-//     let qualified_name = format!("{pkg}.{proto_name}");
-//
-//     let msg_types = vec![msg_name.clone()];
-//     let mut out = MessageParts::default();
-//
-//     struct TmpField<'a> {
-//         field_idx: usize,
-//         tag_num: FieldNum,
-//         def: &'a FieldDef,
-//         pkg: Option<ArcStr>,
-//         file: &'a FileDef,
-//     }
-//
-//     let field_iter = unit
-//         .fields
-//         .by_number
-//         .iter()
-//         .enumerate()
-//         .map(|(idx, (num, def))| TmpField {
-//             field_idx: idx,
-//             tag_num: *num,
-//             def,
-//             pkg: None,
-//             file,
-//         });
-//
-//     let ext_iter = file.extenders.get(&(unit_id as LocalDefId));
-//     let ext_iter = ext_iter.iter().flat_map(|ext_ids| {
-//         ext_ids.iter().flat_map(|ext_defid| {
-//             let file_id = (ext_defid >> 32) as usize;
-//             let (_ext_file_name, ext_file): (_, &FileDef) = set.files.get_index(file_id).unwrap();
-//             let (_, ext_def): (_, &ExtendDef) = ext_file
-//                 .extensions
-//                 .get_index((*ext_defid as u32 & LOCAL_ONLY_ID) as usize)
-//                 .unwrap();
-//
-//             ext_def
-//                 .fields
-//                 .by_number
-//                 .iter()
-//                 .enumerate()
-//                 .map(|(idx, (num, def))| TmpField {
-//                     field_idx: idx,
-//                     tag_num: *num,
-//                     def,
-//                     pkg: Some(ext_file.package.clone()),
-//                     file: ext_file,
-//                 })
-//         })
-//     });
-//
-//     let mut normal_field_count = 0;
-//     for TmpField {
-//         field_idx,
-//         tag_num: _,
-//         def,
-//         pkg,
-//         file: field_file,
-//     } in field_iter.chain(ext_iter)
-//     {
-//         self.message_field(
-//             &mut out,
-//             field_file,
-//             unit_id,
-//             unit,
-//             &msg_name,
-//             field_idx,
-//             def,
-//             pkg.as_ref(),
-//         );
-//         normal_field_count = field_idx;
-//     }
-//
-//     for (oneof_idx, (_oneof_name, oneof)) in unit.oneofs.iter().enumerate() {
-//         self.message_oneof(
-//             &mut out,
-//             file,
-//             normal_field_count,
-//             unit_id,
-//             unit,
-//             &msg_name,
-//             oneof_idx,
-//             oneof,
-//         )
-//     }
-//
-//     let MessageParts {
-//         text_decoders,
-//         text_encoders,
-//         bin_decoders,
-//         bin_encoders,
-//         mut fields,
-//         builders,
-//         tabular_fields: _,
-//         imports,
-//         oneof_defs,
-//     } = out;
-//
-//     // bin_encoders.reverse();
-//
-//     let text_format = if self.options.generate_textformat {
-//         quote! {
-//             impl textformat::Decodable for #msg_name {
-//                 fn merge_field(&mut self, ctx: &textformat::Context, name: &textformat::ast::FieldName, value: &textformat::ast::FieldValue) -> textformat::Result<()> {
-//                     match name {
-//                         #(#text_decoders),*
-//                         other => textformat::bail!("{other:?} was not recognized"),
-//                     }
-//                     Ok(())
-//                 }
-//             }
-//             impl textformat::Encodable for #msg_name {
-//                 fn encode(&self, ctx: &textformat::Context, pad: usize, out: &mut std::string::String) -> textformat::Result<()> {
-//                     use binformat::IsPresent;
-//                     #(#text_encoders)*
-//                     Ok(())
-//                 }
-//             }
-//         }
-//     } else {
-//         quote! {}
-//     };
-//
-//     if self.options.track_unknowns {
-//         fields.push(quote! { pub _unknown: binformat::UnknownFields })
-//     } else {
-//         fields.push(quote! { pub _unknown: () })
-//     }
-//
-//     let result = quote! {
-//         #[repr(C)]
-//         #[derive( Debug, Default, Clone, PartialEq, )]
-//         pub struct #msg_name  {
-//             #(#fields,)*
-//         }
-//
-//         impl #msg_name {
-//             #(#builders)*
-//         }
-//
-//         #text_format
-//
-//         impl binformat::Decodable for #msg_name {
-//             fn merge_field<'i, 'b>(&'i mut self, tag: u32, mut buf: binformat::ReadBuffer<'b>) -> binformat::Result< binformat::ReadBuffer<'b>> {
-//                 use binformat::format::*;
-//                 match tag {
-//                     #(#bin_decoders)*
-//                     other => buf = self._unknown.merge_field(tag, buf)?,
-//                 }
-//                 Ok(buf)
-//             }
-//         }
-//
-//         impl binformat::Encodable for #msg_name {
-//             fn qualified_name(&self) -> &'static str {
-//                 #qualified_name
-//             }
-//             fn encode(&self, buf: &mut binformat::WriteBuffer) -> binformat::Result<()> {
-//                 use binformat::format::*;
-//                 use binformat::IsPresent;
-//                 #(#bin_encoders)*
-//                 binformat::Encodable::encode(&self._unknown, buf)?;
-//                 Ok(())
-//             }
-//         }
-//         #(#oneof_defs)*
-//     };
-//
-//     (result, msg_types, imports.into_iter().map(|v| v as _).collect())
-// }
 
 pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, file_id: usize, file: &FileDef) -> Result<()> {
     let mut generator = CodeGenerator {

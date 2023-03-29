@@ -273,6 +273,7 @@ impl Parse for FieldKind {
 #[derive(Debug, Default, Eq, PartialEq)]
 enum FieldFreq {
     #[default]
+    Raw,
     Singular,
     Optional,
     Repeated,
@@ -286,6 +287,7 @@ impl FieldFreq {
     }
     fn method_suffix(&self) -> &'static str {
         match self {
+            FieldFreq::Raw => "raw",
             FieldFreq::Singular | FieldFreq::Required => "single",
             FieldFreq::Packed => "packed",
             FieldFreq::Repeated => "repeated",
@@ -322,8 +324,9 @@ impl Parse for FieldFreq {
 impl Display for FieldFreq {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            FieldFreq::Raw => write!(f, "raw"),
             FieldFreq::Singular => write!(f, "singular"),
-            FieldFreq::Optional => write!(f, "optinal"),
+            FieldFreq::Optional => write!(f, "optional"),
             FieldFreq::Repeated => write!(f, "repeated"),
             FieldFreq::Required => write!(f, "singular"),
             FieldFreq::Packed => write!(f, "packed"),
@@ -406,15 +409,21 @@ fn emit_arm(
     kind: &FieldKind,
     this: &proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
-    let tag = num.base10_parse::<u32>().unwrap() << 3 | kind.wire_type() as u32;
+
+    let mut wt = kind.wire_type();
+    if matches!(freq, FieldFreq::Packed) && kind.is_scalar() {
+        wt = BYTES;
+    }
+
+    let tag = num.base10_parse::<u32>().unwrap() << 3 | wt as u32;
     let emit = format_ident!("emit_{}", freq.method_suffix(), span = ident.span());
 
     match kind {
         FieldKind::Map(t) => {
             let key_fn = format_ident!("{}", t.deref().0.to_string());
             let val_fn = format_ident!("{}", t.deref().1.to_string());
-            let ktag = 1u32 << t.deref().0.wire_type();
-            let vtag = 2u32 << t.deref().1.wire_type();
+            let ktag = 1u32 << 3 | t.deref().0.wire_type() as u32;
+            let vtag = 2u32 << 3 | t.deref().1.wire_type() as u32;
             quote_spanned! { ident.span() =>
                 binformat::emit_map(#this, #tag, #ktag, #vtag, stream, binformat::OutputStream::#key_fn, binformat::OutputStream::#val_fn);
             }
@@ -503,10 +512,10 @@ fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>) -> syn::Result<pr
                     .collect::<Vec<_>>();
 
                 merge_bin.push(quote_spanned! { ident.span() =>
-                    #(#tags)|* => self.#ident.merge_field(tag, stream),
+                    #(#tags)|* =>  binformat::merge_oneof(&mut self.#ident, tag, stream),
                 });
                 emit_bin.push(quote_spanned! { ident.span() =>
-                    self.#ident.encode(stream);
+                    binformat::emit_oneof(&self.#ident, stream);
                 });
                 merge_txt.push(quote_spanned! { ident.span() =>
                     #(#names)|* => self.#ident.merge_text(stream),
@@ -612,7 +621,7 @@ fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>) -> syn::Result<proc
 
         let this = quote! { self.#setter() };
         merge_bin.push(merge_arm(ident, tag, &FieldFreq::Singular, kind, &this));
-        let emit = emit_arm(&ident, tag, &FieldFreq::Singular, kind, &quote! { v });
+        let emit = emit_arm(&ident, tag, &FieldFreq::Raw, kind, &quote! { v });
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });

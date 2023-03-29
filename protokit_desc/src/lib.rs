@@ -170,6 +170,9 @@ pub enum DataType {
 }
 
 impl DataType {
+    pub fn is_message(&self) -> bool {
+        matches!(self, DataType::Message(_))
+    }
     pub fn is_scalar(&self) -> bool {
         match self {
             DataType::Builtin(b) => b.is_scalar(),

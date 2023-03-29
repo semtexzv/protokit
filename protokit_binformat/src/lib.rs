@@ -1,7 +1,7 @@
 mod stream;
 
 use std::collections::BTreeMap;
-use std::mem  ::size_of;
+use std::mem::size_of;
 use std::ops::{BitAnd, BitOr, Deref, DerefMut, Shl, Shr};
 use std::str::Utf8Error;
 
@@ -17,8 +17,8 @@ pub const FIX32: u8 = 5;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Run out of data")]
-    Empty,
+    #[error("Unexpected end of input")]
+    UnexpectedEOF,
     #[error("Unknown tag: {0}")]
     Tag(u32),
     #[error("Unknown wire type: {0}")]
@@ -45,8 +45,8 @@ pub trait BinProto {
 }
 
 impl<T> BinProto for Box<T>
-where
-    T: BinProto,
+    where
+        T: BinProto,
 {
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
@@ -57,32 +57,17 @@ where
     }
 }
 
-impl<T> BinProto for Option<T>
-where
-    T: BinProto + Default,
-{
-    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream) -> Result<()> {
-        self.get_or_insert_with(Default::default).merge_field(tag_wire, stream)
-    }
-
-    fn encode(&self, stream: &mut OutputStream) {
-        if let Some(v) = self {
-            v.encode(stream)
-        }
-    }
-}
-
 pub trait Varint:
-    Default
-    + Clone
-    + Copy
-    + PartialEq
-    + PartialOrd
-    + Shl<i32, Output = Self>
-    + Shr<i32, Output = Self>
-    + BitAnd
-    + BitOr<Self, Output = Self>
-    + From<u8>
+Default
++ Clone
++ Copy
++ PartialEq
++ PartialOrd
++ Shl<i32, Output=Self>
++ Shr<i32, Output=Self>
++ BitAnd
++ BitOr<Self, Output=Self>
++ From<u8>
 {
     fn max_shift() -> i32 {
         (size_of::<Self>() * 8) as i32
@@ -287,22 +272,32 @@ pub fn merge_repeated<'a, T: Default>(
     mapper(stream, this.last_mut().unwrap())
 }
 
+pub fn merge_oneof<'a, T: Default + BinProto>(
+    this: &mut Option<T>,
+    tag: u32,
+    stream: &mut InputStream<'a>,
+) -> Result<()> {
+    this.get_or_insert_with(Default::default).merge_field(tag, stream)
+}
+
 pub fn merge_packed<'a, T: Default>(
     this: &mut Vec<T>,
     stream: &mut InputStream<'a>,
     mapper: fn(&mut InputStream<'a>, &mut T) -> Result<()>,
 ) -> Result<()> {
-    this.push(T::default());
     let len = stream._varint::<usize>()?;
     if stream.len() < len {
-         return Err(Error::Empty);
+        return Err(Error::UnexpectedEOF);
     }
     let mut is = InputStream {
-        buf: &stream.buf[stream.pos .. stream.pos + len],
+        buf: &stream.buf[stream.pos..stream.pos + len],
         pos: 0,
         limit: len,
     };
-    mapper(&mut is, this.last_mut().unwrap())?;
+    while is.len() > 0 {
+        this.push(T::default());
+        unsafe { mapper(&mut is, this.last_mut().unwrap_unchecked())?; }
+    }
     stream.pos += len;
     Ok(())
 }
@@ -331,9 +326,15 @@ pub fn merge_map<'a, K: Default + Ord, V: Default>(
     Ok(())
 }
 
-pub fn emit_single<T>(this: &T, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
+pub fn emit_raw<T>(this: &T, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     stream._varint(tag);
     mapper(stream, tag, this);
+}
+
+pub fn emit_single<T: Default + PartialEq>(this: &T, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
+    if this != &T::default() {
+        emit_raw(this, tag, stream, mapper)
+    }
 }
 
 pub fn emit_optional<T>(this: &Option<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
@@ -362,7 +363,7 @@ pub fn emit_packed<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapper
     }
 }
 
-pub fn emit_map<K, V>(
+pub fn emit_map<K: Default + PartialEq, V: Default + PartialEq>(
     this: &BTreeMap<K, V>,
     tag: u32,
     ktag: u32,
@@ -371,15 +372,22 @@ pub fn emit_map<K, V>(
     kmapper: fn(&mut OutputStream, u32, &K),
     vmapper: fn(&mut OutputStream, u32, &V),
 ) {
-    if this.len() > 0 {
-        for (k, v) in this {
-            stream._varint(tag);
-            let mut o = OutputStream::default();
-            kmapper(&mut o, ktag, k);
-            vmapper(&mut o, vtag, v);
-            stream._varint(o.len());
-            stream._bytes(o.buf.as_slice());
-        }
+    for (k, v) in this {
+        stream._varint(tag);
+        let mut o = OutputStream::default();
+        emit_single(k, ktag, &mut o, kmapper);
+        emit_single(v, vtag, &mut o, vmapper);
+        stream._varint(o.len());
+        stream._bytes(o.buf.as_slice());
+    }
+}
+
+pub fn emit_oneof<T: BinProto>(
+    o: &Option<T>,
+    stream: &mut OutputStream,
+) {
+    if let Some(o) = o {
+        o.encode(stream)
     }
 }
 

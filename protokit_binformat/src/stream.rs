@@ -27,15 +27,18 @@ impl<'i> InputStream<'i> {
 
     /// Limits the currently readable subslice, and returns previous limit
     pub fn limit(&mut self, limit: usize) -> usize {
-        replace(&mut self.limit, self.pos + limit)
+        replace(&mut self.limit, min(self.pos + limit, self.buf.len()))
     }
 
     /// Bump the current limit by offset
     pub fn bump(&mut self, off: usize) {
-        self.limit += off;
+        self.limit = min(self.limit + off, self.buf.len());
     }
 
     pub fn skip(&mut self, tag: u32) -> Result<()> {
+        if tag >> 3 == 0 {
+            return crate::unknown_tag(0);
+        }
         match (tag & 0b111) as u8 {
             crate::VARINT => { self._varint::<u64>()?; }
             crate::BYTES => { self._bytes()?; }
@@ -61,12 +64,19 @@ impl<'i> InputStream<'i> {
         let mut shift = 0;
 
         let mut success = false;
-        for b in self.buf[self.pos..].iter() {
+        for b in self.buf[self.pos..self.limit].iter() {
             let msb_dropped = b & 0x7F;
-            result = result | ((T::from(msb_dropped)) << shift);
+            let shifted = if shift > T::max_shift() {
+                T::default()
+            } else {
+                ((T::from(msb_dropped)) << shift)
+            };
+            result = result | shifted;
             shift += 7;
 
-            if b & 0x80 == 0 || shift > T::max_shift() {
+            // We must allow overflowing on the wire. In effect has the same as the 'as' cast in rust
+            // Upper bits are forgotten.
+            if b & 0x80 == 0 || shift > (9 * 7) {
                 success = b & 0x80 == 0;
                 break;
             }
@@ -76,7 +86,7 @@ impl<'i> InputStream<'i> {
             self.pos += (shift / 7) as usize;
             Ok(result)
         } else {
-            Err(Error::Empty)
+            Err(Error::UnexpectedEOF)
         }
     }
 
@@ -87,7 +97,7 @@ impl<'i> InputStream<'i> {
     pub fn _fixed<T: Fixed>(&mut self) -> Result<T> {
         let tlen = size_of::<T>();
         if self.len() < tlen {
-            return Err(Error::Empty);
+            return Err(Error::UnexpectedEOF);
         }
         let out = unsafe { read_unaligned(self.buf.as_ptr().offset(self.pos as _) as *const T) };
         self.pos += tlen;
@@ -97,7 +107,7 @@ impl<'i> InputStream<'i> {
     pub fn _bytes(&mut self) -> Result<&[u8]> {
         let len: usize = self._varint()?;
         if self.len() < len {
-            return Err(Error::Empty);
+            return Err(Error::UnexpectedEOF);
         }
         self.pos += len;
         Ok(&self.buf[self.pos - len..self.pos])
@@ -155,7 +165,7 @@ impl<'i> InputStream<'i> {
     pub fn _field_nested(&mut self, proto: &mut dyn BinProto) -> Result<()> {
         let len = self._varint()?;
         if len > self.len() {
-            return Err(Error::Empty);
+            return Err(Error::UnexpectedEOF);
         }
         self.limit(len);
         while self.len() > 0 {
@@ -192,27 +202,12 @@ impl OutputStream {
 
     /// Emits a raw vint onto the wire
     pub(crate) fn _varint<V: Varint>(&mut self, mut v: V) {
-        // let mut out = [0; 10];
-        // let mut len = 0u8;
-        // if v == 0 {
-        //     self.buf.push(0);
-        //     return;
-        // }
-        // while v > 0 && len < 10 {
-        //     if v >= 128 {
-        //         out[len as usize] = (v as u8 & 0x7F) | 0x80;
-        //     } else {
-        //         out[len as usize] = (v as u8 & 0x7F);
-        //     }
-        //     v >>= 7;
-        //     len += 1;
-        // }
-        // self.buf.extend_from_slice(&out[..len]);
-        // (out, len)
-        //
+        if v == V::default() {
+            self.buf.push(0);
+        }
         while v > V::default() {
             if v >= V::from(0x80u8) {
-                self.buf.push(0x80 | v.low_byte() & 0x7F)
+                self.buf.push(0x80 | (v.low_byte() & 0x7F))
             } else {
                 self.buf.push(v.low_byte() & 0x7F)
             }
@@ -233,7 +228,7 @@ impl OutputStream {
     }
 
     pub fn bool(&mut self, _: u32, b: &bool) {
-        self.varint(0, if *b { &1 } else { &0 });
+        self._varint(if *b { 1 } else { 0 });
     }
 
     pub fn protoenum<V: Clone + Copy + Into<u32>>(&mut self, _: u32, v: &V) {
@@ -246,7 +241,7 @@ impl OutputStream {
         self.buf.extend_from_slice(&slice);
     }
 
-    pub fn fixed32<V: Fixed>(&mut self, _: u32, v: &V)   {
+    pub fn fixed32<V: Fixed>(&mut self, _: u32, v: &V) {
         self.fixed(0, v)
     }
 
@@ -265,7 +260,10 @@ impl OutputStream {
     }
 
     pub fn nested<P: BinProto>(&mut self, _: u32, v: &P) {
-        v.encode(self)
+        let mut inner = OutputStream::default();
+        v.encode(&mut inner);
+        self._varint(inner.len());
+        self._bytes(&inner.buf);
     }
 
     pub fn group<P: BinProto>(&mut self, num: u32, v: &P) {

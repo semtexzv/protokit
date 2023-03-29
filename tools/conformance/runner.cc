@@ -30,10 +30,7 @@ class rust_runner : public google::protobuf::ConformanceTestRunner {
   virtual void RunTest(const std::string& test_name,
                        const std::string& input,
                        std::string* output) {
-
-      // 0xE1, 0x88, 0xB4
-      // 0x12, 0x34
-    if (test_name == "Required.Proto3.TextFormatInput.StringLiteralOctalEscapesString.ProtobufOutput") {
+    if (test_name == "Recommended.Proto3.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput") {
       printf("TEST");
     }
     uint8_t data[8192];
