@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt::{Debug, Formatter};
 
-use binformat::{InputStream, OutputStream};
 
 #[derive(Default, Debug)]
 pub struct Registry {

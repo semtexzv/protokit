@@ -194,6 +194,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "integer-encoding"
+version = "3.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bb03732005da905c88227371639bf1ad885cc712789c011c31c5fb3ab3ccf02"
+
+[[package]]
 name = "is_ci"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -452,6 +458,7 @@ dependencies = [
 name = "protokit_binformat"
 version = "0.0.1"
 dependencies = [
+ "integer-encoding",
  "thiserror",
 ]
 

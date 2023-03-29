@@ -1,43 +1,20 @@
+mod util;
+
 extern crate proc_macro;
 
-use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 
-use proc_macro::TokenStream;
-use proc_macro2::{Ident, Span};
+use proc_macro2::{Ident};
 use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::{format_ident, quote, quote_spanned};
-use syn::parse::{Parse, ParseStream};
-use syn::punctuated::Punctuated;
+use syn::{Data, Error, Fields, ImplItem, LitInt, DeriveInput, parse_macro_input, LitStr, DataStruct, Attribute, Type, DataEnum, Generics};
 use syn::spanned::Spanned;
-use syn::{
-    bracketed, parenthesized, parse_macro_input, Attribute, Data, DataEnum, DataStruct, DeriveInput, Error, Fields,
-    ImplItem, LitInt, LitStr, Token, Type,
-};
-use syn::token::Token;
+use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, VarMeta};
 
-const VARINT: u8 = 0;
-const FIX64: u8 = 1;
-const BYTES: u8 = 2;
-const SGRP: u8 = 3;
-const EGRP: u8 = 4;
-const FIX32: u8 = 5;
-
-#[proc_macro_error]
-#[proc_macro_derive(Proto, attributes(proto, field, oneof))]
-pub fn proto(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    match input.data {
-        Data::Struct(s) => _impl_proto(s, input.ident, input.attrs).unwrap_or_else(Error::into_compile_error),
-        Data::Enum(s) => _impl_oneof(s, input.ident, input.attrs).unwrap_or_else(Error::into_compile_error),
-        _ => abort_call_site!("Unsupported: {data:?}"),
-    }
-        .into()
-}
 
 #[proc_macro_error]
 #[proc_macro_attribute]
-pub fn protoenum(_: TokenStream, input: TokenStream) -> TokenStream {
+pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut block = parse_macro_input!(input as syn::ItemImpl);
     let ident = &block.self_ty;
     let mut merge_txt = vec![];
@@ -89,272 +66,19 @@ pub fn protoenum(_: TokenStream, input: TokenStream) -> TokenStream {
         .into()
 }
 
-struct Kv<V: Parse> {
-    name: Ident,
-    value: V,
-}
 
-impl<V: Parse> Parse for Kv<V> {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let name: Ident = input.parse()?;
-        let _: Token![=] = input.parse()?;
-        let value = input.parse()?;
-        Ok(Self { name, value })
+#[proc_macro_error]
+#[proc_macro_derive(Proto, attributes(proto, field, oneof, unknown))]
+pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    match input.data {
+        Data::Struct(s) => _impl_proto(s, input.ident, input.attrs, input.generics).unwrap_or_else(Error::into_compile_error),
+        Data::Enum(s) => _impl_oneof(s, input.ident, input.attrs, input.generics).unwrap_or_else(Error::into_compile_error),
+        _ => abort_call_site!("Unsupported: {data:?}"),
     }
+        .into()
 }
 
-#[derive(Default)]
-struct ProtoMeta {
-    name: Option<LitStr>,
-    file: Option<LitStr>,
-    package: Option<LitStr>,
-}
-
-impl Parse for ProtoMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let fields = Punctuated::<Kv<LitStr>, Token![,]>::parse_terminated(input)?;
-
-        let mut out = Self::default();
-        for f in fields {
-            if f.name == "name" {
-                out.name = Some(f.value);
-            } else if f.name == "file" {
-                out.file = Some(f.value);
-            } else if f.name == "package" {
-                out.package = Some(f.value)
-            } else {
-                return Err(syn::Error::new(
-                    input.span(),
-                    format!("Unknown key: {}, expected name, file or package", f.name),
-                ));
-            }
-        }
-        Ok(out)
-    }
-}
-
-struct VarMeta {
-    tag: LitInt,
-    name: LitStr,
-}
-
-impl Parse for VarMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let tag: LitInt = input.parse()?;
-        let _: Token![,] = input.parse()?;
-        let name: LitStr = input.parse()?;
-
-        Ok(Self { tag, name })
-    }
-}
-
-struct FieldMeta {
-    tag: LitInt,
-    name: LitStr,
-    kind: FieldKind,
-    freq: FieldFreq,
-}
-
-fn err(s: Span, m: impl Display) -> syn::Error {
-    syn::Error::new(s, m)
-}
-
-impl Parse for FieldMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let tag: LitInt = input.parse()?;
-        let _: Token![,] = input.parse()?;
-        let name: LitStr = input.parse()?;
-        let _: Token![,] = input.parse().map_err(|e| err(e.span(), "Expected field kind"))?;
-        let kind: FieldKind = input.parse()?;
-        let freq = if input.peek(Token![,]) {
-            let _: Token![,] = input.parse()?;
-            input.parse()?
-        } else {
-            FieldFreq::Singular
-        };
-
-        Ok(Self { tag, name, kind, freq })
-    }
-}
-
-#[derive(Debug, PartialEq)]
-enum FieldKind {
-    Varint,
-    Sigint,
-    Bool,
-    ProtoEnum,
-    Fixed32,
-    Fixed64,
-    Bytes,
-    String,
-    Nested,
-    Group,
-    Map(Box<(FieldKind, FieldKind)>),
-}
-
-impl FieldKind {
-    pub fn is_scalar(&self) -> bool {
-        matches!(
-            self,
-            Self::Varint | Self::Sigint | Self::ProtoEnum | Self::Bool | Self::Fixed32 | Self::Fixed64
-        )
-    }
-    pub fn wire_type(&self) -> u8 {
-        match self {
-            FieldKind::Varint | FieldKind::Sigint | FieldKind::ProtoEnum | FieldKind::Bool => VARINT,
-            FieldKind::Fixed32 => FIX32,
-            FieldKind::Fixed64 => FIX64,
-            FieldKind::Bytes | FieldKind::String | FieldKind::Nested | FieldKind::Map(_) => BYTES,
-            FieldKind::Group => SGRP,
-        }
-    }
-}
-
-impl Display for FieldKind {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            FieldKind::Varint => write!(f, "varint"),
-            FieldKind::Sigint => write!(f, "sigint"),
-            FieldKind::ProtoEnum => write!(f, "protoenum"),
-            FieldKind::Bool => write!(f, "bool"),
-            FieldKind::Fixed32 => write!(f, "fixed32"),
-            FieldKind::Fixed64 => write!(f, "fixed64"),
-            FieldKind::Bytes => write!(f, "bytes"),
-            FieldKind::String => write!(f, "string"),
-            FieldKind::Nested => write!(f, "nested"),
-            FieldKind::Group => write!(f, "group"),
-            FieldKind::Map(k) => write!(f, "map({},{})", k.deref().0, k.deref().1),
-        }
-    }
-}
-
-impl Parse for FieldKind {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let ident: Ident = input.parse()?;
-        Ok(if ident == "varint" {
-            FieldKind::Varint
-        } else if ident == "sigint" {
-            FieldKind::Sigint
-        } else if ident == "protoenum" {
-            FieldKind::ProtoEnum
-        } else if ident == "bool" {
-            FieldKind::Bool
-        } else if ident == "fixed32" {
-            FieldKind::Fixed32
-        } else if ident == "fixed64" {
-            FieldKind::Fixed64
-        } else if ident == "bytes" {
-            FieldKind::Bytes
-        } else if ident == "string" {
-            FieldKind::String
-        } else if ident == "nested" {
-            FieldKind::Nested
-        } else if ident == "group" {
-            FieldKind::Group
-        } else if ident == "map" {
-            let params;
-            let _ = parenthesized!(params in input);
-            let k: FieldKind = params.parse()?;
-            let _: Token![,] = params.parse()?;
-            let v: FieldKind = params.parse()?;
-            FieldKind::Map(Box::new((k, v)))
-        } else {
-            return Err(Error::new(
-                ident.span(),
-                format!(
-                    "Unknown field kind: {}, expected varint, fixed, nested, or group",
-                    ident
-                ),
-            ));
-        })
-    }
-}
-
-#[derive(Debug, Default, Eq, PartialEq)]
-enum FieldFreq {
-    #[default]
-    Raw,
-    Singular,
-    Optional,
-    Repeated,
-    Required,
-    Packed,
-}
-
-impl FieldFreq {
-    fn is_multi(&self) -> bool {
-        matches!(self, Self::Repeated | Self::Packed)
-    }
-    fn method_suffix(&self) -> &'static str {
-        match self {
-            FieldFreq::Raw => "raw",
-            FieldFreq::Singular | FieldFreq::Required => "single",
-            FieldFreq::Packed => "packed",
-            FieldFreq::Repeated => "repeated",
-            FieldFreq::Optional => "optional",
-        }
-    }
-}
-
-impl Parse for FieldFreq {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let ident: Ident = input.parse()?;
-        Ok(if ident == "singular" {
-            FieldFreq::Singular
-        } else if ident == "optional" {
-            FieldFreq::Optional
-        } else if ident == "repeated" {
-            FieldFreq::Repeated
-        } else if ident == "required" {
-            FieldFreq::Required
-        } else if ident == "packed" {
-            FieldFreq::Packed
-        } else {
-            return Err(syn::Error::new(
-                ident.span(),
-                format!(
-                    "Unknown field frequency: {}, expected singular, optional or repeated",
-                    ident
-                ),
-            ));
-        })
-    }
-}
-
-impl Display for FieldFreq {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            FieldFreq::Raw => write!(f, "raw"),
-            FieldFreq::Singular => write!(f, "singular"),
-            FieldFreq::Optional => write!(f, "optional"),
-            FieldFreq::Repeated => write!(f, "repeated"),
-            FieldFreq::Required => write!(f, "singular"),
-            FieldFreq::Packed => write!(f, "packed"),
-        }
-    }
-}
-
-struct OneOfMeta {
-    tags: Vec<LitInt>,
-    names: Vec<LitStr>,
-}
-
-impl Parse for OneOfMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let tags;
-        let _ = bracketed!(tags in input);
-        let tags = Punctuated::<LitInt, Token![,]>::parse_terminated(&tags)?;
-        let _: Token![,] = input.parse()?;
-        let names;
-        let _ = bracketed!(names in input);
-        let names = Punctuated::<LitStr, Token![,]>::parse_terminated(&names)?;
-
-        Ok(Self {
-            tags: tags.into_iter().collect(),
-            names: names.into_iter().collect(),
-        })
-    }
-}
 
 enum Item {
     Field {
@@ -362,7 +86,7 @@ enum Item {
         tag: LitInt,
         name: LitStr,
         kind: FieldKind,
-        freq: FieldFreq,
+        freq: Frequency,
     },
     Oneof {
         ident: Ident,
@@ -374,14 +98,14 @@ enum Item {
 fn merge_arm(
     ident: &Ident,
     num: &LitInt,
-    freq: &FieldFreq,
+    freq: &Frequency,
     kind: &FieldKind,
     this: &proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
     let num = num.base10_parse::<u32>().unwrap();
     let mut wt = kind.wire_type();
-    if matches!(freq, FieldFreq::Packed) && kind.is_scalar() {
-        wt = BYTES;
+    if matches!(freq, Frequency::Packed) && kind.is_scalar() {
+        wt = util::BYTES;
     }
     let tag = num << 3 | wt as u32;
     let merge_fn = format_ident!("merge_{}", freq.method_suffix(), span = ident.span());
@@ -405,14 +129,13 @@ fn merge_arm(
 fn emit_arm(
     ident: &Ident,
     num: &LitInt,
-    freq: &FieldFreq,
+    freq: &Frequency,
     kind: &FieldKind,
     this: &proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
-
     let mut wt = kind.wire_type();
-    if matches!(freq, FieldFreq::Packed) && kind.is_scalar() {
-        wt = BYTES;
+    if matches!(freq, Frequency::Packed) && kind.is_scalar() {
+        wt = util::BYTES;
     }
 
     let tag = num.base10_parse::<u32>().unwrap() << 3 | wt as u32;
@@ -437,7 +160,7 @@ fn emit_arm(
     }
 }
 
-fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>) -> syn::Result<proc_macro2::TokenStream> {
+fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
     let items = s
         .fields
         .iter()
@@ -485,8 +208,8 @@ fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>) -> syn::Result<pr
             } => {
                 let this = quote! { &mut self.#ident };
                 merge_bin.push(if kind.is_scalar() && freq.is_multi() {
-                    let a = merge_arm(ident, tag, &FieldFreq::Repeated, kind, &this);
-                    let b = merge_arm(ident, tag, &FieldFreq::Packed, kind, &this);
+                    let a = merge_arm(ident, tag, &Frequency::Repeated, kind, &this);
+                    let b = merge_arm(ident, tag, &Frequency::Packed, kind, &this);
                     quote_spanned!( ident.span() => #a #b )
                 } else {
                     merge_arm(ident, tag, freq, kind, &this)
@@ -527,8 +250,9 @@ fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>) -> syn::Result<pr
         }
     }
 
+    let (ig,tg, wg) = generics.split_for_impl();
     Ok(quote! {
-        impl binformat::BinProto for #ident {
+        impl #ig binformat::BinProto for #ident #tg #wg {
             fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream) -> binformat::Result<()> {
                 match tag {
                     #(#merge_bin)*
@@ -541,7 +265,7 @@ fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>) -> syn::Result<pr
             }
         }
 
-        impl textformat::TextProto for #ident {
+        impl #ig textformat::TextProto for #ident #tg #wg {
             fn merge_field(&mut self, stream: &mut textformat::InputStream) -> textformat::Result<()> {
                 match stream.field() {
                     #(#merge_txt)*
@@ -564,7 +288,10 @@ struct OneOfField {
     name: LitStr,
 }
 
-fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>) -> syn::Result<proc_macro2::TokenStream> {
+fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
+
+    let (impl_gen, type_gen, where_gen) = generics.split_for_impl();
+
     let items = s
         .variants
         .iter()
@@ -589,7 +316,7 @@ fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>) -> syn::Result<proc
         })
         .collect::<Result<Vec<_>, _>>()?;
 
-    let mut setters = items.iter().map(|item| {
+    let setters = items.iter().map(|item| {
         let OneOfField { ident, typ, setter, .. } = item;
 
         quote_spanned! { ident.span() =>
@@ -620,8 +347,8 @@ fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>) -> syn::Result<proc
         } = it;
 
         let this = quote! { self.#setter() };
-        merge_bin.push(merge_arm(ident, tag, &FieldFreq::Singular, kind, &this));
-        let emit = emit_arm(&ident, tag, &FieldFreq::Raw, kind, &quote! { v });
+        merge_bin.push(merge_arm(ident, tag, &Frequency::Singular, kind, &this));
+        let emit = emit_arm(&ident, tag, &Frequency::Raw, kind, &quote! { v });
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });
@@ -633,11 +360,12 @@ fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>) -> syn::Result<proc
         });
     }
 
+
     Ok(quote! {
-        impl #ident {
+        impl #impl_gen #ident #type_gen #where_gen {
             #(#setters)*
         }
-        impl binformat::BinProto for #ident {
+        impl #impl_gen binformat::BinProto for #ident #type_gen #where_gen {
             fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream) -> binformat::Result<()> {
                 match tag {
                     #(#merge_bin)*
@@ -651,7 +379,7 @@ fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>) -> syn::Result<proc
                 }
             }
         }
-        impl textformat::TextProto for #ident {
+        impl #impl_gen textformat::TextProto for #ident #type_gen #where_gen {
             fn merge_field(&mut self, stream: &mut textformat::InputStream) -> textformat::Result<()> {
                 match stream.field() {
                     #(#merge_txt)*

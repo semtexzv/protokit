@@ -5,14 +5,17 @@ use std::slice::from_raw_parts;
 
 use crate::{BinProto, Bytes, Error, Fixed, Result, Sigint, Varint, EGRP};
 
-pub struct InputStream<'a> {
-    pub(crate) buf: &'a [u8],
+pub const MSB: u8 = 0b1000_0000;
+const DROP_MSB: u8 = 0b0111_1111;
+
+pub struct InputStream<'buf> {
+    pub(crate) buf: &'buf [u8],
     pub(crate) pos: usize,
     pub(crate) limit: usize,
 }
 
-impl<'i> InputStream<'i> {
-    pub fn new(buf: &'i [u8]) -> Self {
+impl<'buf> InputStream<'buf> {
+    pub fn new(buf: &'buf [u8]) -> Self {
         Self {
             buf,
             pos: 0,
@@ -26,13 +29,19 @@ impl<'i> InputStream<'i> {
     }
 
     /// Limits the currently readable subslice, and returns previous limit
-    pub fn limit(&mut self, limit: usize) -> usize {
-        replace(&mut self.limit, min(self.pos + limit, self.buf.len()))
+    pub fn limit(&mut self, limit: usize) -> Result<usize> {
+        if self.limit < limit  {
+            return Err(Error::InvalidLimit)
+        }
+        if self.limit < limit {
+            panic!("Limiting back")
+        }
+        Ok(replace(&mut self.limit, min(self.pos + limit, self.buf.len())))
     }
 
-    /// Bump the current limit by offset
-    pub fn bump(&mut self, off: usize) {
-        self.limit = min(self.limit + off, self.buf.len());
+    pub fn unlimit(&mut self, limit: usize) {
+        assert!(self.limit <= limit);
+        self.limit = limit;
     }
 
     pub fn skip(&mut self, tag: u32) -> Result<()> {
@@ -60,31 +69,24 @@ impl<'i> InputStream<'i> {
     }
 
     pub fn _varint<T: Varint>(&mut self) -> Result<T> {
-        let mut result: T = T::default();
+        let mut result: u64 = 0;
         let mut shift = 0;
 
         let mut success = false;
         for b in self.buf[self.pos..self.limit].iter() {
-            let msb_dropped = b & 0x7F;
-            let shifted = if shift > T::max_shift() {
-                T::default()
-            } else {
-                ((T::from(msb_dropped)) << shift)
-            };
-            result = result | shifted;
+            let msb_dropped = b & DROP_MSB;
+            result |= (msb_dropped as u64) << shift;
             shift += 7;
 
-            // We must allow overflowing on the wire. In effect has the same as the 'as' cast in rust
-            // Upper bits are forgotten.
-            if b & 0x80 == 0 || shift > (9 * 7) {
-                success = b & 0x80 == 0;
+            if b & MSB == 0 || shift > (9 * 7) {
+                success = b & MSB == 0;
                 break;
             }
         }
 
         if success {
             self.pos += (shift / 7) as usize;
-            Ok(result)
+            Ok(T::from_u64(result))
         } else {
             Err(Error::UnexpectedEOF)
         }
@@ -104,7 +106,7 @@ impl<'i> InputStream<'i> {
         Ok(out)
     }
 
-    pub fn _bytes(&mut self) -> Result<&[u8]> {
+    pub fn _bytes(&mut self) -> Result<&'buf [u8]> {
         let len: usize = self._varint()?;
         if self.len() < len {
             return Err(Error::UnexpectedEOF);
@@ -135,21 +137,25 @@ impl<'i> InputStream<'i> {
     }
 
     pub fn fixed32<T: Default + Fixed>(&mut self, field: &mut T) -> Result<()> {
+        assert_eq!(size_of::<T>(), 4);
         *field = self._fixed()?;
         Ok(())
     }
 
     pub fn fixed64<T: Fixed>(&mut self, field: &mut T) -> Result<()> {
+        assert_eq!(size_of::<T>(), 8);
         *field = self._fixed()?;
         Ok(())
     }
 
-    pub fn bytes<T: Bytes>(&mut self, field: &mut T) -> Result<()> {
+    pub fn bytes<'x, T: Bytes<'buf>>(&mut self, field: &mut T) -> Result<()> {
+        field.clear();
         field.push(self._bytes()?)?;
         Ok(())
     }
 
-    pub fn string<T: Bytes>(&mut self, field: &mut T) -> Result<()> {
+    pub fn string<T: Bytes<'buf>>(&mut self, field: &mut T) -> Result<()> {
+        field.clear();
         field.push(self._bytes()?)?;
         Ok(())
     }
@@ -167,13 +173,15 @@ impl<'i> InputStream<'i> {
         if len > self.len() {
             return Err(Error::UnexpectedEOF);
         }
-        self.limit(len);
+        let start = self.pos;
+        let olimit = self.limit(len)?;
         while self.len() > 0 {
             let tag = self._varint()?;
             proto.merge_field(tag, self)?;
         }
+        assert_eq!(self.pos, start + len);
         // Bump consumed
-        self.bump(len);
+        self.unlimit(olimit);
         Ok(())
     }
 
@@ -201,18 +209,17 @@ impl OutputStream {
     }
 
     /// Emits a raw vint onto the wire
-    pub(crate) fn _varint<V: Varint>(&mut self, mut v: V) {
-        if v == V::default() {
-            self.buf.push(0);
+    pub(crate) fn _varint<V: Varint>(&mut self, v: V) {
+
+        let mut n = v.into_u64();
+
+        while n >= 0x80 {
+            self.buf.push(MSB | (n as u8));
+            n >>= 7;
         }
-        while v > V::default() {
-            if v >= V::from(0x80u8) {
-                self.buf.push(0x80 | (v.low_byte() & 0x7F))
-            } else {
-                self.buf.push(v.low_byte() & 0x7F)
-            }
-            v = v >> 7
-        }
+
+        // dst[i] = n as u8;
+        self.buf.push(n as u8);
     }
 
     pub(crate) fn _bytes(&mut self, v: &[u8]) {
@@ -249,12 +256,12 @@ impl OutputStream {
         self.fixed(0, v)
     }
 
-    pub fn bytes<B: Bytes>(&mut self, _: u32, b: &B) {
+    pub fn bytes<'x, B: Bytes<'x>>(&mut self, _: u32, b: &B) {
         self._varint(b.bytes().len());
         self._bytes(b.bytes());
     }
 
-    pub fn string(&mut self, _: u32, b: &String) {
+    pub fn string<'out, B: Bytes<'out>>(&mut self, _: u32, b: &B) {
         self._varint(b.bytes().len());
         self._bytes(b.bytes());
     }

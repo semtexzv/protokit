@@ -30,8 +30,8 @@ class rust_runner : public google::protobuf::ConformanceTestRunner {
   virtual void RunTest(const std::string& test_name,
                        const std::string& input,
                        std::string* output) {
-    if (test_name == "Recommended.Proto3.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput") {
-      printf("TEST");
+    if (test_name == "Required.Proto2.ProtobufInput.ValidDataOneof.UINT32.MultipleValuesForDifferentField.ProtobufOutput") {
+       printf("TEST");
     }
     uint8_t data[8192];
     uint32_t out_len =

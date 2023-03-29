@@ -94,7 +94,7 @@ impl<I: Iterator<Item = u8>> Iterator for Unescape<I> {
                     continue;
                 }
                 first @ b'0' ..= b'7' => {
-                    let mut value = (first - b'0');
+                    let mut value = first - b'0';
                     for _ in 0 .. 2 {
                         match self.it.peek() {
                             Some(x @ b'0' ..= b'7') => {

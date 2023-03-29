@@ -8,6 +8,7 @@ use crate::gen::conformance::conformance::{
     ConformanceRequestOneOfPayload, ConformanceResponse, ConformanceResponseOneOfResult, FailureSet, WireFormat,
 };
 
+
 pub mod gen {
     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
 }
@@ -54,7 +55,7 @@ fn input(payload: ConformanceRequestOneOfPayload, proto3: bool) -> anyhow::Resul
         (other, _) => panic!("Unknown payload {other:?}"),
     }?;
 
-    // eprintln!("Req: {txt} => {out:?}");
+    eprintln!("Req: {txt} => {out:?}");
     Ok(out)
 }
 

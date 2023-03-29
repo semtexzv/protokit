@@ -239,7 +239,7 @@ impl CodeGenerator<'_> {
             let kind = self.type_marker(&var.typ);
 
             vars.push(quote! {
-                #[field(#num, #name, #kind, singular)]
+                #[field(#num, #name, #kind, raw)]
                 #var_name(#typ),
             });
 

@@ -1,13 +1,15 @@
 mod stream;
+mod value;
 
 use std::collections::BTreeMap;
-use std::mem::size_of;
-use std::ops::{BitAnd, BitOr, Deref, DerefMut, Shl, Shr};
+use std::ops::{Deref, DerefMut};
 use std::str::Utf8Error;
 
 pub use stream::{InputStream, OutputStream};
+pub use value::{Value, Field, UnknownFields};
 use thiserror::Error;
 
+pub const MAP_WIRE: u8 = 0b111;
 pub const VARINT: u8 = 0;
 pub const FIX64: u8 = 1;
 pub const BYTES: u8 = 2;
@@ -15,10 +17,15 @@ pub const SGRP: u8 = 3;
 pub const EGRP: u8 = 4;
 pub const FIX32: u8 = 5;
 
+#[repr(u8)]
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Unexpected end of input")]
     UnexpectedEOF,
+    #[error("Length of submessage exceeds the length of message")]
+    InvalidLimit,
+    #[error("Unterminated group")]
+    UnterminatedGroup,
     #[error("Unknown tag: {0}")]
     Tag(u32),
     #[error("Unknown wire type: {0}")]
@@ -57,50 +64,58 @@ impl<T> BinProto for Box<T>
     }
 }
 
-pub trait Varint:
-Default
-+ Clone
-+ Copy
-+ PartialEq
-+ PartialOrd
-+ Shl<i32, Output=Self>
-+ Shr<i32, Output=Self>
-+ BitAnd
-+ BitOr<Self, Output=Self>
-+ From<u8>
+pub trait Varint: Default + Clone + Copy + PartialEq + PartialOrd
 {
-    fn max_shift() -> i32 {
-        (size_of::<Self>() * 8) as i32
-    }
-    fn low_byte(self) -> u8;
+    fn from_u64(v: u64) -> Self;
+    fn into_u64(self) -> u64;
 }
 
 impl Varint for u32 {
-    fn low_byte(self) -> u8 {
+    fn from_u64(v: u64) -> Self {
+        v as _
+    }
+
+    fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for u64 {
-    fn low_byte(self) -> u8 {
+    fn from_u64(v: u64) -> Self {
+        v as _
+    }
+
+    fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for i32 {
-    fn low_byte(self) -> u8 {
+    fn from_u64(v: u64) -> Self {
+        v as _
+    }
+
+    fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for i64 {
-    fn low_byte(self) -> u8 {
+    fn from_u64(v: u64) -> Self {
+        v as _
+    }
+
+    fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for usize {
-    fn low_byte(self) -> u8 {
+    fn from_u64(v: u64) -> Self {
+        v as _
+    }
+
+    fn into_u64(self) -> u64 {
         self as _
     }
 }
@@ -211,13 +226,14 @@ impl Fixed for f64 {
     }
 }
 
-pub trait Bytes {
+pub trait Bytes<'a> {
     fn blen(&self) -> usize;
     fn bytes(&self) -> &[u8];
-    fn push(&mut self, b: &[u8]) -> Result<()>;
+    fn clear(&mut self);
+    fn push(&mut self, b: &'a [u8]) -> Result<()>;
 }
 
-impl Bytes for String {
+impl<'a> Bytes<'a> for &'a str {
     fn blen(&self) -> usize {
         self.len()
     }
@@ -226,19 +242,46 @@ impl Bytes for String {
         self.as_bytes()
     }
 
+    fn clear(&mut self) {
+        *self = "";
+    }
+
+    fn push(&mut self, b: &'a [u8]) -> Result<()> {
+        *self = std::str::from_utf8(b)?;
+        Ok(())
+    }
+}
+
+impl<'any> Bytes<'any> for String {
+    fn blen(&self) -> usize {
+        self.len()
+    }
+
+    fn bytes(&self) -> &[u8] {
+        self.as_bytes()
+    }
+
+    fn clear(&mut self) {
+        self.clear();
+    }
+
     fn push(&mut self, b: &[u8]) -> Result<()> {
         self.push_str(std::str::from_utf8(b)?);
         Ok(())
     }
 }
 
-impl Bytes for Vec<u8> {
+impl<'any> Bytes<'any> for Vec<u8> {
     fn blen(&self) -> usize {
         self.len()
     }
 
     fn bytes(&self) -> &[u8] {
         self.as_slice()
+    }
+
+    fn clear(&mut self) {
+        self.clear();
     }
 
     fn push(&mut self, b: &[u8]) -> Result<()> {
@@ -285,6 +328,7 @@ pub fn merge_packed<'a, T: Default>(
     stream: &mut InputStream<'a>,
     mapper: fn(&mut InputStream<'a>, &mut T) -> Result<()>,
 ) -> Result<()> {
+    this.clear();
     let len = stream._varint::<usize>()?;
     if stream.len() < len {
         return Err(Error::UnexpectedEOF);
@@ -309,7 +353,7 @@ pub fn merge_map<'a, K: Default + Ord, V: Default>(
     vmapper: fn(&mut InputStream<'a>, &mut V) -> Result<()>,
 ) -> Result<()> {
     let len = stream._varint::<usize>()?;
-    stream.limit(len);
+    let olimit = stream.limit(len)?;
 
     let mut key = K::default();
     let mut val = V::default();
@@ -321,7 +365,7 @@ pub fn merge_map<'a, K: Default + Ord, V: Default>(
             tag => unknown_tag(tag)?,
         }
     }
-    stream.bump(len);
+    stream.unlimit(olimit);
     this.insert(key, val);
     Ok(())
 }
@@ -375,8 +419,8 @@ pub fn emit_map<K: Default + PartialEq, V: Default + PartialEq>(
     for (k, v) in this {
         stream._varint(tag);
         let mut o = OutputStream::default();
-        emit_single(k, ktag, &mut o, kmapper);
-        emit_single(v, vtag, &mut o, vmapper);
+        emit_raw(k, ktag, &mut o, kmapper);
+        emit_raw(v, vtag, &mut o, vmapper);
         stream._varint(o.len());
         stream._bytes(o.buf.as_slice());
     }
