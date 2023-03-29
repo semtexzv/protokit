@@ -7,15 +7,15 @@ use crate::escape::escape_bytes_to;
 use crate::Token::*;
 use crate::{unexpected, unknown, Enum, Result, TextField, TextProto, Token};
 
-pub struct InputStream<'i> {
-    pub(crate) lex: Lexer<'i, Token>,
+pub struct InputStream<'buf> {
+    pub(crate) lex: Lexer<'buf, Token>,
     pub(crate) cur: Token,
     // Whether we are parsing root message, or we're expecting more braces
     root: bool,
 }
 
-impl<'i> InputStream<'i> {
-    pub fn new(data: &'i str) -> Self {
+impl<'buf> InputStream<'buf> {
+    pub fn new(data: &'buf str) -> Self {
         let lex = Lexer::new(data);
         Self {
             lex,
@@ -34,15 +34,15 @@ impl<'i> InputStream<'i> {
         self.cur = self.lex.next().unwrap_or(EndOfFile);
     }
 
-    pub fn buf(&self) -> &str {
+    pub fn buf(&self) -> &'buf str {
         self.lex.slice()
     }
 
-    pub fn field(&self) -> &str {
+    pub fn field(&self) -> &'buf str {
         self.lex.slice()
     }
 
-    fn token_and_span(&self) -> (Token, &str) {
+    fn token_and_span(&self) -> (Token, &'buf str) {
         (self.cur, self.lex.slice())
     }
 
@@ -71,7 +71,7 @@ impl<'i> InputStream<'i> {
         }
     }
 
-    pub fn string<F: FnMut(&str)>(&mut self, mut f: F) -> Result<()> {
+    pub fn string<F: FnMut(&'buf str)>(&mut self, mut f: F) -> Result<()> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf();
@@ -82,7 +82,7 @@ impl<'i> InputStream<'i> {
         Ok(())
     }
 
-    pub fn bytes<F: FnMut(&[u8])>(&mut self, mut f: F) -> Result<()> {
+    pub fn bytes<F: FnMut(&'buf [u8])>(&mut self, mut f: F) -> Result<()> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf().as_bytes();
@@ -93,7 +93,7 @@ impl<'i> InputStream<'i> {
         Ok(())
     }
 
-    fn ident(&mut self) -> Result<&str> {
+    fn ident(&mut self) -> Result<&'buf str> {
         if self.cur == Ident {
             return Ok(self.buf());
         } else {
@@ -168,7 +168,7 @@ impl<'i> InputStream<'i> {
         Ok(self.f64()? as _)
     }
 
-    pub(crate) fn message_fields(&mut self, p: &mut dyn TextProto) -> Result<()> {
+    pub(crate) fn message_fields(&mut self, p: &mut dyn TextProto<'buf>) -> Result<()> {
         let allow_eof = self.root;
         self.root = false;
         self.next();
@@ -261,11 +261,11 @@ impl OutputStream {
         self.buf.push('"');
     }
 
-    pub fn emit_field<F: TextField>(&mut self, name: &str, f: &F) {
+    pub fn emit_field<'any, F: TextField<'any>>(&mut self, name: &str, f: &F) {
         f.emit(name, self)
     }
 
-    pub fn emit_oneof<P: TextProto>(&mut self, o: &Option<P>) {
+    pub fn emit_oneof<'any, P: TextProto<'any>>(&mut self, o: &Option<P>) {
         if let Some(o) = o {
             o.encode(self)
         }

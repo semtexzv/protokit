@@ -1,8 +1,9 @@
 use proc_macro2::{Ident, Span};
 use std::fmt::{Display, Formatter};
-use syn::{bracketed, Error, LitInt, LitStr, parenthesized, Token};
+use syn::{bracketed, Error, Lifetime, LitInt, LitStr, parenthesized, Token};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
+use syn::token::Token;
 
 pub const VARINT: u8 = 0;
 pub const FIX64: u8 = 1;
@@ -11,47 +12,53 @@ pub const SGRP: u8 = 3;
 pub const _EGRP: u8 = 4;
 pub const FIX32: u8 = 5;
 
-struct Kv<V: Parse> {
-    name: Ident,
-    value: V,
-}
-
-impl<V: Parse> Parse for Kv<V> {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let name: Ident = input.parse()?;
-        let _: Token![=] = input.parse()?;
-        let value = input.parse()?;
-        Ok(Self { name, value })
-    }
-}
-
 #[derive(Default)]
-struct ProtoMeta {
-    name: Option<LitStr>,
-    file: Option<LitStr>,
-    package: Option<LitStr>,
+pub struct ProtoMeta {
+    pub buf: Option<Lifetime>,
+    pub name: Option<LitStr>,
+    pub file: Option<LitStr>,
+    pub package: Option<LitStr>,
 }
 
 impl Parse for ProtoMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let fields = Punctuated::<Kv<LitStr>, Token![,]>::parse_terminated(input)?;
-
         let mut out = Self::default();
-        for f in fields {
-            if f.name == "name" {
-                out.name = Some(f.value);
-            } else if f.name == "file" {
-                out.file = Some(f.value);
-            } else if f.name == "package" {
-                out.package = Some(f.value)
-            } else {
-                return Err(syn::Error::new(
-                    input.span(),
-                    format!("Unknown key: {}, expected name, file or package", f.name),
-                ));
+        let mut oname: Option<Ident> = input.parse()?;
+        for i in 0 .. 100 {
+            let Some(name) = &oname else {
+                return Ok(out);
+            };
+
+            let _: Token![=] = input.parse()?;
+            if name == "buf" || name == "borrow" {
+                out.buf = Some(input.parse()?);
+            } else if name == "name" {
+                out.name = Some(input.parse()?);
             }
+
+            let _: Option<Token![,]> = input.parse()?;
+
+            oname = input.parse()?;
         }
-        Ok(out)
+        panic!()
+        // for f in fields {
+        //     if if f.name == "buf" || f.name == "borrow" {
+        //
+        //         out.buf = Some(f.value);
+        //     } else if f.name == "name" {
+        //         out.name = Some(f.value);
+        //     } else if f.name == "file" {
+        //         out.file = Some(f.value);
+        //     } else if f.name == "package" {
+        //         out.package = Some(f.value)
+        //     } else {
+        //         return Err(syn::Error::new(
+        //             input.span(),
+        //             format!("Unknown key: {}, expected name, file or package", f.name),
+        //         ));
+        //     }
+        // }
+        // Ok(out)
     }
 }
 

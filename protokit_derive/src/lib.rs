@@ -7,9 +7,9 @@ use std::ops::Deref;
 use proc_macro2::{Ident};
 use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::{format_ident, quote, quote_spanned};
-use syn::{Data, Error, Fields, ImplItem, LitInt, DeriveInput, parse_macro_input, LitStr, DataStruct, Attribute, Type, DataEnum, Generics};
+use syn::{Data, Error, Fields, ImplItem, LitInt, DeriveInput, parse_macro_input, LitStr, DataStruct, Attribute, Type, DataEnum, Generics, parse_quote, Lifetime};
 use syn::spanned::Spanned;
-use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, VarMeta};
+use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta};
 
 
 #[proc_macro_error]
@@ -45,8 +45,8 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         impl From<#ident> for u32 {
             fn from(v: #ident) -> Self { v.0 }
         }
-        impl textformat::TextField for #ident {
-             fn merge_value(&mut self, stream: &mut textformat::InputStream) -> textformat::Result<()> {
+        impl<'buf> textformat::TextField<'buf> for #ident {
+             fn merge_value(&mut self, stream: &mut textformat::InputStream<'buf>) -> textformat::Result<()> {
                 match stream.field() {
                     #(#merge_txt)*
                     name => return textformat::unknown(name),
@@ -160,7 +160,15 @@ fn emit_arm(
     }
 }
 
-fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
+fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
+    let mut meta: Option<ProtoMeta> = None;
+    for a in attrs {
+        if a.path().is_ident("proto") {
+            meta = Some(a.parse_args()?);
+        }
+    }
+    let meta = meta.unwrap_or_default();
+
     let items = s
         .fields
         .iter()
@@ -250,10 +258,24 @@ fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>, generics: Generic
         }
     }
 
-    let (ig,tg, wg) = generics.split_for_impl();
+    let (_, type_gen, where_gen) = generics.split_for_impl();
+    let lp = generics.lifetimes();
+    let tp = generics.type_params();
+    let cp = generics.const_params();
+
+    let (buf_param, buf_comma) = match meta.buf {
+        None => {
+            (quote! { 'buf }, quote! { 'buf, })
+        }
+        Some(borrow) => {
+            (quote! { #borrow }, quote! {})
+        }
+    };
+    let text_impl_params = quote! { #buf_comma #(#lp,)* #(#tp,)* #(#cp,)* };
+
     Ok(quote! {
-        impl #ig binformat::BinProto for #ident #tg #wg {
-            fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream) -> binformat::Result<()> {
+        impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
+            fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
                 match tag {
                     #(#merge_bin)*
                     other => stream.skip(other),
@@ -265,8 +287,9 @@ fn _impl_proto(s: DataStruct, ident: Ident, _: Vec<Attribute>, generics: Generic
             }
         }
 
-        impl #ig textformat::TextProto for #ident #tg #wg {
-            fn merge_field(&mut self, stream: &mut textformat::InputStream) -> textformat::Result<()> {
+
+        impl<#text_impl_params> textformat::TextProto< #buf_param > for #ident #type_gen #where_gen {
+            fn merge_field(&mut self, stream: &mut textformat::InputStream< #buf_param >) -> textformat::Result<()> {
                 match stream.field() {
                     #(#merge_txt)*
                     name => textformat::unknown(name),
@@ -288,9 +311,15 @@ struct OneOfField {
     name: LitStr,
 }
 
-fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
+fn _impl_oneof(s: DataEnum, ident: Ident, attrs: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
 
-    let (impl_gen, type_gen, where_gen) = generics.split_for_impl();
+    let mut meta: Option<ProtoMeta> = None;
+    for a in attrs {
+        if a.path().is_ident("proto") {
+            meta = Some(a.parse_args()?);
+        }
+    }
+    let meta = meta.unwrap_or_default();
 
     let items = s
         .variants
@@ -360,13 +389,28 @@ fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>, generics: Generics)
         });
     }
 
+    let (orig_impl_gen, type_gen, where_gen) = generics.split_for_impl();
+    let lp = generics.lifetimes();
+    let tp = generics.type_params();
+    let cp = generics.const_params();
+
+    let (buf_param, buf_comma) = match meta.buf {
+        None => {
+            (quote! { 'buf }, quote! { 'buf, })
+        }
+        Some(borrow) => {
+            (quote! { #borrow }, quote! {})
+        }
+    };
+    let text_impl_params = quote! { #buf_comma #(#lp,)* #(#tp,)* #(#cp,)* };
+
 
     Ok(quote! {
-        impl #impl_gen #ident #type_gen #where_gen {
+        impl #orig_impl_gen #ident #type_gen #where_gen {
             #(#setters)*
         }
-        impl #impl_gen binformat::BinProto for #ident #type_gen #where_gen {
-            fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream) -> binformat::Result<()> {
+        impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
+            fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
                 match tag {
                     #(#merge_bin)*
                     other => stream.skip(other),
@@ -379,8 +423,8 @@ fn _impl_oneof(s: DataEnum, ident: Ident, _: Vec<Attribute>, generics: Generics)
                 }
             }
         }
-        impl #impl_gen textformat::TextProto for #ident #type_gen #where_gen {
-            fn merge_field(&mut self, stream: &mut textformat::InputStream) -> textformat::Result<()> {
+        impl<#text_impl_params> textformat::TextProto<#buf_param> for #ident #type_gen #where_gen {
+            fn merge_field(&mut self, stream: &mut textformat::InputStream<#buf_param>) -> textformat::Result<()> {
                 match stream.field() {
                     #(#merge_txt)*
                     name => textformat::unknown(name),

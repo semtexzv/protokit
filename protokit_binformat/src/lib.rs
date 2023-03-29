@@ -46,16 +46,16 @@ pub fn unknown_wire<T>(w: u8) -> Result<T> {
     Err(Error::Wire(w))
 }
 
-pub trait BinProto {
-    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream) -> Result<()>;
+pub trait BinProto<'buf> {
+    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()>;
     fn encode(&self, stream: &mut OutputStream);
 }
 
-impl<T> BinProto for Box<T>
+impl<'buf, T> BinProto<'buf> for Box<T>
     where
-        T: BinProto,
+        T: BinProto<'buf>,
 {
-    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream) -> Result<()> {
+    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
     }
 
@@ -271,6 +271,26 @@ impl<'any> Bytes<'any> for String {
     }
 }
 
+
+impl<'a> Bytes<'a> for &'a [u8] {
+    fn blen(&self) -> usize {
+        self.len()
+    }
+
+    fn bytes(&self) -> &[u8] {
+        self
+    }
+
+    fn clear(&mut self) {
+        *self = &[];
+    }
+
+    fn push(&mut self, b: &'a [u8]) -> Result<()> {
+        *self = b;
+        Ok(())
+    }
+}
+
 impl<'any> Bytes<'any> for Vec<u8> {
     fn blen(&self) -> usize {
         self.len()
@@ -290,43 +310,43 @@ impl<'any> Bytes<'any> for Vec<u8> {
     }
 }
 
-pub fn merge_single<'a, T>(
+pub fn merge_single<'buf, T>(
     this: &mut T,
-    stream: &mut InputStream<'a>,
-    mapper: fn(&mut InputStream<'a>, &mut T) -> Result<()>,
+    stream: &mut InputStream<'buf>,
+    mapper: fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 ) -> Result<()> {
     mapper(stream, this)
 }
 
-pub fn merge_optional<'a, T: Default>(
+pub fn merge_optional<'buf, T: Default>(
     this: &mut Option<T>,
-    stream: &mut InputStream<'a>,
-    mapper: fn(&mut InputStream<'a>, &mut T) -> Result<()>,
+    stream: &mut InputStream<'buf>,
+    mapper: fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 ) -> Result<()> {
     mapper(stream, this.get_or_insert_with(Default::default))
 }
 
-pub fn merge_repeated<'a, T: Default>(
+pub fn merge_repeated<'buf, T: Default>(
     this: &mut Vec<T>,
-    stream: &mut InputStream<'a>,
-    mapper: fn(&mut InputStream<'a>, &mut T) -> Result<()>,
+    stream: &mut InputStream<'buf>,
+    mapper: fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 ) -> Result<()> {
     this.push(T::default());
     mapper(stream, this.last_mut().unwrap())
 }
 
-pub fn merge_oneof<'a, T: Default + BinProto>(
+pub fn merge_oneof<'buf, T: Default + BinProto<'buf>>(
     this: &mut Option<T>,
     tag: u32,
-    stream: &mut InputStream<'a>,
+    stream: &mut InputStream<'buf>,
 ) -> Result<()> {
     this.get_or_insert_with(Default::default).merge_field(tag, stream)
 }
 
-pub fn merge_packed<'a, T: Default>(
+pub fn merge_packed<'buf, T: Default>(
     this: &mut Vec<T>,
-    stream: &mut InputStream<'a>,
-    mapper: fn(&mut InputStream<'a>, &mut T) -> Result<()>,
+    stream: &mut InputStream<'buf>,
+    mapper: fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 ) -> Result<()> {
     this.clear();
     let len = stream._varint::<usize>()?;
@@ -346,11 +366,11 @@ pub fn merge_packed<'a, T: Default>(
     Ok(())
 }
 
-pub fn merge_map<'a, K: Default + Ord, V: Default>(
+pub fn merge_map<'buf, K: Default + Ord, V: Default>(
     this: &mut BTreeMap<K, V>,
-    stream: &mut InputStream<'a>,
-    kmapper: fn(&mut InputStream<'a>, &mut K) -> Result<()>,
-    vmapper: fn(&mut InputStream<'a>, &mut V) -> Result<()>,
+    stream: &mut InputStream<'buf>,
+    kmapper: fn(&mut InputStream<'buf>, &mut K) -> Result<()>,
+    vmapper: fn(&mut InputStream<'buf>, &mut V) -> Result<()>,
 ) -> Result<()> {
     let len = stream._varint::<usize>()?;
     let olimit = stream.limit(len)?;
@@ -426,7 +446,7 @@ pub fn emit_map<K: Default + PartialEq, V: Default + PartialEq>(
     }
 }
 
-pub fn emit_oneof<T: BinProto>(
+pub fn emit_oneof<'buf, T: BinProto<'buf>>(
     o: &Option<T>,
     stream: &mut OutputStream,
 ) {
@@ -435,7 +455,7 @@ pub fn emit_oneof<T: BinProto>(
     }
 }
 
-pub fn decode<T: Default + BinProto>(b: &[u8]) -> Result<T> {
+pub fn decode<'buf, T: Default + BinProto<'buf>>(b: &'buf [u8]) -> Result<T> {
     let mut out = T::default();
     let mut is = InputStream::new(b);
     while is.len() > 0 {
@@ -445,7 +465,7 @@ pub fn decode<T: Default + BinProto>(b: &[u8]) -> Result<T> {
     Ok(out)
 }
 
-pub fn encode<T: BinProto>(b: &T) -> Result<Vec<u8>> {
+pub fn encode<'buf, T: BinProto<'buf>>(b: &T) -> Result<Vec<u8>> {
     let mut out = OutputStream::default();
     b.encode(&mut out);
     Ok(out.buf)

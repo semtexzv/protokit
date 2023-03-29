@@ -21,8 +21,8 @@ pub struct UnknownFields {
     pub fields: Option<Box<Vec<Field>>>,
 }
 
-impl BinProto for UnknownFields {
-    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream) -> crate::Result<()> {
+impl<'buf> BinProto<'buf> for UnknownFields {
+    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> crate::Result<()> {
         let f = self.fields.get_or_insert_with(Default::default);
         Self::merge_one(f, tag_wire, stream)
     }

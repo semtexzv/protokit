@@ -44,12 +44,12 @@ pub fn unknown<T>(name: &str) -> Result<T> {
     Err(Error::Unknown(name.to_string()))
 }
 
-pub trait TextProto {
+pub trait TextProto<'buf> {
     /// Parse a message from a stream
     ///
     /// Start position: `Token::StartOfFile` or `Token::LBrace`
     /// End position: `Token::EndOfFile` or `Token::RBrace`
-    fn decode(&mut self, stream: &mut InputStream) -> Result<()>
+    fn decode(&mut self, stream: &mut InputStream<'buf>) -> Result<()>
     where
         Self: Sized,
     {
@@ -59,7 +59,7 @@ pub trait TextProto {
     /// Merge a single field into this message from input stream
     ///
     /// Stream position: Identifier token
-    fn merge_field(&mut self, stream: &mut InputStream) -> Result<()>;
+    fn merge_field(&mut self, stream: &mut InputStream<'buf>) -> Result<()>;
 
     /// Encode this message contents into the provided output stream
     fn encode(&self, stream: &mut OutputStream);
@@ -67,18 +67,18 @@ pub trait TextProto {
 
 pub trait Enum: From<u32> + Into<u32> + FromStr<Err = Error> + Display {}
 
-impl<T> TextProto for Box<T>
+impl<'buf, T> TextProto<'buf> for Box<T>
 where
-    T: TextProto,
+    T: TextProto<'buf>,
 {
-    fn decode(&mut self, stream: &mut InputStream) -> Result<()>
+    fn decode(&mut self, stream: &mut InputStream<'buf>) -> Result<()>
     where
         Self: Sized,
     {
         self.deref_mut().decode(stream)
     }
 
-    fn merge_field(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_field(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(stream)
     }
 
@@ -88,7 +88,7 @@ where
 }
 
 /// Method implementing Field::emit (extracted for reusability)
-fn _emit<F: TextField + ?Sized>(f: &F, name: &str, stream: &mut OutputStream) {
+fn _emit<'any, F: TextField<'any> + ?Sized>(f: &F, name: &str, stream: &mut OutputStream) {
     stream.ln();
     stream.push(name);
     if !F::is_message() {
@@ -98,7 +98,7 @@ fn _emit<F: TextField + ?Sized>(f: &F, name: &str, stream: &mut OutputStream) {
     f.emit_value(stream);
 }
 
-pub trait TextField {
+pub trait TextField<'buf> {
     fn is_message() -> bool {
         false
     }
@@ -106,7 +106,7 @@ pub trait TextField {
     /// Merge value from stream into the current self
     ///
     /// Stream position: Field identifier token
-    fn merge_text(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_text(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         stream.expect_consume(Ident)?;
         if !Self::is_message() {
             stream.expect_consume(Colon)?;
@@ -116,7 +116,7 @@ pub trait TextField {
     /// Merges a value from the stream into self
     ///
     /// Stream position: Value input (scalar literal, left bracket/brace)
-    fn merge_value(&mut self, stream: &mut InputStream) -> Result<()>;
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()>;
 
     /// Emit a complete field entry in form of
     ///
@@ -130,18 +130,18 @@ pub trait TextField {
     fn emit_value(&self, stream: &mut OutputStream);
 }
 
-impl<F> TextField for Option<F>
+impl<'buf, F> TextField<'buf> for Option<F>
 where
-    F: TextField + Default,
+    F: TextField<'buf> + Default,
 {
     fn is_message() -> bool {
         F::is_message()
     }
-    fn merge_text(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_text(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         self.get_or_insert_with(Default::default).merge_text(stream)
     }
 
-    fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         self.get_or_insert_with(Default::default).merge_value(stream)
     }
 
@@ -158,15 +158,15 @@ where
     }
 }
 
-impl<F> TextField for Vec<F>
+impl<'buf, F> TextField<'buf> for Vec<F>
 where
-    F: TextField + Default,
+    F: TextField<'buf> + Default,
 {
     fn is_message() -> bool {
         F::is_message()
     }
 
-    fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         let is_list = stream.try_consume(LBracket);
         loop {
             self.push(F::default());
@@ -243,8 +243,8 @@ struct Help<K, V> {
     value: V,
 }
 
-impl<K: TextField + Default, V: TextField + Default> TextProto for Help<K, V> {
-    fn merge_field(&mut self, stream: &mut InputStream) -> Result<()> {
+impl<'buf, K: TextField<'buf> + Default, V: TextField<'buf> + Default> TextProto<'buf> for Help<K, V> {
+    fn merge_field(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         match stream.field() {
             "key" => self.key.merge_text(stream),
             "value" => self.value.merge_text(stream),
@@ -258,12 +258,12 @@ impl<K: TextField + Default, V: TextField + Default> TextProto for Help<K, V> {
     }
 }
 
-impl<K: TextField + Default + Ord, V: TextField + Default> TextField for BTreeMap<K, V> {
+impl<'buf, K: TextField<'buf> + Default + Ord, V: TextField<'buf> + Default> TextField<'buf> for BTreeMap<K, V> {
     fn is_message() -> bool {
         true
     }
 
-    fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         let mut help = Vec::<Help<K, V>>::default();
 
         help.merge_value(stream)?;
@@ -278,12 +278,24 @@ impl<K: TextField + Default + Ord, V: TextField + Default> TextField for BTreeMa
     }
 
     fn emit(&self, name: &str, stream: &mut OutputStream) {
+        stream.ln();
         stream.push(name);
+        stream.space();
+        stream.lbracket();
+        stream.enter();
         self.iter().for_each(|(k, v)| {
-            k.emit("key: ", stream);
-            k.emit("value: ", stream);
+            stream.ln();
+            stream.lbrace();
+            stream.enter();
+            k.emit("key", stream);
+            k.emit("value", stream);
+            stream.exit();
+            stream.ln();
+            stream.rbrace();
         });
-        todo!()
+        stream.exit();
+        stream.ln();
+        stream.rbracket();
     }
 
     fn emit_value(&self, stream: &mut OutputStream) {
@@ -291,7 +303,7 @@ impl<K: TextField + Default + Ord, V: TextField + Default> TextField for BTreeMa
     }
 }
 
-impl TextField for bool {
+impl<'buf> TextField<'buf> for bool {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.bool()?;
         Ok(())
@@ -302,7 +314,7 @@ impl TextField for bool {
     }
 }
 
-impl TextField for i32 {
+impl<'buf> TextField<'buf> for i32 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.i32()?;
         Ok(())
@@ -313,7 +325,7 @@ impl TextField for i32 {
     }
 }
 
-impl TextField for i64 {
+impl<'buf> TextField<'buf> for i64 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.i64()?;
         Ok(())
@@ -324,7 +336,7 @@ impl TextField for i64 {
     }
 }
 
-impl TextField for u32 {
+impl<'buf> TextField<'buf> for u32 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.u32()?;
         Ok(())
@@ -335,7 +347,7 @@ impl TextField for u32 {
     }
 }
 
-impl TextField for u64 {
+impl<'buf> TextField<'buf> for u64 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.u64()?;
         Ok(())
@@ -346,7 +358,7 @@ impl TextField for u64 {
     }
 }
 
-impl TextField for f32 {
+impl<'buf> TextField<'buf> for f32 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.f64()? as _;
         Ok(())
@@ -357,7 +369,7 @@ impl TextField for f32 {
     }
 }
 
-impl TextField for f64 {
+impl<'buf> TextField<'buf> for f64 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.f64()?;
         Ok(())
@@ -368,7 +380,7 @@ impl TextField for f64 {
     }
 }
 
-impl TextField for String {
+impl<'buf> TextField<'buf> for String {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         stream.string(|s| self.push_str(s))
     }
@@ -384,7 +396,17 @@ impl TextField for String {
     }
 }
 
-impl TextField for Vec<u8> {
+impl<'buf> TextField<'buf> for &'buf str {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
+        stream.string(|s| *self = s)
+    }
+
+    fn emit_value(&self, stream: &mut OutputStream) {
+        stream.string(self)
+    }
+}
+
+impl<'buf> TextField<'buf> for Vec<u8> {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         stream.bytes(|s| {
             self.extend_from_slice(s);
@@ -402,15 +424,15 @@ impl TextField for Vec<u8> {
     }
 }
 
-impl<F> TextField for F
+impl<'buf, F> TextField<'buf> for F
 where
-    F: TextProto,
+    F: TextProto<'buf>,
 {
     fn is_message() -> bool {
         true
     }
 
-    fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         self.decode(stream)
     }
 
@@ -432,7 +454,7 @@ where
     }
 }
 
-pub fn decode<T: TextProto + Default>(data: &str, reg: &Registry) -> Result<T> {
+pub fn decode<'buf, T: TextProto<'buf> + Default>(data: &'buf str, reg: &Registry) -> Result<T> {
     let mut out = T::default();
     let mut stream = InputStream::new(data);
     let mut next = stream.next();
@@ -443,7 +465,7 @@ pub fn decode<T: TextProto + Default>(data: &str, reg: &Registry) -> Result<T> {
     Ok(out)
 }
 
-pub fn encode<T: TextProto>(b: &T, reg: &Registry) -> Result<String> {
+pub fn encode<'any, T: TextProto<'any>>(b: &T, reg: &Registry) -> Result<String> {
     let mut out = OutputStream::new();
     b.encode(&mut out);
     Ok(out.buf)

@@ -160,15 +160,15 @@ impl<'buf> InputStream<'buf> {
         Ok(())
     }
 
-    pub fn nested<P: BinProto>(&mut self, p: &mut P) -> Result<()> {
+    pub fn nested<P: BinProto<'buf>>(&mut self, p: &mut P) -> Result<()> {
         self._field_nested(p)
     }
 
-    pub fn group<P: BinProto>(&mut self, p: &mut P) -> Result<()> {
+    pub fn group<P: BinProto<'buf>>(&mut self, p: &mut P) -> Result<()> {
         self._field_group(0, p)
     }
 
-    pub fn _field_nested(&mut self, proto: &mut dyn BinProto) -> Result<()> {
+    pub fn _field_nested(&mut self, proto: &mut dyn BinProto<'buf>) -> Result<()> {
         let len = self._varint()?;
         if len > self.len() {
             return Err(Error::UnexpectedEOF);
@@ -185,7 +185,7 @@ impl<'buf> InputStream<'buf> {
         Ok(())
     }
 
-    pub fn _field_group(&mut self, _gtag: u32, proto: &mut dyn BinProto) -> Result<()> {
+    pub fn _field_group(&mut self, _gtag: u32, proto: &mut dyn BinProto<'buf>) -> Result<()> {
         while self.len() > 0 {
             let tag = self._varint()?;
             // If this is the end group tag, we're done with current item.
@@ -266,14 +266,14 @@ impl OutputStream {
         self._bytes(b.bytes());
     }
 
-    pub fn nested<P: BinProto>(&mut self, _: u32, v: &P) {
+    pub fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P) {
         let mut inner = OutputStream::default();
         v.encode(&mut inner);
         self._varint(inner.len());
         self._bytes(&inner.buf);
     }
 
-    pub fn group<P: BinProto>(&mut self, num: u32, v: &P) {
+    pub fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P) {
         // SGRP tag is encoded outside of this method
         v.encode(self);
         self._varint((num & !0b111) | EGRP as u32);
