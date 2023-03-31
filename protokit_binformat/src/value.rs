@@ -1,4 +1,4 @@
-use crate::{BinProto, emit_raw, Error, InputStream, MAP_WIRE, OutputStream, unknown_wire};
+use crate::{emit_raw, unknown_tag, unknown_wire, BinProto, Error, InputStream, OutputStream, MAP_WIRE};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value {
@@ -18,6 +18,7 @@ pub struct Field {
 #[repr(transparent)]
 #[derive(Default, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UnknownFields {
+    // Double indirection to keep this struct one pointer wide.
     pub fields: Option<Box<Vec<Field>>>,
 }
 
@@ -38,8 +39,8 @@ impl UnknownFields {
     fn emit_field(f: &Field, stream: &mut OutputStream) {
         match &f.val {
             Value::Varint(v) => emit_raw(v, f.num << 3 | crate::VARINT as u32, stream, OutputStream::varint),
-            Value::Fixed32(v)  => emit_raw(v, f.num << 3 | crate::FIX32 as u32, stream, OutputStream::fixed32),
-            Value::Fixed64(v)  => emit_raw(v, f.num << 3 | crate::FIX64 as u32, stream, OutputStream::fixed64),
+            Value::Fixed32(v) => emit_raw(v, f.num << 3 | crate::FIX32 as u32, stream, OutputStream::fixed32),
+            Value::Fixed64(v) => emit_raw(v, f.num << 3 | crate::FIX64 as u32, stream, OutputStream::fixed64),
             Value::Bytes(v) => emit_raw(v, f.num << 3 | crate::VARINT as u32, stream, OutputStream::bytes),
             Value::Group(v) => {
                 stream._varint(f.num << 3 | crate::SGRP as u32);
@@ -47,10 +48,13 @@ impl UnknownFields {
                     Self::emit_field(v, stream)
                 }
                 stream._varint(f.num << 3 | crate::EGRP as u32)
-            },
+            }
         }
     }
     fn merge_one(fields: &mut Vec<Field>, tag: u32, stream: &mut InputStream) -> crate::Result<()> {
+        if tag >> 3 == 0 {
+            return unknown_tag(tag);
+        }
         match (tag as u8 & MAP_WIRE) as u8 {
             crate::VARINT => fields.push(Field {
                 num: tag >> 3,

@@ -5,7 +5,8 @@ use logos::Lexer;
 
 use crate::escape::escape_bytes_to;
 use crate::Token::*;
-use crate::{unexpected, unknown, Enum, Result, TextField, TextProto, Token};
+use crate::{unexpected, unknown, Result, TextProto, Token};
+use crate::reflect::Registry;
 
 pub struct InputStream<'buf> {
     pub(crate) lex: Lexer<'buf, Token>,
@@ -23,6 +24,7 @@ impl<'buf> InputStream<'buf> {
             root: true,
         }
     }
+    // pub fn with_registry(data: &'buf str, reg: &Registry) ->
 
     pub fn next(&mut self) -> Token {
         self.advance();
@@ -71,23 +73,23 @@ impl<'buf> InputStream<'buf> {
         }
     }
 
-    pub fn string<F: FnMut(&'buf str)>(&mut self, mut f: F) -> Result<()> {
+    pub fn string<F: FnMut(&'buf str) -> Result<()>>(&mut self, mut f: F) -> Result<()> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf();
             // TODO: Escape + Trim quotes
-            f(&buf[1 .. buf.len() - 1]);
+            f(&buf[1 .. buf.len() - 1])?;
             let _ = self.next();
         }
         Ok(())
     }
 
-    pub fn bytes<F: FnMut(&'buf [u8])>(&mut self, mut f: F) -> Result<()> {
+    pub fn bytes<F: FnMut(&'buf [u8]) -> Result<()>>(&mut self, mut f: F) -> Result<()> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf().as_bytes();
             // TODO: Escape + Trim quotes
-            f(&buf[1 .. buf.len() - 1]);
+            f(&buf[1 .. buf.len() - 1])?;
             let _ = self.next();
         }
         Ok(())
@@ -148,7 +150,7 @@ impl<'buf> InputStream<'buf> {
 
     pub fn f64(&mut self) -> Result<f64> {
         let neg = if self.try_consume(Minus) { -1.0 } else { 1.0 };
-        Ok(neg
+        let res = neg
             * match self.token_and_span() {
                 (FltLit | DecLit, s) => f64::from_str(s).unwrap(),
                 (Ident, txt) => {
@@ -161,7 +163,10 @@ impl<'buf> InputStream<'buf> {
                     }
                 }
                 (k, _) => return unexpected(FltLit, k),
-            })
+            };
+
+        self.next();
+        Ok(res)
     }
 
     fn f32(&mut self) -> Result<f64> {
@@ -171,7 +176,12 @@ impl<'buf> InputStream<'buf> {
     pub(crate) fn message_fields(&mut self, p: &mut dyn TextProto<'buf>) -> Result<()> {
         let allow_eof = self.root;
         self.root = false;
+        if self.cur == Colon {
+            self.next();
+        }
+        // assert!(matches!(self.cur, StartOfFile | LBrace), "{:?}", self.cur);
         self.next();
+
         loop {
             match self.cur {
                 Ident | ExtIdent => {
@@ -206,7 +216,7 @@ impl OutputStream {
     }
     pub fn ln(&mut self) {
         self.buf.push('\n');
-        for p in 0 .. self.pad {
+        for _ in 0 .. self.pad {
             self.buf.push(' ');
         }
     }
@@ -259,15 +269,5 @@ impl OutputStream {
         // TODO: escape properly, this won't
         escape_bytes_to(s.as_bytes(), &mut self.buf);
         self.buf.push('"');
-    }
-
-    pub fn emit_field<'any, F: TextField<'any>>(&mut self, name: &str, f: &F) {
-        f.emit(name, self)
-    }
-
-    pub fn emit_oneof<'any, P: TextProto<'any>>(&mut self, o: &Option<P>) {
-        if let Some(o) = o {
-            o.encode(self)
-        }
     }
 }

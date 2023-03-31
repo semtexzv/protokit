@@ -1,9 +1,8 @@
-use std::collections::{BTreeMap, HashSet};
+use std::collections::HashSet;
 use std::ops::Deref;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use convert_case::Case::{Pascal, UpperSnake};
 use convert_case::{Case, Casing};
 use proc_macro2::{Ident, TokenStream};
 use protokit_proto::translate::TranslateCtx;
@@ -16,12 +15,14 @@ pub mod grpc;
 
 #[derive(Debug)]
 pub struct Options {
-    pub generate_textformat: bool,
+    pub lifetime_arg: Option<TokenStream>,
     pub import_root: TokenStream,
 
     pub string_type: TokenStream,
     pub bytes_type: TokenStream,
     pub map_type: TokenStream,
+
+    pub protoattrs: Vec<TokenStream>,
 
     pub track_unknowns: bool,
 }
@@ -29,11 +30,12 @@ pub struct Options {
 impl Default for Options {
     fn default() -> Self {
         Self {
-            generate_textformat: true,
+            lifetime_arg: None,
             import_root: quote! { ::protokit },
             string_type: quote! { String },
             bytes_type: quote! { Vec<u8> },
             map_type: quote! { ::std::collections::BTreeMap },
+            protoattrs: vec![],
             track_unknowns: false,
         }
     }
@@ -137,7 +139,14 @@ impl CodeGenerator<'_> {
         TokenStream::from_str(match typ {
             DataType::Unresolved(_) => panic!(),
             DataType::Builtin(b) => builtin_type_marker(*b),
-            DataType::Message(m) => "nested",
+            DataType::Message(m) => {
+                let (m,_) = self.context.def.message_by_id(*m).unwrap();
+                if m.is_group {
+                    "group"
+                } else {
+                    "nested"
+                }
+            },
             DataType::Enum(m) => "protoenum",
             DataType::Map(k) => {
                 return TokenStream::from_str(&format!(
@@ -145,7 +154,7 @@ impl CodeGenerator<'_> {
                     builtin_type_marker(k.0),
                     self.type_marker(&k.1)
                 ))
-                .unwrap()
+                .unwrap();
             }
         })
         .unwrap()
@@ -157,7 +166,12 @@ impl CodeGenerator<'_> {
                 panic!("Name {path} was not resolved to actual type")
             }
             DataType::Builtin(bt) => return Ok(self.builtin_rusttype(*bt)),
-            DataType::Message(id) => TokenStream::from_str(&self.resolve_name(*id)?).unwrap(),
+            DataType::Message(id) => {
+                let borrow = self.borrow();
+                let ident = format_ident!("{}", self.resolve_name(*id)?);
+
+                quote! {#ident #borrow}
+            }
             DataType::Enum(id) => TokenStream::from_str(&self.resolve_name(*id)?).unwrap(),
             DataType::Map(m) => {
                 let kt = self.base_type(&DataType::Builtin(m.deref().0))?;
@@ -167,6 +181,7 @@ impl CodeGenerator<'_> {
             }
         })
     }
+
     pub fn field_type(&self, typ: &FieldDef) -> Result<TokenStream> {
         let base = self.base_type(&typ.typ)?;
         let is_msg = match typ.typ {
@@ -179,6 +194,19 @@ impl CodeGenerator<'_> {
             (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
             (Frequency::Optional, true) => Ok(quote!(Option<Box<#base>>)),
             (Frequency::Repeated, _) => Ok(quote!(Vec<#base>)),
+        }
+    }
+
+    pub fn borrow(&self) -> Option<TokenStream> {
+        self.options.lifetime_arg.clone().map(|a| quote! { <#a> })
+    }
+
+    pub fn protoattrs(&self) -> TokenStream {
+        if self.options.protoattrs.len() > 0 {
+            let attrs = &self.options.protoattrs;
+            quote! { #[proto(#(#attrs,)*)] }
+        } else {
+            quote! {}
         }
     }
 
@@ -196,6 +224,8 @@ impl CodeGenerator<'_> {
 
     pub fn message(&mut self, file_id: usize, msg_id: usize, msg_name: &ArcStr, msg: &MessageDef) -> Result<()> {
         let ident = format_ident!("{}", rustify_name(msg_name));
+        let borrow = self.borrow();
+        let attrs = self.protoattrs();
 
         let fields = msg
             .fields
@@ -210,11 +240,22 @@ impl CodeGenerator<'_> {
             .map(|(name, def)| self.oneof(&msg_name, def))
             .collect::<Result<Vec<_>>>()?;
 
+        let last = if self.options.track_unknowns {
+            Some(quote! {
+                #[unknown]
+                pub unknown: protokit::binformat::UnknownFields
+            })
+        } else {
+            None
+        };
+
         self.output.push(quote! {
             #[derive(Debug, Default, Clone, PartialEq, Proto)]
-            pub struct #ident {
+            #attrs
+            pub struct #ident #borrow {
                 #(#fields,)*
                 #(#oneofs,)*
+                #last
             }
         });
 
@@ -224,6 +265,9 @@ impl CodeGenerator<'_> {
     pub fn oneof(&mut self, msg_name: &str, def: &OneOfDef) -> Result<TokenStream> {
         let field_ident = format_ident!("{}", rustify_name(&def.name));
         let oneof_type = format_ident!("{msg_name}OneOf{}", def.name.as_str().to_case(Case::Pascal));
+        let borrow = self.borrow();
+        let borrow_or_static = self.options.lifetime_arg.clone().unwrap_or_else(|| quote! { 'static });
+        let attrs = self.protoattrs();
 
         let mut nums = vec![];
         let mut names = vec![];
@@ -245,7 +289,7 @@ impl CodeGenerator<'_> {
 
             if default.is_none() {
                 default = Some(quote! {
-                    impl Default for #oneof_type {
+                    impl #borrow Default for #oneof_type #borrow {
                         fn default() -> Self {
                             Self::#var_name(Default::default())
                         }
@@ -259,8 +303,10 @@ impl CodeGenerator<'_> {
 
         self.output.push(quote! {
             #[derive(Debug, Clone, PartialEq, Proto)]
-            pub enum #oneof_type {
+            #attrs
+            pub enum #oneof_type #borrow {
                 #(#vars)*
+                // __Unused(::std::marker::PhantomData< & #borrow_or_static ()>),
             }
             #default
         });

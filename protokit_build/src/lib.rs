@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 pub use anyhow::Result;
 use quote::__private::TokenStream;
+use quote::quote;
 
 use crate::deps::*;
 
@@ -46,8 +47,11 @@ impl Build {
         self.ctx.include(p);
         self
     }
-    pub fn textformat(mut self, t: bool) -> Self {
-        self.options.generate_textformat = t;
+    pub fn borrow(mut self) -> Self {
+        self.options.lifetime_arg = Some(quote! { 'buf });
+        self.options.string_type = quote! {&'buf str};
+        self.options.bytes_type = quote! {&'buf [u8]};
+        self.options.protoattrs.push(quote! { borrow = 'buf });
         self
     }
     pub fn track_unknowns(mut self, t: bool) -> Self {

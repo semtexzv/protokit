@@ -86,8 +86,9 @@ impl CodeGenerator<'_> {
             };
 
             trait_items.push(quote! {
-           async fn #method_name(&self, req: tonic::Request<#req_type>) -> Result<tonic::Response<#res_type>, tonic::Status>;
-        });
+                async fn #method_name(&self, req: tonic::Request<#req_type>) -> Result<tonic::Response<#res_type>, tonic::Status>;
+            });
+
             defs.push(quote! {
                 struct #rpc_struct<S: #svc_name>(Arc<S>);
                 impl<S: #svc_name> tonic::server::#svc_type<super::#raw_req_type> for #rpc_struct<S> {

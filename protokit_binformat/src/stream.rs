@@ -30,8 +30,8 @@ impl<'buf> InputStream<'buf> {
 
     /// Limits the currently readable subslice, and returns previous limit
     pub fn limit(&mut self, limit: usize) -> Result<usize> {
-        if self.limit < limit  {
-            return Err(Error::InvalidLimit)
+        if self.limit < limit {
+            return Err(Error::InvalidLimit);
         }
         if self.limit < limit {
             panic!("Limiting back")
@@ -49,11 +49,21 @@ impl<'buf> InputStream<'buf> {
             return crate::unknown_tag(0);
         }
         match (tag & 0b111) as u8 {
-            crate::VARINT => { self._varint::<u64>()?; }
-            crate::BYTES => { self._bytes()?; }
-            crate::FIX32 => { self._fixed::<u32>()?; }
-            crate::FIX64 => { self._fixed::<u64>()?; }
-            crate::SGRP => { self.skip_grp((tag & !0b111) | EGRP as u32)?; }
+            crate::VARINT => {
+                self._varint::<u64>()?;
+            }
+            crate::BYTES => {
+                self._bytes()?;
+            }
+            crate::FIX32 => {
+                self._fixed::<u32>()?;
+            }
+            crate::FIX64 => {
+                self._fixed::<u64>()?;
+            }
+            crate::SGRP => {
+                self.skip_grp((tag & !0b111) | EGRP as u32)?;
+            }
             other => return crate::unknown_wire(other),
         }
 
@@ -73,7 +83,7 @@ impl<'buf> InputStream<'buf> {
         let mut shift = 0;
 
         let mut success = false;
-        for b in self.buf[self.pos..self.limit].iter() {
+        for b in self.buf[self.pos .. self.limit].iter() {
             let msb_dropped = b & DROP_MSB;
             result |= (msb_dropped as u64) << shift;
             shift += 7;
@@ -112,7 +122,7 @@ impl<'buf> InputStream<'buf> {
             return Err(Error::UnexpectedEOF);
         }
         self.pos += len;
-        Ok(&self.buf[self.pos - len..self.pos])
+        Ok(&self.buf[self.pos - len .. self.pos])
     }
 
     pub fn _string(&mut self) -> Result<&str> {
@@ -210,7 +220,6 @@ impl OutputStream {
 
     /// Emits a raw vint onto the wire
     pub(crate) fn _varint<V: Varint>(&mut self, v: V) {
-
         let mut n = v.into_u64();
 
         while n >= 0x80 {

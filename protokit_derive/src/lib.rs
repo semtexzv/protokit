@@ -3,14 +3,18 @@ mod util;
 extern crate proc_macro;
 
 use std::ops::Deref;
-
-use proc_macro2::{Ident};
+use convert_case::Case;
+use convert_case::Casing;
+use proc_macro2::Ident;
 use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::{format_ident, quote, quote_spanned};
-use syn::{Data, Error, Fields, ImplItem, LitInt, DeriveInput, parse_macro_input, LitStr, DataStruct, Attribute, Type, DataEnum, Generics, parse_quote, Lifetime};
 use syn::spanned::Spanned;
-use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta};
+use syn::{
+    parse_macro_input, Attribute, Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics,
+    ImplItem, LitInt, LitStr, Type,
+};
 
+use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta};
 
 #[proc_macro_error]
 #[proc_macro_attribute]
@@ -63,24 +67,29 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         }
 
     })
-        .into()
+    .into()
 }
-
 
 #[proc_macro_error]
 #[proc_macro_derive(Proto, attributes(proto, field, oneof, unknown))]
 pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match input.data {
-        Data::Struct(s) => _impl_proto(s, input.ident, input.attrs, input.generics).unwrap_or_else(Error::into_compile_error),
-        Data::Enum(s) => _impl_oneof(s, input.ident, input.attrs, input.generics).unwrap_or_else(Error::into_compile_error),
+        Data::Struct(s) => {
+            _impl_proto(s, input.ident, input.attrs, input.generics).unwrap_or_else(Error::into_compile_error)
+        }
+        Data::Enum(s) => {
+            _impl_oneof(s, input.ident, input.attrs, input.generics).unwrap_or_else(Error::into_compile_error)
+        }
         _ => abort_call_site!("Unsupported: {data:?}"),
     }
-        .into()
+    .into()
 }
 
-
 enum Item {
+    Unknowns {
+        ident: Ident,
+    },
     Field {
         ident: Ident,
         tag: LitInt,
@@ -108,7 +117,7 @@ fn merge_arm(
         wt = util::BYTES;
     }
     let tag = num << 3 | wt as u32;
-    let merge_fn = format_ident!("merge_{}", freq.method_suffix(), span = ident.span());
+    let merge_fn = format_ident!("merge_{}", freq.binformat_suffix(), span = ident.span());
     match kind {
         FieldKind::Map(t) => {
             let key_fn = format_ident!("{}", t.deref().0.to_string());
@@ -139,7 +148,7 @@ fn emit_arm(
     }
 
     let tag = num.base10_parse::<u32>().unwrap() << 3 | wt as u32;
-    let emit = format_ident!("emit_{}", freq.method_suffix(), span = ident.span());
+    let emit = format_ident!("emit_{}", freq.binformat_suffix(), span = ident.span());
 
     match kind {
         FieldKind::Map(t) => {
@@ -160,7 +169,12 @@ fn emit_arm(
     }
 }
 
-fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
+fn _impl_proto(
+    s: DataStruct,
+    ident: Ident,
+    attrs: Vec<Attribute>,
+    generics: Generics,
+) -> syn::Result<proc_macro2::TokenStream> {
     let mut meta: Option<ProtoMeta> = None;
     for a in attrs {
         if a.path().is_ident("proto") {
@@ -190,6 +204,10 @@ fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Gen
                         tags: ometa.tags,
                         names: ometa.names,
                     });
+                } else if a.path().is_ident(&format_ident!("unknown")) {
+                    return Ok(Item::Unknowns {
+                        ident: field.ident.clone().unwrap(),
+                    });
                 }
             }
             Err(Error::new(
@@ -206,6 +224,14 @@ fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Gen
 
     for it in items.iter() {
         match it {
+            Item::Unknowns { ident } => {
+                merge_bin.push(quote_spanned! { ident.span() =>
+                    tag => self.#ident.merge_field(tag, stream),
+                });
+                emit_bin.push(quote_spanned! { ident.span() =>
+                    self.#ident.encode(stream);
+                });
+            }
             Item::Field {
                 ident,
                 name,
@@ -222,13 +248,27 @@ fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Gen
                 } else {
                     merge_arm(ident, tag, freq, kind, &this)
                 });
-
                 emit_bin.push(emit_arm(ident, tag, freq, kind, &quote! { &self.#ident}));
+
+
+                let emit = if let FieldKind::Map(..) = kind{
+                    format_ident!("emit_map", span = ident.span())
+                } else {
+                    format_ident!("emit_{}", freq.textformat_suffix(), span = ident.span())
+                };
+
+                let merge =  if let FieldKind::Map(..) = kind{
+                    format_ident!("merge_map", span = ident.span())
+                } else {
+                    format_ident!("merge_{}", freq.textformat_suffix(), span = ident.span())
+                };
+
+
                 merge_txt.push(quote_spanned! { ident.span() =>
-                    #name => self.#ident.merge_text(stream),
+                    #name => textformat::#merge(&mut self.#ident, stream),
                 });
                 emit_txt.push(quote_spanned! { ident.span() =>
-                    stream.emit_field(#name, &self.#ident);
+                    textformat::#emit(&self.#ident, #name, stream);
                 });
             }
 
@@ -243,16 +283,18 @@ fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Gen
                     .collect::<Vec<_>>();
 
                 merge_bin.push(quote_spanned! { ident.span() =>
-                    #(#tags)|* =>  binformat::merge_oneof(&mut self.#ident, tag, stream),
+                    #(#tags)|* => binformat::merge_oneof(&mut self.#ident, tag, stream),
                 });
                 emit_bin.push(quote_spanned! { ident.span() =>
                     binformat::emit_oneof(&self.#ident, stream);
                 });
+
+
                 merge_txt.push(quote_spanned! { ident.span() =>
-                    #(#names)|* => self.#ident.merge_text(stream),
+                    #(#names)|* => textformat::merge_oneof(&mut self.#ident, stream),
                 });
                 emit_txt.push(quote_spanned! { ident.span() =>
-                    stream.emit_oneof(&self.#ident);
+                    textformat::emit_oneof(&self.#ident, stream);
                 });
             }
         }
@@ -264,12 +306,8 @@ fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Gen
     let cp = generics.const_params();
 
     let (buf_param, buf_comma) = match meta.buf {
-        None => {
-            (quote! { 'buf }, quote! { 'buf, })
-        }
-        Some(borrow) => {
-            (quote! { #borrow }, quote! {})
-        }
+        None => (quote! { 'buf }, quote! { 'buf, }),
+        Some(borrow) => (quote! { #borrow }, quote! {}),
     };
     let text_impl_params = quote! { #buf_comma #(#lp,)* #(#tp,)* #(#cp,)* };
 
@@ -279,7 +317,6 @@ fn _impl_proto(s: DataStruct, ident: Ident, attrs: Vec<Attribute>, generics: Gen
                 match tag {
                     #(#merge_bin)*
                     other => stream.skip(other),
-                    // other => binformat::unknown_tag(other),
                 }
             }
             fn encode(&self, stream: &mut binformat::OutputStream) {
@@ -311,8 +348,12 @@ struct OneOfField {
     name: LitStr,
 }
 
-fn _impl_oneof(s: DataEnum, ident: Ident, attrs: Vec<Attribute>, generics: Generics) -> syn::Result<proc_macro2::TokenStream> {
-
+fn _impl_oneof(
+    s: DataEnum,
+    ident: Ident,
+    attrs: Vec<Attribute>,
+    generics: Generics,
+) -> syn::Result<proc_macro2::TokenStream> {
     let mut meta: Option<ProtoMeta> = None;
     for a in attrs {
         if a.path().is_ident("proto") {
@@ -324,26 +365,27 @@ fn _impl_oneof(s: DataEnum, ident: Ident, attrs: Vec<Attribute>, generics: Gener
     let items = s
         .variants
         .iter()
-        .map(|variant| {
+        .filter_map(|variant| {
             for a in &variant.attrs {
                 if a.path().is_ident(&format_ident!("field")) {
-                    let fmeta: FieldMeta = a.parse_args()?;
-                    return Ok(OneOfField {
+                    let fmeta: FieldMeta = a.parse_args().unwrap();
+                    return Some(OneOfField {
                         ident: variant.ident.clone(),
                         kind: fmeta.kind,
                         typ: match &variant.fields {
                             Fields::Unnamed(f) => f.unnamed.first().unwrap().ty.clone(),
                             _ => panic!(),
                         },
-                        setter: format_ident!("make_{}_mut", variant.ident),
+                        setter: format_ident!("make_{}_mut", variant.ident.to_string().to_case(Case::Snake)),
                         tag: fmeta.tag,
                         name: fmeta.name,
                     });
                 }
             }
-            Err(Error::new(variant.span(), "Missing #[field] attribute"))
+            None
+            // Err(Error::new(variant.span(), "Missing #[field] attribute"))
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Vec<_>>();
 
     let setters = items.iter().map(|item| {
         let OneOfField { ident, typ, setter, .. } = item;
@@ -381,11 +423,14 @@ fn _impl_oneof(s: DataEnum, ident: Ident, attrs: Vec<Attribute>, generics: Gener
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });
+
+        let emit = format_ident!("emit_raw", span = ident.span());
+
         merge_txt.push(quote_spanned! { ident.span() =>
-            #name => self.#setter().merge_text(stream),
+            #name =>  self.#setter().merge_text(stream),
         });
         emit_txt.push(quote_spanned! { ident.span() =>
-            Self::#ident(v) => stream.emit_field(#name, v),
+            Self::#ident(v) => textformat::#emit(v, #name, stream),
         });
     }
 
@@ -395,15 +440,11 @@ fn _impl_oneof(s: DataEnum, ident: Ident, attrs: Vec<Attribute>, generics: Gener
     let cp = generics.const_params();
 
     let (buf_param, buf_comma) = match meta.buf {
-        None => {
-            (quote! { 'buf }, quote! { 'buf, })
-        }
-        Some(borrow) => {
-            (quote! { #borrow }, quote! {})
-        }
+        None => (quote! { 'buf }, quote! { 'buf, }),
+        Some(borrow) => (quote! { #borrow }, quote! {}),
     };
-    let text_impl_params = quote! { #buf_comma #(#lp,)* #(#tp,)* #(#cp,)* };
 
+    let text_impl_params = quote! { #buf_comma #(#lp,)* #(#tp,)* #(#cp,)* };
 
     Ok(quote! {
         impl #orig_impl_gen #ident #type_gen #where_gen {
@@ -425,6 +466,7 @@ fn _impl_oneof(s: DataEnum, ident: Ident, attrs: Vec<Attribute>, generics: Gener
         }
         impl<#text_impl_params> textformat::TextProto<#buf_param> for #ident #type_gen #where_gen {
             fn merge_field(&mut self, stream: &mut textformat::InputStream<#buf_param>) -> textformat::Result<()> {
+                println!("Field {} {}", stream.field(), std::any::type_name::<Self>());
                 match stream.field() {
                     #(#merge_txt)*
                     name => textformat::unknown(name),

@@ -1,10 +1,11 @@
 fn main() {
     protokit_build::Build::new()
+        // .borrow()
         .track_unknowns(true)
+        .out_dir("./src/gen")
         .include("../../vendor/protobuf/conformance")
         .include("../../vendor/protobuf/src/")
         .include("../../vendor/protobuf/src/google/protobuf")
-        .textformat(true)
         .compile("conformance.proto")
         .unwrap()
         .compile("test_messages_proto3.proto")

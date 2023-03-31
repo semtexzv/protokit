@@ -1,7 +1,6 @@
 fn main() {
     protokit_build::Build::new()
         .include("../proto")
-        .textformat(true)
         .compile("google/protobuf/descriptor.proto")
         .unwrap()
         .compile("google/protobuf/api.proto")

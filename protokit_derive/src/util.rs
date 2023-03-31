@@ -1,9 +1,9 @@
-use proc_macro2::{Ident, Span};
 use std::fmt::{Display, Formatter};
-use syn::{bracketed, Error, Lifetime, LitInt, LitStr, parenthesized, Token};
+
+use proc_macro2::{Ident, Span};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::token::Token;
+use syn::{bracketed, parenthesized, Error, Lifetime, LitInt, LitStr, Token};
 
 pub const VARINT: u8 = 0;
 pub const FIX64: u8 = 1;
@@ -24,7 +24,7 @@ impl Parse for ProtoMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut out = Self::default();
         let mut oname: Option<Ident> = input.parse()?;
-        for i in 0 .. 100 {
+        for _ in 0 .. 100 {
             let Some(name) = &oname else {
                 return Ok(out);
             };
@@ -214,12 +214,20 @@ impl Frequency {
     pub fn is_multi(&self) -> bool {
         matches!(self, Self::Repeated | Self::Packed)
     }
-    pub fn method_suffix(&self) -> &'static str {
+    pub fn binformat_suffix(&self) -> &'static str {
         match self {
             Frequency::Raw => "raw",
             Frequency::Singular | Frequency::Required => "single",
             Frequency::Packed => "packed",
             Frequency::Repeated => "repeated",
+            Frequency::Optional => "optional",
+        }
+    }
+    pub fn textformat_suffix(&self) -> &'static str {
+        match self {
+            Frequency::Raw => "raw",
+            Frequency::Singular | Frequency::Required => "single",
+            Frequency::Repeated | Frequency::Packed => "repeated",
             Frequency::Optional => "optional",
         }
     }

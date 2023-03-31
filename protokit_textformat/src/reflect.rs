@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt::{Debug, Formatter};
 
-
 #[derive(Default, Debug)]
 pub struct Registry {
     pub messages: BTreeMap<&'static str, Box<dyn AnyMessage>>,

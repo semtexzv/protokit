@@ -6,8 +6,8 @@ use std::ops::{Deref, DerefMut};
 use std::str::Utf8Error;
 
 pub use stream::{InputStream, OutputStream};
-pub use value::{Value, Field, UnknownFields};
 use thiserror::Error;
+pub use value::{Field, UnknownFields, Value};
 
 pub const MAP_WIRE: u8 = 0b111;
 pub const VARINT: u8 = 0;
@@ -30,7 +30,7 @@ pub enum Error {
     Tag(u32),
     #[error("Unknown wire type: {0}")]
     Wire(u8),
-    #[error("UTF8: {0}")]
+    #[error("String is not UTF8: {0}")]
     Utf8(#[from] Utf8Error),
 }
 
@@ -52,8 +52,8 @@ pub trait BinProto<'buf> {
 }
 
 impl<'buf, T> BinProto<'buf> for Box<T>
-    where
-        T: BinProto<'buf>,
+where
+    T: BinProto<'buf>,
 {
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
@@ -64,8 +64,7 @@ impl<'buf, T> BinProto<'buf> for Box<T>
     }
 }
 
-pub trait Varint: Default + Clone + Copy + PartialEq + PartialOrd
-{
+pub trait Varint: Default + Clone + Copy + PartialEq + PartialOrd {
     fn from_u64(v: u64) -> Self;
     fn into_u64(self) -> u64;
 }
@@ -271,7 +270,6 @@ impl<'any> Bytes<'any> for String {
     }
 }
 
-
 impl<'a> Bytes<'a> for &'a [u8] {
     fn blen(&self) -> usize {
         self.len()
@@ -354,13 +352,16 @@ pub fn merge_packed<'buf, T: Default>(
         return Err(Error::UnexpectedEOF);
     }
     let mut is = InputStream {
-        buf: &stream.buf[stream.pos..stream.pos + len],
+        buf: &stream.buf[stream.pos .. stream.pos + len],
         pos: 0,
         limit: len,
     };
     while is.len() > 0 {
         this.push(T::default());
-        unsafe { mapper(&mut is, this.last_mut().unwrap_unchecked())?; }
+        // Safe, we've just pushed an elem into this
+        unsafe {
+            mapper(&mut is, this.last_mut().unwrap_unchecked())?;
+        }
     }
     stream.pos += len;
     Ok(())
@@ -395,7 +396,12 @@ pub fn emit_raw<T>(this: &T, tag: u32, stream: &mut OutputStream, mapper: fn(&mu
     mapper(stream, tag, this);
 }
 
-pub fn emit_single<T: Default + PartialEq>(this: &T, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
+pub fn emit_single<T: Default + PartialEq>(
+    this: &T,
+    tag: u32,
+    stream: &mut OutputStream,
+    mapper: fn(&mut OutputStream, u32, &T),
+) {
     if this != &T::default() {
         emit_raw(this, tag, stream, mapper)
     }
@@ -446,10 +452,7 @@ pub fn emit_map<K: Default + PartialEq, V: Default + PartialEq>(
     }
 }
 
-pub fn emit_oneof<'buf, T: BinProto<'buf>>(
-    o: &Option<T>,
-    stream: &mut OutputStream,
-) {
+pub fn emit_oneof<'buf, T: BinProto<'buf>>(o: &Option<T>, stream: &mut OutputStream) {
     if let Some(o) = o {
         o.encode(stream)
     }

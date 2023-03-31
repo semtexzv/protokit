@@ -7,11 +7,12 @@ use crate::gen::conformance::conformance;
 use crate::gen::conformance::conformance::{
     ConformanceRequestOneOfPayload, ConformanceResponse, ConformanceResponseOneOfResult, FailureSet, WireFormat,
 };
+pub mod gen;
 
-
-pub mod gen {
-    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
-}
+// pub mod gen {
+//
+//     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+// }
 
 use gen::protobuf_test_messages::proto2::test_messages_proto2::TestAllTypesProto2;
 use gen::protobuf_test_messages::proto3::test_messages_proto3::TestAllTypesProto3;

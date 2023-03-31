@@ -1,8 +1,10 @@
+#![allow(unused_imports)]
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::str::FromStr;
 
 use arcstr::ArcStr;
+
 pub(crate) use binformat::{BinProto, Bytes, Fixed, Sigint, Varint};
 pub(crate) use derive::{protoenum, Proto};
 #[cfg(feature = "descriptors")]
@@ -310,10 +312,10 @@ impl FieldDef {
         false
     }
 
-    #[cfg(not(feature = "descriptors"))]
-    pub fn set_packed(&mut self, packed: bool) {
-        // self.options.packed = packed;
-    }
+    // #[cfg(not(feature = "descriptors"))]
+    // pub fn set_packed(&mut self, packed: bool) {
+    //     // self.options.packed = packed;
+    // }
 
     pub fn is_message(&self) -> bool {
         match &self.typ {

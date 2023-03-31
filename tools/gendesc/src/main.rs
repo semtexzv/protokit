@@ -6,7 +6,6 @@ fn main() -> protokit_build::Result<()> {
         .include("../proto")
         .include("vendor/validate")
         .include("../vendor/validate")
-        .textformat(true)
         .root("crate");
 
     config
@@ -14,6 +13,7 @@ fn main() -> protokit_build::Result<()> {
         .compile("google/protobuf/empty.proto")?
         .compile("google/protobuf/field_mask.proto")?
         .compile("google/protobuf/timestamp.proto")?
+        .compile("google/protobuf/compiler/plugin.proto")?
         .compile("validate/validate.proto")?
         .generate()
 }
