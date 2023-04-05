@@ -22,8 +22,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Unexpected token: expected: {exp:?} got: {got:?}")]
-    Unexpected { exp: Token, got: Token },
+    #[error("Unexpected token: expected: {exp:?} got: {got:?}. input: {rest:?}")]
+    Unexpected { exp: Token, got: Token, rest: String },
 
     #[error("Unknown identifier: {0}")]
     Unknown(String),
@@ -39,8 +39,8 @@ pub enum Error {
 }
 
 #[cold]
-pub fn unexpected<T>(exp: Token, got: Token) -> Result<T> {
-    Err(Error::Unexpected { exp, got })
+pub fn unexpected<T>(exp: Token, got: Token, rest: &str) -> Result<T> {
+    Err(Error::Unexpected { exp, got, rest: rest.to_string() })
 }
 
 #[cold]
@@ -101,6 +101,7 @@ fn _emit<'any, F: TextField<'any> + ?Sized>(f: &F, name: &str, stream: &mut Outp
     stream.space();
     f.emit_value(stream);
 }
+// fn _merge<'any,
 
 pub trait TextField<'buf> {
     fn is_message() -> bool {
@@ -368,7 +369,7 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
             _ if !is_list => {
                 return Ok(());
             }
-            other => return unexpected(RBracket, other),
+            other => return unexpected(RBracket, other, stream.lex.remainder()),
         }
     }
 }
@@ -402,6 +403,11 @@ pub fn merge_map<'buf, K, V>(
 
     let mut help = Vec::<Help<K, V>>::default();
 
+    // TODO: Improve this, this eats the field identifier
+    stream.expect_consume(Ident)?;
+    if stream.cur == Colon {
+        stream.next();
+    }
     merge_repeated(&mut help, stream)?;
 
     for it in help {

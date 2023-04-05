@@ -51,14 +51,14 @@ impl<'buf> InputStream<'buf> {
     /// Asserts that we're on a specified token, and advances one position
     pub fn expect_consume(&mut self, kind: Token) -> Result<Token> {
         if self.cur != kind {
-            return unexpected(kind, self.cur);
+            return unexpected(kind, self.cur, self.lex.remainder());
         }
         Ok(self.next())
     }
 
     fn expect_curr(&self, kind: Token) -> Result<()> {
         if self.cur != kind {
-            return unexpected(kind, self.cur);
+            return unexpected(kind, self.cur, self.lex.remainder());
         }
         Ok(())
     }
@@ -99,7 +99,7 @@ impl<'buf> InputStream<'buf> {
         if self.cur == Ident {
             return Ok(self.buf());
         } else {
-            return unexpected(Ident, self.cur);
+            return unexpected(Ident, self.cur, self.lex.remainder());
         }
     }
 
@@ -108,7 +108,7 @@ impl<'buf> InputStream<'buf> {
             (Ident, "t" | "T" | "True" | "true") => Ok(true),
             (Ident, "f" | "F" | "False" | "false") => Ok(false),
             (DecLit, x) => Ok(u64::from_str(x).unwrap_or(0) != 0),
-            (kind, _) => unexpected(Ident, kind),
+            (kind, _) => unexpected(Ident, kind, self.lex.remainder()),
         }?;
         let _ = self.next();
         Ok(out)
@@ -119,7 +119,7 @@ impl<'buf> InputStream<'buf> {
             (HexLit, h) => u64::from_str_radix(&h[2 ..], 16)?,
             (DecLit, h) => u64::from_str_radix(&h, 10)?,
             (OctLit, h) => u64::from_str_radix(&h, 8)?,
-            (tok, _) => return unexpected(DecLit, tok),
+            (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
         };
         let _ = self.next();
         Ok(out)
@@ -130,7 +130,7 @@ impl<'buf> InputStream<'buf> {
             (HexLit, h) => u32::from_str_radix(&h[2 ..], 16)?,
             (DecLit, h) => u32::from_str_radix(&h, 10)?,
             (OctLit, h) => u32::from_str_radix(&h, 8)?,
-            (tok, _) => return unexpected(DecLit, tok),
+            (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
         };
         let _ = self.next();
         Ok(out)
@@ -162,7 +162,7 @@ impl<'buf> InputStream<'buf> {
                         return unknown(txt);
                     }
                 }
-                (k, _) => return unexpected(FltLit, k),
+                (k, _) => return unexpected(FltLit, k, self.lex.remainder()),
             };
 
         self.next();
@@ -195,7 +195,7 @@ impl<'buf> InputStream<'buf> {
                     return Ok(());
                 }
                 EndOfFile if allow_eof => return Ok(()),
-                other => return unexpected(Ident, other),
+                other => return unexpected(Ident, other, self.lex.remainder()),
             }
         }
     }
