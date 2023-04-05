@@ -92,6 +92,7 @@ impl<'buf, T> TextProto<'buf> for Box<T>
 }
 
 /// Method implementing Field::emit (extracted for reusability)
+#[inline(never)]
 fn _emit<'any, F: TextField<'any> + ?Sized>(f: &F, name: &str, stream: &mut OutputStream) {
     stream.ln();
     stream.push(name);
@@ -111,6 +112,7 @@ pub trait TextField<'buf> {
     /// Merge value from stream into the current self
     ///
     /// Stream position: Field identifier token
+    #[inline(never)]
     fn merge_text(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         stream.expect_consume(Ident)?;
         if !Self::is_message() {
@@ -128,29 +130,13 @@ pub trait TextField<'buf> {
     /// ident: scalar-value
     /// or:
     /// ident message-value
+    #[inline(never)]
     fn emit(&self, name: &str, stream: &mut OutputStream) {
         _emit(self, name, stream)
     }
     /// Emit just the value stored in this field
     fn emit_value(&self, stream: &mut OutputStream);
 }
-
-
-//
-
-//
-
-//         Ok(())
-//     }
-//
-//     fn emit(&self, name: &str, stream: &mut OutputStream) {
-
-//     }
-//
-//     fn emit_value(&self, stream: &mut OutputStream) {
-//         todo!()
-//     }
-// }
 
 impl<'buf> TextField<'buf> for bool {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
@@ -323,6 +309,7 @@ impl<'buf, F> TextField<'buf> for F
     }
 }
 
+#[inline(never)]
 pub fn merge_single<'buf, T: TextField<'buf>>(
     v: &mut T,
     stream: &mut InputStream<'buf>,
@@ -330,7 +317,7 @@ pub fn merge_single<'buf, T: TextField<'buf>>(
     v.merge_text(stream)
 }
 
-
+#[inline(never)]
 pub fn merge_oneof<'buf, T: TextProto<'buf> + Default>(
     oneof: &mut Option<T>,
     stream: &mut InputStream<'buf>,
@@ -338,6 +325,7 @@ pub fn merge_oneof<'buf, T: TextProto<'buf> + Default>(
     oneof.get_or_insert_with(Default::default).merge_field(stream)
 }
 
+#[inline(never)]
 pub fn merge_optional<'buf, T: TextField<'buf> + Default>(
     v: &mut Option<T>,
     stream: &mut InputStream<'buf>,
@@ -345,6 +333,7 @@ pub fn merge_optional<'buf, T: TextField<'buf> + Default>(
     v.get_or_insert_with(Default::default).merge_text(stream)
 }
 
+#[inline(never)]
 pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
     out: &mut Vec<T>,
     stream: &mut InputStream<'buf>,
@@ -374,6 +363,7 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
     }
 }
 
+#[inline(never)]
 pub fn merge_map<'buf, K, V>(
     field: &mut BTreeMap<K, V>,
     stream: &mut InputStream<'buf>,
@@ -419,20 +409,23 @@ pub fn merge_map<'buf, K, V>(
     Ok(())
 }
 
+#[inline(never)]
 pub fn emit_raw<'buf, F: TextField<'buf>>(o: &F, name: &'static str, stream: &mut OutputStream) {
     o.emit(name, stream)
 }
 
+#[inline(never)]
 pub fn emit_single<'buf, F: TextField<'buf> + Default + PartialEq>(
     field: &F,
     name: &'static str,
     stream: &mut OutputStream,
 ) {
     if field != &Default::default() {
-        emit_raw(field, name, stream)
+        field.emit(name, stream)
     }
 }
 
+#[inline(never)]
 pub fn emit_optional<'buf, F: TextField<'buf> + Default>(
     field: &Option<F>,
     name: &'static str,
@@ -443,6 +436,7 @@ pub fn emit_optional<'buf, F: TextField<'buf> + Default>(
     }
 }
 
+#[inline(never)]
 pub fn emit_repeated<'buf, F: TextField<'buf> + Default + PartialEq>(
     field: &Vec<F>,
     name: &'static str,
@@ -480,6 +474,7 @@ pub fn emit_repeated<'buf, F: TextField<'buf> + Default + PartialEq>(
     }
 }
 
+#[inline(never)]
 pub fn emit_map<'buf, K: TextField<'buf>, V: TextField<'buf>>(
     field: &BTreeMap<K, V>,
     name: &'static str,
@@ -491,7 +486,10 @@ pub fn emit_map<'buf, K: TextField<'buf>, V: TextField<'buf>>(
         stream.space();
         stream.lbracket();
         stream.enter();
-        field.iter().for_each(|(k, v)| {
+        field.iter().enumerate().for_each(|(i,(k, v))| {
+            if i > 0  {
+                stream.push(",");
+            }
             stream.ln();
             stream.lbrace();
             stream.enter();
@@ -507,6 +505,7 @@ pub fn emit_map<'buf, K: TextField<'buf>, V: TextField<'buf>>(
     }
 }
 
+#[inline(never)]
 pub fn emit_oneof<'any, P: TextProto<'any>>(o: &Option<P>, stream: &mut OutputStream) {
     if let Some(o) = o {
         o.encode(stream)

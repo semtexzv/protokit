@@ -28,6 +28,10 @@ impl<'buf> BinProto<'buf> for UnknownFields {
         Self::merge_one(f, tag_wire, stream)
     }
 
+    fn size(&self) -> usize {
+        todo!()
+    }
+
     fn encode(&self, stream: &mut OutputStream) {
         for f in self.fields.iter().map(|v| v.iter()).flatten() {
             Self::emit_field(f, stream)

@@ -13,3 +13,8 @@ members = [
 ]
 
 exclude = ["tools/gendesc", "tools/fuzz"]
+
+[profile.release]
+codegen-units = 1
+#lto = true
+

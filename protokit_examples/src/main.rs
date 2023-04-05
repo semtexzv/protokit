@@ -1,4 +1,6 @@
 use std::io::{stdin, BufRead};
+use protokit::BinProto;
+use crate::gen::com::book::test1::book::Book;
 
 pub mod gen {
     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
@@ -6,11 +8,14 @@ pub mod gen {
 
 // use crate::gen::com::book::test1::book::Book;
 
+
 fn main() {
     let mut stdin = stdin().lock();
     let b = stdin.fill_buf().unwrap();
-    // let book: Book = protokit::binformat::decode(b).unwrap();
-    // println!("{book:?}");
+
+    let book: Book = protokit::binformat::decode(b).unwrap();
+    let out = protokit::textformat::encode(&book, &Default::default()).unwrap();
+    println!("{out:?}");
 }
 
 #[test]
@@ -25,16 +30,17 @@ fn test_roundtrip() {
         sections: vec![],
         test1: [("a".to_string(), "b".to_string())].into_iter().collect(),
         other: None,
-        extfield: "".to_string(),
         id: Default::default(),
         book: None,
-        _unknown: (),
+        ..Default::default()
     };
 
+    let s = panic!("{:?}", book.size());
     let v = protokit::binformat::encode(&book).unwrap();
     let dec = protokit::binformat::decode(&v).unwrap();
     assert_eq!(book, dec);
 }
+
 #[test]
 fn test_textformat() {
     // use protokit::util::{Base, Bits};

@@ -78,7 +78,7 @@ impl<'buf> InputStream<'buf> {
         while self.cur == StrLit {
             let buf = self.buf();
             // TODO: Escape + Trim quotes
-            f(&buf[1 .. buf.len() - 1])?;
+            f(&buf[1..buf.len() - 1])?;
             let _ = self.next();
         }
         Ok(())
@@ -89,7 +89,7 @@ impl<'buf> InputStream<'buf> {
         while self.cur == StrLit {
             let buf = self.buf().as_bytes();
             // TODO: Escape + Trim quotes
-            f(&buf[1 .. buf.len() - 1])?;
+            f(&buf[1..buf.len() - 1])?;
             let _ = self.next();
         }
         Ok(())
@@ -116,7 +116,7 @@ impl<'buf> InputStream<'buf> {
 
     pub fn u64(&mut self) -> Result<u64> {
         let out = match self.token_and_span() {
-            (HexLit, h) => u64::from_str_radix(&h[2 ..], 16)?,
+            (HexLit, h) => u64::from_str_radix(&h[2..], 16)?,
             (DecLit, h) => u64::from_str_radix(&h, 10)?,
             (OctLit, h) => u64::from_str_radix(&h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
@@ -127,7 +127,7 @@ impl<'buf> InputStream<'buf> {
 
     pub fn u32(&mut self) -> Result<u32> {
         let out = match self.token_and_span() {
-            (HexLit, h) => u32::from_str_radix(&h[2 ..], 16)?,
+            (HexLit, h) => u32::from_str_radix(&h[2..], 16)?,
             (DecLit, h) => u32::from_str_radix(&h, 10)?,
             (OctLit, h) => u32::from_str_radix(&h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
@@ -137,33 +137,43 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn i64(&mut self) -> Result<i64> {
-        let neg = if self.try_consume(Minus) { -1 } else { 1 };
-
-        Ok(neg * TryInto::<i64>::try_into(self.u64()?)?)
+        // TODO: There is a bug here, fix
+        let neg = if self.try_consume(Minus) { true } else { false };
+        let v = TryInto::<i64>::try_into(self.u64()?)?;
+        Ok(if neg {
+            -v
+        } else {
+            v
+        })
     }
 
     pub fn i32(&mut self) -> Result<i32> {
-        let neg = if self.try_consume(Minus) { -1 } else { 1 };
-
-        Ok(neg * TryInto::<i32>::try_into(self.u32()?)?)
+        // TODO: There is a bug here. Fix
+        let neg = if self.try_consume(Minus) { true } else { false };
+        let v = TryInto::<i32>::try_into(self.u32()?)?;
+        Ok(if neg {
+            v
+        } else {
+            v
+        })
     }
 
     pub fn f64(&mut self) -> Result<f64> {
         let neg = if self.try_consume(Minus) { -1.0 } else { 1.0 };
         let res = neg
             * match self.token_and_span() {
-                (FltLit | DecLit, s) => f64::from_str(s).unwrap(),
-                (Ident, txt) => {
-                    if txt.eq_ignore_ascii_case("infinity") | txt.eq_ignore_ascii_case("inf") {
-                        f64::INFINITY
-                    } else if txt.eq_ignore_ascii_case("nan") {
-                        f64::NAN
-                    } else {
-                        return unknown(txt);
-                    }
+            (FltLit | DecLit, s) => f64::from_str(s).unwrap(),
+            (Ident, txt) => {
+                if txt.eq_ignore_ascii_case("infinity") | txt.eq_ignore_ascii_case("inf") {
+                    f64::INFINITY
+                } else if txt.eq_ignore_ascii_case("nan") {
+                    f64::NAN
+                } else {
+                    return unknown(txt);
                 }
-                (k, _) => return unexpected(FltLit, k, self.lex.remainder()),
-            };
+            }
+            (k, _) => return unexpected(FltLit, k, self.lex.remainder()),
+        };
 
         self.next();
         Ok(res)
@@ -216,7 +226,7 @@ impl OutputStream {
     }
     pub fn ln(&mut self) {
         self.buf.push('\n');
-        for _ in 0 .. self.pad {
+        for _ in 0..self.pad {
             self.buf.push(' ');
         }
     }

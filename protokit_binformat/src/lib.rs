@@ -2,6 +2,7 @@ mod stream;
 mod value;
 
 use std::collections::BTreeMap;
+use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 use std::str::Utf8Error;
 
@@ -46,74 +47,88 @@ pub fn unknown_wire<T>(w: u8) -> Result<T> {
     Err(Error::Wire(w))
 }
 
-pub trait BinProto<'buf> {
+pub trait BinProto<'buf>: Debug {
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()>;
+    fn size(&self) -> usize;
     fn encode(&self, stream: &mut OutputStream);
 }
 
 impl<'buf, T> BinProto<'buf> for Box<T>
-where
-    T: BinProto<'buf>,
+    where
+        T: BinProto<'buf>,
 {
+    #[inline(always)]
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
     }
 
+    #[inline(always)]
+    fn size(&self) -> usize {
+        self.deref().size()
+    }
+
+    #[inline(always)]
     fn encode(&self, stream: &mut OutputStream) {
         self.deref().encode(stream)
     }
 }
 
-pub trait Varint: Default + Clone + Copy + PartialEq + PartialOrd {
+pub trait Varint: Default + Debug + Clone + Copy + PartialEq + PartialOrd {
     fn from_u64(v: u64) -> Self;
+
     fn into_u64(self) -> u64;
 }
 
 impl Varint for u32 {
+    #[inline(always)]
     fn from_u64(v: u64) -> Self {
         v as _
     }
-
+    #[inline(always)]
     fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for u64 {
+    #[inline(always)]
     fn from_u64(v: u64) -> Self {
         v as _
     }
-
+    #[inline(always)]
     fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for i32 {
+    #[inline(always)]
     fn from_u64(v: u64) -> Self {
         v as _
     }
-
+    #[inline(always)]
     fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for i64 {
+    #[inline(always)]
     fn from_u64(v: u64) -> Self {
         v as _
     }
-
+    #[inline(always)]
     fn into_u64(self) -> u64 {
         self as _
     }
 }
 
 impl Varint for usize {
+    #[inline(always)]
     fn from_u64(v: u64) -> Self {
         v as _
     }
-
+    #[inline(always)]
     fn into_u64(self) -> u64 {
         self as _
     }
@@ -156,10 +171,12 @@ pub trait Fixed: Default + Sized + Clone + Copy {
 impl Fixed for i32 {
     type WIRE = Self;
 
+    #[inline(always)]
     fn from_wire(v: Self::WIRE) -> Self {
         Self::from_le(v)
     }
 
+    #[inline(always)]
     fn to_wire(self) -> Self::WIRE {
         self.to_le()
     }
@@ -168,10 +185,12 @@ impl Fixed for i32 {
 impl Fixed for i64 {
     type WIRE = Self;
 
+    #[inline(always)]
     fn from_wire(v: Self::WIRE) -> Self {
         Self::from_le(v)
     }
 
+    #[inline(always)]
     fn to_wire(self) -> Self::WIRE {
         self.to_le()
     }
@@ -180,10 +199,12 @@ impl Fixed for i64 {
 impl Fixed for u32 {
     type WIRE = u32;
 
+    #[inline(always)]
     fn from_wire(v: Self::WIRE) -> Self {
         Self::from_le(v)
     }
 
+    #[inline(always)]
     fn to_wire(self) -> Self::WIRE {
         self.to_le()
     }
@@ -192,10 +213,12 @@ impl Fixed for u32 {
 impl Fixed for u64 {
     type WIRE = Self;
 
+    #[inline(always)]
     fn from_wire(v: Self::WIRE) -> Self {
         Self::from_le(v)
     }
 
+    #[inline(always)]
     fn to_wire(self) -> Self::WIRE {
         self.to_le()
     }
@@ -204,10 +227,12 @@ impl Fixed for u64 {
 impl Fixed for f32 {
     type WIRE = u32;
 
+    #[inline(always)]
     fn from_wire(v: Self::WIRE) -> Self {
         Self::from_bits(Self::WIRE::from_le(v))
     }
 
+    #[inline(always)]
     fn to_wire(self) -> Self::WIRE {
         self.to_bits().to_le()
     }
@@ -216,10 +241,12 @@ impl Fixed for f32 {
 impl Fixed for f64 {
     type WIRE = u64;
 
+    #[inline(always)]
     fn from_wire(v: Self::WIRE) -> Self {
         Self::from_bits(Self::WIRE::from_le(v))
     }
 
+    #[inline(always)]
     fn to_wire(self) -> Self::WIRE {
         self.to_bits().to_le()
     }
@@ -233,18 +260,22 @@ pub trait Bytes<'a> {
 }
 
 impl<'a> Bytes<'a> for &'a str {
+    #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
     }
 
+    #[inline(always)]
     fn bytes(&self) -> &[u8] {
         self.as_bytes()
     }
 
+    #[inline(always)]
     fn clear(&mut self) {
         *self = "";
     }
 
+    #[inline(always)]
     fn push(&mut self, b: &'a [u8]) -> Result<()> {
         *self = std::str::from_utf8(b)?;
         Ok(())
@@ -252,18 +283,22 @@ impl<'a> Bytes<'a> for &'a str {
 }
 
 impl<'any> Bytes<'any> for String {
+    #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
     }
 
+    #[inline(always)]
     fn bytes(&self) -> &[u8] {
         self.as_bytes()
     }
 
+    #[inline(always)]
     fn clear(&mut self) {
         self.clear();
     }
 
+    #[inline(always)]
     fn push(&mut self, b: &[u8]) -> Result<()> {
         self.push_str(std::str::from_utf8(b)?);
         Ok(())
@@ -271,18 +306,22 @@ impl<'any> Bytes<'any> for String {
 }
 
 impl<'a> Bytes<'a> for &'a [u8] {
+    #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
     }
 
+    #[inline(always)]
     fn bytes(&self) -> &[u8] {
         self
     }
 
+    #[inline(always)]
     fn clear(&mut self) {
         *self = &[];
     }
 
+    #[inline(always)]
     fn push(&mut self, b: &'a [u8]) -> Result<()> {
         *self = b;
         Ok(())
@@ -290,24 +329,29 @@ impl<'a> Bytes<'a> for &'a [u8] {
 }
 
 impl<'any> Bytes<'any> for Vec<u8> {
+    #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
     }
 
+    #[inline(always)]
     fn bytes(&self) -> &[u8] {
         self.as_slice()
     }
 
+    #[inline(always)]
     fn clear(&mut self) {
         self.clear();
     }
 
+    #[inline(always)]
     fn push(&mut self, b: &[u8]) -> Result<()> {
         self.extend_from_slice(b);
         Ok(())
     }
 }
 
+#[inline(never)]
 pub fn merge_single<'buf, T>(
     this: &mut T,
     stream: &mut InputStream<'buf>,
@@ -316,6 +360,7 @@ pub fn merge_single<'buf, T>(
     mapper(stream, this)
 }
 
+#[inline(never)]
 pub fn merge_optional<'buf, T: Default>(
     this: &mut Option<T>,
     stream: &mut InputStream<'buf>,
@@ -324,6 +369,7 @@ pub fn merge_optional<'buf, T: Default>(
     mapper(stream, this.get_or_insert_with(Default::default))
 }
 
+#[inline(never)]
 pub fn merge_repeated<'buf, T: Default>(
     this: &mut Vec<T>,
     stream: &mut InputStream<'buf>,
@@ -333,6 +379,7 @@ pub fn merge_repeated<'buf, T: Default>(
     mapper(stream, this.last_mut().unwrap())
 }
 
+#[inline(never)]
 pub fn merge_oneof<'buf, T: Default + BinProto<'buf>>(
     this: &mut Option<T>,
     tag: u32,
@@ -341,6 +388,7 @@ pub fn merge_oneof<'buf, T: Default + BinProto<'buf>>(
     this.get_or_insert_with(Default::default).merge_field(tag, stream)
 }
 
+#[inline(never)]
 pub fn merge_packed<'buf, T: Default>(
     this: &mut Vec<T>,
     stream: &mut InputStream<'buf>,
@@ -352,7 +400,7 @@ pub fn merge_packed<'buf, T: Default>(
         return Err(Error::UnexpectedEOF);
     }
     let mut is = InputStream {
-        buf: &stream.buf[stream.pos .. stream.pos + len],
+        buf: &stream.buf[stream.pos..stream.pos + len],
         pos: 0,
         limit: len,
     };
@@ -367,6 +415,7 @@ pub fn merge_packed<'buf, T: Default>(
     Ok(())
 }
 
+#[inline(never)]
 pub fn merge_map<'buf, K: Default + Ord, V: Default>(
     this: &mut BTreeMap<K, V>,
     stream: &mut InputStream<'buf>,
@@ -391,11 +440,13 @@ pub fn merge_map<'buf, K: Default + Ord, V: Default>(
     Ok(())
 }
 
+#[inline(never)]
 pub fn emit_raw<T>(this: &T, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     stream._varint(tag);
     mapper(stream, tag, this);
 }
 
+#[inline(never)]
 pub fn emit_single<T: Default + PartialEq>(
     this: &T,
     tag: u32,
@@ -407,6 +458,7 @@ pub fn emit_single<T: Default + PartialEq>(
     }
 }
 
+#[inline(never)]
 pub fn emit_optional<T>(this: &Option<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     if let Some(v) = this {
         stream._varint(tag);
@@ -414,6 +466,7 @@ pub fn emit_optional<T>(this: &Option<T>, tag: u32, stream: &mut OutputStream, m
     }
 }
 
+#[inline(never)]
 pub fn emit_repeated<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     for v in this {
         stream._varint(tag);
@@ -421,6 +474,7 @@ pub fn emit_repeated<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapp
     }
 }
 
+#[inline(never)]
 pub fn emit_packed<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     if this.len() > 0 {
         stream._varint(tag);
@@ -433,6 +487,7 @@ pub fn emit_packed<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapper
     }
 }
 
+#[inline(never)]
 pub fn emit_map<K: Default + PartialEq, V: Default + PartialEq>(
     this: &BTreeMap<K, V>,
     tag: u32,
@@ -452,10 +507,122 @@ pub fn emit_map<K: Default + PartialEq, V: Default + PartialEq>(
     }
 }
 
+#[inline(never)]
 pub fn emit_oneof<'buf, T: BinProto<'buf>>(o: &Option<T>, stream: &mut OutputStream) {
     if let Some(o) = o {
         o.encode(stream)
     }
+}
+
+pub fn size_bytes<'x, T: Bytes<'x>>(v: &T) -> usize {
+    size_varint(&v.blen()) + v.blen()
+}
+
+pub fn size_string<'x, T: Bytes<'x>>(v: &T) -> usize {
+    size_varint(&v.blen()) + v.blen()
+}
+
+#[inline(always)]
+pub fn size_protoenum<T: Copy + Into<u32>>(v: &T) -> usize {
+    size_varint(&Into::<u32>::into(*v))
+}
+
+#[inline(always)]
+pub fn size_bool(_: &bool) -> usize {
+    1
+}
+
+#[inline(always)]
+pub fn size_fixed32<T>(_: &T) -> usize {
+    4
+}
+
+#[inline(always)]
+pub fn size_fixed64<T>(_: &T) -> usize {
+    8
+}
+
+pub fn size_varint<T: Varint + Debug>(value: &T) -> usize {
+    let mut v = value.into_u64();
+    if v == 0 {
+        return 1;
+    }
+
+    let mut out = 0;
+    while v > 0 {
+        v >>= 7;
+        out += 1;
+    }
+    out
+}
+
+pub fn size_sigint<T: Sigint>(v: &T) -> usize {
+    size_varint(&v.encode().into_u64())
+}
+
+pub fn size_nested<'a, T: BinProto<'a>>(v: &T) -> usize {
+    let s = v.size();
+    size_varint(&s) + s
+}
+
+pub fn size_group<'a, T: BinProto<'a>>(v: &T) -> usize {
+    // v.size()
+    panic!()
+}
+
+#[inline(never)]
+pub fn size_raw<T>(v: &T, tag: u32, sizer: fn(&T) -> usize) -> usize {
+    size_varint(&tag) + sizer(v)
+}
+
+#[inline(never)]
+pub fn size_singular<T: PartialEq + Default>(v: &T, tag: u32, sizer: fn(&T) -> usize) -> usize {
+    if v != &Default::default() {
+        size_raw(v, tag, sizer)
+    } else {
+        0
+    }
+}
+
+#[inline(never)]
+pub fn size_optional<T>(v: &Option<T>, tag: u32, sizer: fn(&T) -> usize) -> usize {
+    if let Some(v) = v {
+        size_varint(&tag) + sizer(v)
+    } else {
+        0
+    }
+}
+
+#[inline(never)]
+pub fn size_repeated<T>(v: &Vec<T>, tag: u32, sizer: fn(&T) -> usize) -> usize {
+    v.iter().map(|v| size_varint(&tag) + sizer(v)).sum::<usize>()
+}
+
+#[inline(never)]
+pub fn size_packed<T>(v: &Vec<T>, tag: u32, sizer: fn(&T) -> usize) -> usize {
+    if v.len() > 0 {
+        let len: usize = v.iter().map(|v| sizer(v)).sum();
+        size_varint(&tag) + size_varint(&len) + len
+    } else {
+        0
+    }
+}
+
+#[inline(never)]
+pub fn size_oneof<'a, T: BinProto<'a>>(o: &Option<T>) -> usize {
+    if let Some(o) = o {
+        o.size()
+    } else {
+        0
+    }
+}
+
+#[inline(never)]
+pub fn size_map<K, V>(m: &BTreeMap<K, V>, tag: u32, ktag: u32, vtag: u32, ksize: fn(&K) -> usize, vsize: fn(&V) -> usize) -> usize {
+    m.iter().map(|(k, v)| {
+        let elem = ksize(k) + size_varint(&ktag) + vsize(v) + size_varint(&vtag);
+        size_varint(&tag) + size_varint(&elem)
+    }).sum()
 }
 
 pub fn decode<'buf, T: Default + BinProto<'buf>>(b: &'buf [u8]) -> Result<T> {

@@ -1,4 +1,5 @@
 use std::cmp::min;
+use std::fmt::Debug;
 use std::mem::{replace, size_of};
 use std::ptr::read_unaligned;
 use std::slice::from_raw_parts;
@@ -15,6 +16,7 @@ pub struct InputStream<'buf> {
 }
 
 impl<'buf> InputStream<'buf> {
+    #[inline(always)]
     pub fn new(buf: &'buf [u8]) -> Self {
         Self {
             buf,
@@ -24,6 +26,7 @@ impl<'buf> InputStream<'buf> {
     }
 
     /// Returns the length of currently readable subslice
+    #[inline(always)]
     pub fn len(&self) -> usize {
         min(self.buf.len(), self.limit) - self.pos
     }
@@ -39,6 +42,7 @@ impl<'buf> InputStream<'buf> {
         Ok(replace(&mut self.limit, min(self.pos + limit, self.buf.len())))
     }
 
+    #[inline(always)]
     pub fn unlimit(&mut self, limit: usize) {
         assert!(self.limit <= limit);
         self.limit = limit;
@@ -83,7 +87,7 @@ impl<'buf> InputStream<'buf> {
         let mut shift = 0;
 
         let mut success = false;
-        for b in self.buf[self.pos .. self.limit].iter() {
+        for b in self.buf[self.pos..self.limit].iter() {
             let msb_dropped = b & DROP_MSB;
             result |= (msb_dropped as u64) << shift;
             shift += 7;
@@ -122,7 +126,7 @@ impl<'buf> InputStream<'buf> {
             return Err(Error::UnexpectedEOF);
         }
         self.pos += len;
-        Ok(&self.buf[self.pos - len .. self.pos])
+        Ok(&self.buf[self.pos - len..self.pos])
     }
 
     pub fn _string(&mut self) -> Result<&str> {
@@ -147,13 +151,13 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn fixed32<T: Default + Fixed>(&mut self, field: &mut T) -> Result<()> {
-        assert_eq!(size_of::<T>(), 4);
+        debug_assert_eq!(size_of::<T>(), 4);
         *field = self._fixed()?;
         Ok(())
     }
 
     pub fn fixed64<T: Fixed>(&mut self, field: &mut T) -> Result<()> {
-        assert_eq!(size_of::<T>(), 8);
+        debug_assert_eq!(size_of::<T>(), 8);
         *field = self._fixed()?;
         Ok(())
     }
@@ -219,15 +223,14 @@ impl OutputStream {
     }
 
     /// Emits a raw vint onto the wire
-    pub(crate) fn _varint<V: Varint>(&mut self, v: V) {
+    pub(crate) fn _varint<V: Varint + Debug>(&mut self, v: V) {
         let mut n = v.into_u64();
 
         while n >= 0x80 {
-            self.buf.push(MSB | (n as u8));
+            self.buf.push(MSB | (n as u8 & DROP_MSB));
             n >>= 7;
         }
 
-        // dst[i] = n as u8;
         self.buf.push(n as u8);
     }
 
@@ -235,11 +238,11 @@ impl OutputStream {
         self.buf.extend_from_slice(v);
     }
 
-    pub fn varint<V: Varint>(&mut self, _: u32, v: &V) {
+    pub fn varint<V: Varint + Debug>(&mut self, _: u32, v: &V) {
         self._varint(*v)
     }
 
-    pub fn sigint<V: Sigint>(&mut self, _: u32, v: &V) {
+    pub fn sigint<V: Sigint + Debug>(&mut self, _: u32, v: &V) {
         self._varint(v.encode())
     }
 
@@ -275,11 +278,25 @@ impl OutputStream {
         self._bytes(b.bytes());
     }
 
+    #[inline(never)]
+    fn _nested<'buf>(&mut self, v: &dyn BinProto<'buf>) {
+        let len = v.size();
+        self._varint(len);
+        v.encode(self)
+    }
+
     pub fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P) {
-        let mut inner = OutputStream::default();
-        v.encode(&mut inner);
-        self._varint(inner.len());
-        self._bytes(&inner.buf);
+        self._nested(v)
+        // let mut inner = OutputStream::default();
+        // let size = v.size();
+        // v.encode(&mut inner);
+        // // Migration, verify that we're getting correct values
+        // if size != inner.len() {
+        //     panic!("{:?} {:?} {:#?}", size, inner.len(), v);
+        // }
+        // // assert_eq!(size, inner.len());
+        // self._varint(inner.len());
+        // self._bytes(&inner.buf);
     }
 
     pub fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P) {

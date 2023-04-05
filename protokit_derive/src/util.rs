@@ -63,22 +63,22 @@ impl Parse for ProtoMeta {
 }
 
 pub struct VarMeta {
-    pub tag: LitInt,
+    pub num: LitInt,
     pub name: LitStr,
 }
 
 impl Parse for VarMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let tag: LitInt = input.parse()?;
+        let num: LitInt = input.parse()?;
         let _: Token![,] = input.parse()?;
         let name: LitStr = input.parse()?;
 
-        Ok(Self { tag, name })
+        Ok(Self { num, name })
     }
 }
 
 pub struct FieldMeta {
-    pub tag: LitInt,
+    pub num: LitInt,
     pub name: LitStr,
     pub kind: FieldKind,
     pub freq: Frequency,
@@ -90,7 +90,7 @@ fn err(s: Span, m: impl Display) -> syn::Error {
 
 impl Parse for FieldMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let tag: LitInt = input.parse()?;
+        let num: LitInt = input.parse()?;
         let _: Token![,] = input.parse()?;
         let name: LitStr = input.parse()?;
         let _: Token![,] = input.parse().map_err(|e| err(e.span(), "Expected field kind"))?;
@@ -102,7 +102,7 @@ impl Parse for FieldMeta {
             Frequency::Singular
         };
 
-        Ok(Self { tag, name, kind, freq })
+        Ok(Self { num, name, kind, freq })
     }
 }
 
@@ -274,22 +274,22 @@ impl Display for Frequency {
 }
 
 pub struct OneOfMeta {
-    pub tags: Vec<LitInt>,
+    pub nums: Vec<LitInt>,
     pub names: Vec<LitStr>,
 }
 
 impl Parse for OneOfMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let tags;
-        let _ = bracketed!(tags in input);
-        let tags = Punctuated::<LitInt, Token![,]>::parse_terminated(&tags)?;
+        let nums;
+        let _ = bracketed!(nums in input);
+        let nums = Punctuated::<LitInt, Token![,]>::parse_terminated(&nums)?;
         let _: Token![,] = input.parse()?;
         let names;
         let _ = bracketed!(names in input);
         let names = Punctuated::<LitStr, Token![,]>::parse_terminated(&names)?;
 
         Ok(Self {
-            tags: tags.into_iter().collect(),
+            nums: nums.into_iter().collect(),
             names: names.into_iter().collect(),
         })
     }

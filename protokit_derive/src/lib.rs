@@ -29,7 +29,7 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
                 if a.path().is_ident(&format_ident!("var")) {
                     let m = a.parse_args::<VarMeta>().unwrap();
                     let name = m.name;
-                    let num = m.tag;
+                    let num = m.num;
                     merge_txt.push(quote! { #name => *self = Self::from(#num), });
                     emit_txt.push(quote! { #num => stream.ident(#name), });
                     false
@@ -171,19 +171,35 @@ fn emit_arm(
 
 fn size_arm(
     ident: &Ident,
+    num: &LitInt,
     freq: &Frequency,
     kind: &FieldKind,
     this: &proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
-    let sizer = if let FieldKind::Map(kind) = kind {
-        let id = format_ident!("size_map_{}", freq.to_string()).into_token_stream();
-        let kv = format_ident!("{}", kind.0.to_string());
-        let vv = format_ident!("{}", kind.0.to_string());
-        quote_spanned! { ident.span() => #id::<#kv, #vv> }
+    if let FieldKind::Map(kind) = kind {
+        let kv = format_ident!("size_{}", kind.0.to_string());
+        let vv = format_ident!("size_{}", kind.1.to_string());
+
+        let num = num.base10_parse::<u32>().unwrap();
+        let tag = num << 3 | util::BYTES as u32;
+
+        let ktag = 1u32 << 3 | kind.deref().0.wire_type() as u32;
+        let vtag = 2u32 << 3 | kind.deref().1.wire_type() as u32;
+
+        quote_spanned! { ident.span() => binformat::size_map(#this, #tag, #ktag, #vtag, binformat::#kv, binformat::#vv) }
     } else {
-        format_ident!("size_{}_{}", kind.to_string(), freq.to_string()).into_token_stream()
-    };
-    quote_spanned! { ident.span() => binformat::#sizer(#this) }
+        let wrapper = format_ident!("size_{}", freq.to_string());
+        let sizer = format_ident!("size_{}", kind.to_string());
+
+        let num = num.base10_parse::<u32>().unwrap();
+        let mut wt = kind.wire_type();
+        if matches!(freq, Frequency::Packed) && kind.is_scalar() {
+            wt = util::BYTES;
+        }
+        let tag = num << 3 | wt as u32;
+
+        quote_spanned! { ident.span() => binformat::#wrapper(#this, #tag, binformat::#sizer) }
+    }
 }
 
 fn _impl_proto(
@@ -209,7 +225,7 @@ fn _impl_proto(
                     let fmeta: FieldMeta = a.parse_args()?;
                     return Ok(Item::Field {
                         ident: field.ident.clone().unwrap(),
-                        tag: fmeta.tag,
+                        tag: fmeta.num,
                         name: fmeta.name,
                         kind: fmeta.kind,
                         freq: fmeta.freq,
@@ -218,7 +234,7 @@ fn _impl_proto(
                     let ometa: OneOfMeta = a.parse_args()?;
                     return Ok(Item::Oneof {
                         ident: field.ident.clone().unwrap(),
-                        tags: ometa.tags,
+                        tags: ometa.nums,
                         names: ometa.names,
                     });
                 } else if a.path().is_ident(&format_ident!("unknown")) {
@@ -268,7 +284,7 @@ fn _impl_proto(
                 });
                 let this = quote! { &self.#ident};
                 emit_bin.push(emit_arm(ident, tag, freq, kind, &this));
-                size_bin.push(size_arm(&ident, freq, kind, &this));
+                size_bin.push(size_arm(&ident, tag, freq, kind, &this));
 
 
                 let emit = if let FieldKind::Map(..) = kind {
@@ -282,7 +298,6 @@ fn _impl_proto(
                 } else {
                     format_ident!("merge_{}", freq.textformat_suffix(), span = ident.span())
                 };
-
 
                 merge_txt.push(quote_spanned! { ident.span() =>
                     #name => textformat::#merge(&mut self.#ident, stream),
@@ -309,7 +324,7 @@ fn _impl_proto(
                     binformat::emit_oneof(&self.#ident, stream);
                 });
                 size_bin.push(quote_spanned! { ident.span() =>
-                    self.#ident.size()
+                    binformat::size_oneof(&self.#ident)
                 });
 
                 merge_txt.push(quote_spanned! { ident.span() =>
@@ -340,6 +355,9 @@ fn _impl_proto(
                     #(#merge_bin)*
                     other => stream.skip(other),
                 }
+            }
+            fn size(&self) -> usize {
+                0 #(+ #size_bin)*
             }
             fn encode(&self, stream: &mut binformat::OutputStream) {
                 #(#emit_bin)*
@@ -399,7 +417,7 @@ fn _impl_oneof(
                             _ => panic!(),
                         },
                         setter: format_ident!("make_{}_mut", variant.ident.to_string().to_case(Case::Snake)),
-                        tag: fmeta.tag,
+                        tag: fmeta.num,
                         name: fmeta.name,
                     });
                 }
@@ -446,7 +464,10 @@ fn _impl_oneof(
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });
-        size_bin.push(size_arm(&ident, &Frequency::Raw, kind, &this));
+        let size = size_arm(&ident, tag, &Frequency::Raw, kind, &quote!{ v });
+        size_bin.push(quote_spanned! { ident.span() =>
+            Self::#ident(v) => #size,
+        });
 
         let emit = format_ident!("emit_raw", span = ident.span());
 
@@ -481,6 +502,11 @@ fn _impl_oneof(
                     #(#merge_bin)*
                     other => stream.skip(other),
                     // other => binformat::unknown_tag(other),
+                }
+            }
+            fn size(&self) -> usize {
+                match self {
+                    #(#size_bin)*
                 }
             }
             fn encode(&self, stream: &mut binformat::OutputStream) {

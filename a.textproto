@@ -1,0 +1,15 @@
+
+map_int32_int32 [
+    {
+        key: 1
+        value: 0
+    }
+    {
+        key: 2
+        value: 0
+    }
+    {
+        key: 3
+        value: 0
+    }
+]

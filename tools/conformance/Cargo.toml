@@ -5,7 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [lib]
-crate-type = ["staticlib"]
+crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 anyhow = "1.0.66"
