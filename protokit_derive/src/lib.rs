@@ -3,6 +3,7 @@ mod util;
 extern crate proc_macro;
 
 use std::ops::Deref;
+use std::process::id;
 use convert_case::Case;
 use convert_case::Casing;
 use proc_macro2::Ident;
@@ -67,7 +68,7 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         }
 
     })
-    .into()
+        .into()
 }
 
 #[proc_macro_error]
@@ -83,7 +84,7 @@ pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         }
         _ => abort_call_site!("Unsupported: {data:?}"),
     }
-    .into()
+        .into()
 }
 
 enum Item {
@@ -169,6 +170,16 @@ fn emit_arm(
     }
 }
 
+fn size_arm(
+    ident: &Ident,
+    freq: &Frequency,
+    kind: &FieldKind,
+    this: &proc_macro2::TokenStream,
+) -> proc_macro2::TokenStream {
+    let sizer = format_ident!("size_{}_{}", kind.to_string(), freq.to_string());
+    quote! { binformat::#sizer(#this) }
+}
+
 fn _impl_proto(
     s: DataStruct,
     ident: Ident,
@@ -217,6 +228,7 @@ fn _impl_proto(
         })
         .collect::<Result<Vec<_>, _>>()?;
 
+    let mut size_bin = vec![];
     let mut merge_bin = vec![];
     let mut emit_bin = vec![];
     let mut merge_txt = vec![];
@@ -248,16 +260,18 @@ fn _impl_proto(
                 } else {
                     merge_arm(ident, tag, freq, kind, &this)
                 });
-                emit_bin.push(emit_arm(ident, tag, freq, kind, &quote! { &self.#ident}));
+                let mut this = quote! { &self.#ident};
+                emit_bin.push(emit_arm(ident, tag, freq, kind, &this));
+                size_bin.push(size_arm(&ident, &Frequency::Raw, kind, &this));
 
 
-                let emit = if let FieldKind::Map(..) = kind{
+                let emit = if let FieldKind::Map(..) = kind {
                     format_ident!("emit_map", span = ident.span())
                 } else {
                     format_ident!("emit_{}", freq.textformat_suffix(), span = ident.span())
                 };
 
-                let merge =  if let FieldKind::Map(..) = kind{
+                let merge = if let FieldKind::Map(..) = kind {
                     format_ident!("merge_map", span = ident.span())
                 } else {
                     format_ident!("merge_{}", freq.textformat_suffix(), span = ident.span())
@@ -402,6 +416,7 @@ fn _impl_oneof(
         }
     });
 
+    let mut size_bin = vec![];
     let mut merge_bin = vec![];
     let mut emit_bin = vec![];
     let mut merge_txt = vec![];
@@ -423,6 +438,7 @@ fn _impl_oneof(
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });
+        size_bin.push(size_arm(&ident, &Frequency::Raw, kind, &this));
 
         let emit = format_ident!("emit_raw", span = ident.span());
 

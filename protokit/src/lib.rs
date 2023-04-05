@@ -1,4 +1,3 @@
-
 use std::marker::PhantomData;
 use std::ops::Deref;
 
@@ -9,61 +8,6 @@ pub use derive::{protoenum, Proto};
 pub use grpc;
 pub use textformat::{TextField as _, TextProto};
 pub use {binformat, textformat};
-
-trait Config<'ptr> {
-    /// A Pointer type for indirect values
-    type Ptr<T: 'ptr>: Deref<Target=T>;
-}
-
-
-pub struct PtrRef<'ptr>(PhantomData<&'ptr ()>);
-
-impl<'ptr> Config<'ptr> for PtrRef<'ptr> {
-    type Ptr<T: 'ptr> = &'ptr T;
-}
-
-pub struct PtrBox;
-
-impl<'ptr> Config<'ptr> for PtrBox {
-    type Ptr<T: 'ptr> = Box<T>;
-}
-
-
-trait ConfigFrom<'ptr, F: Config<'ptr>>: Config<'ptr> {
-    /// Convert one pointer from one pointer configuration to other
-    /// The Clone bound is actually not needed
-    fn config_from<T: Clone>(&self, from: &'ptr T) -> Self::Ptr<T>;
-}
-
-impl<'ptr> ConfigFrom<'ptr, PtrRef<'ptr>> for PtrBox {
-    #[inline(always)]
-    fn config_from<T: Clone>(&self, from: &'ptr T) -> Self::Ptr<T> {
-        Self::Ptr::new(from.deref().clone())
-    }
-}
-
-struct Msg<'a, C: Config<'a>> {
-    a: C::Ptr<u32>,
-    v: u32,
-}
-
-pub trait MapConfig<C> {
-    type Output;
-    fn ptrconv(&self, c: &C) -> Self::Output;
-}
-
-impl<'a, C> MapConfig<C> for Msg<'a, PtrRef<'a>>
-    where C: ConfigFrom<'a, PtrRef<'a>>
-{
-    type Output = Msg<'a, C>;
-
-    fn ptrconv(&self, c: &C) -> Self::Output {
-        Msg {
-            a: c.config_from(self.a),
-            v: self.v,
-        }
-    }
-}
 
 
 #[cfg(test)]
