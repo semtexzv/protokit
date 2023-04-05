@@ -3,12 +3,11 @@ mod util;
 extern crate proc_macro;
 
 use std::ops::Deref;
-use std::process::id;
 use convert_case::Case;
 use convert_case::Casing;
 use proc_macro2::Ident;
 use proc_macro_error::{abort_call_site, proc_macro_error};
-use quote::{format_ident, quote, quote_spanned};
+use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::spanned::Spanned;
 use syn::{
     parse_macro_input, Attribute, Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics,
@@ -176,8 +175,15 @@ fn size_arm(
     kind: &FieldKind,
     this: &proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
-    let sizer = format_ident!("size_{}_{}", kind.to_string(), freq.to_string());
-    quote! { binformat::#sizer(#this) }
+    let sizer = if let FieldKind::Map(kind) = kind {
+        let id = format_ident!("size_map_{}", freq.to_string()).into_token_stream();
+        let kv = format_ident!("{}", kind.0.to_string());
+        let vv = format_ident!("{}", kind.0.to_string());
+        quote_spanned! { ident.span() => #id::<#kv, #vv> }
+    } else {
+        format_ident!("size_{}_{}", kind.to_string(), freq.to_string()).into_token_stream()
+    };
+    quote_spanned! { ident.span() => binformat::#sizer(#this) }
 }
 
 fn _impl_proto(
@@ -260,9 +266,9 @@ fn _impl_proto(
                 } else {
                     merge_arm(ident, tag, freq, kind, &this)
                 });
-                let mut this = quote! { &self.#ident};
+                let this = quote! { &self.#ident};
                 emit_bin.push(emit_arm(ident, tag, freq, kind, &this));
-                size_bin.push(size_arm(&ident, &Frequency::Raw, kind, &this));
+                size_bin.push(size_arm(&ident, freq, kind, &this));
 
 
                 let emit = if let FieldKind::Map(..) = kind {
@@ -302,7 +308,9 @@ fn _impl_proto(
                 emit_bin.push(quote_spanned! { ident.span() =>
                     binformat::emit_oneof(&self.#ident, stream);
                 });
-
+                size_bin.push(quote_spanned! { ident.span() =>
+                    self.#ident.size()
+                });
 
                 merge_txt.push(quote_spanned! { ident.span() =>
                     #(#names)|* => textformat::merge_oneof(&mut self.#ident, stream),
@@ -319,11 +327,11 @@ fn _impl_proto(
     let tp = generics.type_params();
     let cp = generics.const_params();
 
-    let (buf_param, buf_comma) = match meta.buf {
+    let (buf_param, additional_lifetime) = match meta.buf {
         None => (quote! { 'buf }, quote! { 'buf, }),
         Some(borrow) => (quote! { #borrow }, quote! {}),
     };
-    let text_impl_params = quote! { #buf_comma #(#lp,)* #(#tp,)* #(#cp,)* };
+    let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
     Ok(quote! {
         impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
@@ -455,12 +463,13 @@ fn _impl_oneof(
     let tp = generics.type_params();
     let cp = generics.const_params();
 
-    let (buf_param, buf_comma) = match meta.buf {
+    // We add the 'buf lifetime only if user did not borrow the input.
+    let (buf_param, additional_lifetime) = match meta.buf {
         None => (quote! { 'buf }, quote! { 'buf, }),
         Some(borrow) => (quote! { #borrow }, quote! {}),
     };
 
-    let text_impl_params = quote! { #buf_comma #(#lp,)* #(#tp,)* #(#cp,)* };
+    let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
     Ok(quote! {
         impl #orig_impl_gen #ident #type_gen #where_gen {
