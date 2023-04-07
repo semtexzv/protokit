@@ -17,14 +17,14 @@ impl Category {
     pub const OTHER: Category = Category(2u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct Section {
+pub struct BookSection {
     #[field(1u32, "contents", string, optional)]
     pub contents: Option<String>,
     #[unknown]
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct Test1Entry {
+pub struct BookTest1Entry {
     #[field(1u32, "key", string, optional)]
     pub key: Option<String>,
     #[field(2u32, "value", string, optional)]
@@ -79,8 +79,8 @@ pub struct Book {
     pub category: Vec<Category>,
     #[field(80u32, "sections", nested, packed)]
     pub sections: Vec<Section>,
-    #[field(322u32, "test1", map(string, string), singular)]
-    pub test1: ::protokit::IndexMap<String, String>,
+    #[field(322u32, "test1", nested, packed)]
+    pub test1: Vec<Test1Entry>,
     #[field(35u32, "other", nested, optional)]
     pub other: Option<Box<Any>>,
     #[field(321321u32, "book", nested, optional)]

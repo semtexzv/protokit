@@ -4,9 +4,10 @@ use anyhow::bail;
 use protokit::textformat::reflect::Registry;
 use protokit::{binformat, textformat};
 
-pub mod gen {
-    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
-}
+// pub mod gen {
+//     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+// }
+pub mod gen;
 
 use crate::gen::conformance::conformance::{
     self,
@@ -79,19 +80,20 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
 
     let req = protokit::binformat::decode::<conformance::ConformanceRequest>(data).unwrap();
 
+    let msg_type = req.message_type;
     let out = if let Some(ConformanceRequestOneOfPayload::JsonPayload(_)) = req.payload {
         ConformanceResponse {
             result: Some(ConformanceResponseOneOfResult::Skipped("No json support".to_string())),
             ..Default::default()
         }
-    } else if req.message_type.contains("Proto3") || req.message_type.contains("Proto2") {
-        let out = input(req.payload.unwrap(), req.message_type.contains("Proto3"));
+    } else if msg_type.contains("Proto3") || msg_type.contains("Proto2") {
+        let out = input(req.payload.unwrap(), msg_type.contains("Proto3"));
         let data_out = output(out, req.requested_output_format);
         ConformanceResponse {
             result: Some(data_out),
             ..Default::default()
         }
-    } else if req.message_type.contains("FailureSet") {
+    } else if msg_type.contains("FailureSet") {
         let fs = FailureSet {
             failure: vec![],
 
@@ -106,7 +108,7 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
         }
     } else {
         ConformanceResponse {
-            result: Some(ConformanceResponseOneOfResult::RuntimeError(format!("Unknown req: {:?}", req.message_type))),
+            result: Some(ConformanceResponseOneOfResult::RuntimeError(format!("Unknown req: {:?}", msg_type))),
             ..Default::default()
         }
     };

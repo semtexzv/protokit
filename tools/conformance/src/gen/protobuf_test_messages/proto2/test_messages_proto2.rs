@@ -4,19 +4,17 @@
 use ::protokit::*;
 pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestAllTypesProto2NestedEnum(pub u32);
+pub struct NestedEnum(pub u32);
 #[protoenum]
-impl TestAllTypesProto2NestedEnum {
+impl NestedEnum {
     #[var(0u32, "FOO")]
-    pub const FOO: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(0u32);
+    pub const FOO: NestedEnum = NestedEnum(0u32);
     #[var(1u32, "BAR")]
-    pub const BAR: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(1u32);
+    pub const BAR: NestedEnum = NestedEnum(1u32);
     #[var(2u32, "BAZ")]
-    pub const BAZ: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(2u32);
+    pub const BAZ: NestedEnum = NestedEnum(2u32);
     #[var(4294967295u32, "NEG")]
-    pub const NEG: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(
-        4294967295u32,
-    );
+    pub const NEG: NestedEnum = NestedEnum(4294967295u32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ForeignEnumProto2(pub u32);
@@ -30,20 +28,20 @@ impl ForeignEnumProto2 {
     pub const FOREIGN_BAZ: ForeignEnumProto2 = ForeignEnumProto2(2u32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct EnumOnlyProto2Bool(pub u32);
+pub struct Bool(pub u32);
 #[protoenum]
-impl EnumOnlyProto2Bool {
+impl Bool {
     #[var(0u32, "kFalse")]
-    pub const kFalse: EnumOnlyProto2Bool = EnumOnlyProto2Bool(0u32);
+    pub const kFalse: Bool = Bool(0u32);
     #[var(1u32, "kTrue")]
-    pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1u32);
+    pub const kTrue: Bool = Bool(1u32);
 }
 #[derive(Debug, Clone, PartialEq, Proto)]
 pub enum TestAllTypesProto2OneOfOneofField {
     #[field(111u32, "oneof_uint32", varint, raw)]
     OneofUint32(u32),
     #[field(112u32, "oneof_nested_message", nested, raw)]
-    OneofNestedMessage(TestAllTypesProto2NestedMessage),
+    OneofNestedMessage(NestedMessage),
     #[field(113u32, "oneof_string", string, raw)]
     OneofString(String),
     #[field(114u32, "oneof_bytes", bytes, raw)]
@@ -57,7 +55,8 @@ pub enum TestAllTypesProto2OneOfOneofField {
     #[field(118u32, "oneof_double", fixed64, raw)]
     OneofDouble(f64),
     #[field(119u32, "oneof_enum", protoenum, raw)]
-    OneofEnum(TestAllTypesProto2NestedEnum),
+    OneofEnum(NestedEnum),
+    __Unused(::core::marker::PhantomData<&'static ()>),
 }
 impl Default for TestAllTypesProto2OneOfOneofField {
     fn default() -> Self {
@@ -97,11 +96,11 @@ pub struct TestAllTypesProto2 {
     #[field(15u32, "optional_bytes", bytes, optional)]
     pub optional_bytes: Option<Vec<u8>>,
     #[field(18u32, "optional_nested_message", nested, optional)]
-    pub optional_nested_message: Option<Box<TestAllTypesProto2NestedMessage>>,
+    pub optional_nested_message: Option<Box<NestedMessage>>,
     #[field(19u32, "optional_foreign_message", nested, optional)]
     pub optional_foreign_message: Option<Box<ForeignMessageProto2>>,
     #[field(21u32, "optional_nested_enum", protoenum, optional)]
-    pub optional_nested_enum: Option<TestAllTypesProto2NestedEnum>,
+    pub optional_nested_enum: Option<NestedEnum>,
     #[field(22u32, "optional_foreign_enum", protoenum, optional)]
     pub optional_foreign_enum: Option<ForeignEnumProto2>,
     #[field(24u32, "optional_string_piece", string, optional)]
@@ -141,11 +140,11 @@ pub struct TestAllTypesProto2 {
     #[field(45u32, "repeated_bytes", bytes, repeated)]
     pub repeated_bytes: Vec<Vec<u8>>,
     #[field(48u32, "repeated_nested_message", nested, repeated)]
-    pub repeated_nested_message: Vec<TestAllTypesProto2NestedMessage>,
+    pub repeated_nested_message: Vec<NestedMessage>,
     #[field(49u32, "repeated_foreign_message", nested, repeated)]
     pub repeated_foreign_message: Vec<ForeignMessageProto2>,
     #[field(51u32, "repeated_nested_enum", protoenum, repeated)]
-    pub repeated_nested_enum: Vec<TestAllTypesProto2NestedEnum>,
+    pub repeated_nested_enum: Vec<NestedEnum>,
     #[field(52u32, "repeated_foreign_enum", protoenum, repeated)]
     pub repeated_foreign_enum: Vec<ForeignEnumProto2>,
     #[field(54u32, "repeated_string_piece", string, repeated)]
@@ -179,7 +178,7 @@ pub struct TestAllTypesProto2 {
     #[field(87u32, "packed_bool", bool, repeated)]
     pub packed_bool: Vec<bool>,
     #[field(88u32, "packed_nested_enum", protoenum, repeated)]
-    pub packed_nested_enum: Vec<TestAllTypesProto2NestedEnum>,
+    pub packed_nested_enum: Vec<NestedEnum>,
     #[field(89u32, "unpacked_int32", varint, repeated)]
     pub unpacked_int32: Vec<i32>,
     #[field(90u32, "unpacked_int64", varint, repeated)]
@@ -207,7 +206,7 @@ pub struct TestAllTypesProto2 {
     #[field(101u32, "unpacked_bool", bool, repeated)]
     pub unpacked_bool: Vec<bool>,
     #[field(102u32, "unpacked_nested_enum", protoenum, repeated)]
-    pub unpacked_nested_enum: Vec<TestAllTypesProto2NestedEnum>,
+    pub unpacked_nested_enum: Vec<NestedEnum>,
     #[field(56u32, "map_int32_int32", map(varint, varint), singular)]
     pub map_int32_int32: ::protokit::IndexMap<i32, i32>,
     #[field(57u32, "map_int64_int64", map(varint, varint), singular)]
@@ -239,21 +238,15 @@ pub struct TestAllTypesProto2 {
     #[field(70u32, "map_string_bytes", map(string, bytes), singular)]
     pub map_string_bytes: ::protokit::IndexMap<String, Vec<u8>>,
     #[field(71u32, "map_string_nested_message", map(string, nested), singular)]
-    pub map_string_nested_message: ::protokit::IndexMap<
-        String,
-        TestAllTypesProto2NestedMessage,
-    >,
+    pub map_string_nested_message: ::protokit::IndexMap<String, NestedMessage>,
     #[field(72u32, "map_string_foreign_message", map(string, nested), singular)]
     pub map_string_foreign_message: ::protokit::IndexMap<String, ForeignMessageProto2>,
     #[field(73u32, "map_string_nested_enum", map(string, protoenum), singular)]
-    pub map_string_nested_enum: ::protokit::IndexMap<
-        String,
-        TestAllTypesProto2NestedEnum,
-    >,
+    pub map_string_nested_enum: ::protokit::IndexMap<String, NestedEnum>,
     #[field(74u32, "map_string_foreign_enum", map(string, protoenum), singular)]
     pub map_string_foreign_enum: ::protokit::IndexMap<String, ForeignEnumProto2>,
     #[field(201u32, "Data", group, optional)]
-    pub Data: Option<Box<TestAllTypesProto2Data>>,
+    pub Data: Option<Box<Data>>,
     #[field(241u32, "default_int32", varint, optional)]
     pub default_int32: Option<i32>,
     #[field(242u32, "default_int64", varint, optional)]
@@ -347,7 +340,7 @@ pub struct TestAllTypesProto2 {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct TestAllTypesProto2NestedMessage {
+pub struct NestedMessage {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
     #[field(2u32, "corecursive", nested, optional)]
@@ -356,7 +349,7 @@ pub struct TestAllTypesProto2NestedMessage {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct TestAllTypesProto2Data {
+pub struct Data {
     #[field(202u32, "group_int32", varint, optional)]
     pub group_int32: Option<i32>,
     #[field(203u32, "group_uint32", varint, optional)]
@@ -365,27 +358,23 @@ pub struct TestAllTypesProto2Data {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct TestAllTypesProto2MessageSetCorrect {
+pub struct MessageSetCorrect {
     #[unknown]
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
+pub struct MessageSetCorrectExtension1 {
     #[field(1547769u32, "message_set_extension", nested, optional)]
-    pub message_set_extension: Option<
-        Box<TestAllTypesProto2MessageSetCorrectExtension1>,
-    >,
+    pub message_set_extension: Option<Box<MessageSetCorrectExtension1>>,
     #[field(25u32, "str", string, optional)]
     pub str: Option<String>,
     #[unknown]
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct TestAllTypesProto2MessageSetCorrectExtension2 {
+pub struct MessageSetCorrectExtension2 {
     #[field(4135312u32, "message_set_extension", nested, optional)]
-    pub message_set_extension: Option<
-        Box<TestAllTypesProto2MessageSetCorrectExtension2>,
-    >,
+    pub message_set_extension: Option<Box<MessageSetCorrectExtension2>>,
     #[field(9u32, "i", varint, optional)]
     pub i: Option<i32>,
     #[unknown]
@@ -407,7 +396,7 @@ pub struct UnknownToTestAllTypes {
     #[field(1003u32, "nested_message", nested, optional)]
     pub nested_message: Option<Box<ForeignMessageProto2>>,
     #[field(1004u32, "OptionalGroup", group, optional)]
-    pub OptionalGroup: Option<Box<UnknownToTestAllTypesOptionalGroup>>,
+    pub OptionalGroup: Option<Box<OptionalGroup>>,
     #[field(1006u32, "optional_bool", bool, optional)]
     pub optional_bool: Option<bool>,
     #[field(1011u32, "repeated_int32", varint, repeated)]
@@ -416,7 +405,7 @@ pub struct UnknownToTestAllTypes {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct UnknownToTestAllTypesOptionalGroup {
+pub struct OptionalGroup {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
     #[unknown]

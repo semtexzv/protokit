@@ -75,7 +75,7 @@ impl ProtocContext {
         let data = std::fs::read(Path::new(&std::env::var("OUT_DIR").unwrap()).join("descriptor.bin")).unwrap();
         let desc = protokit_binformat::decode::<protokit_desc::FileDescriptorSet>(data.as_slice())?;
 
-
+        // panic!("{:#?}", desc);
         Ok(FileSetDef::from_descriptor(desc))
     }
 }

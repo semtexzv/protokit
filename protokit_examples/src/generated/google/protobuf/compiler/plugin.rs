@@ -40,7 +40,7 @@ pub struct CodeGeneratorRequest {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct File {
+pub struct CodeGeneratorResponseFile {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
     #[field(2u32, "insertion_point", string, optional)]

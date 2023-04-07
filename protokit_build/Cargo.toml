@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2021"
 
 [features]
-default = ["protoc"]
+default = ["parser"]
 protoc = ["descriptors"]
 parser = ["protokit_proto", "descriptors"]
 descriptors = ["protokit_desc/descriptors"]

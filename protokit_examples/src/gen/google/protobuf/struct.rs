@@ -11,6 +11,15 @@ impl NullValue {
     pub const NULL_VALUE: NullValue = NullValue(0u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+pub struct FieldsEntry {
+    #[field(1u32, "key", string, optional)]
+    pub key: Option<String>,
+    #[field(2u32, "value", nested, optional)]
+    pub value: Option<Box<Value>>,
+    #[unknown]
+    pub unknown: binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct Struct {
     #[field(1u32, "fields", map(string, nested), singular)]
     pub fields: ::protokit::IndexMap<String, Value>,
@@ -62,7 +71,7 @@ pub struct Value {
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct ListValue {
-    #[field(1u32, "values", nested, repeated)]
+    #[field(1u32, "values", nested, packed)]
     pub values: Vec<Value>,
     #[unknown]
     pub unknown: binformat::UnknownFieldsOwned,

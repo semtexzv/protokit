@@ -183,8 +183,6 @@ pub fn parser_wire_tag(field: &FieldDef) -> (WireType, Option<WireType>, u32) {
     (normal, packed, field.num as u32)
 }
 
-// pub type Options = HashMap<ArcStr, Value>;
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Bool(bool),
@@ -312,18 +310,21 @@ impl FieldDef {
         _msg_desc: &DescriptorProto,
         desc: &FieldDescriptorProto,
     ) -> Self {
-        // eprintln!("{:?}", desc);
-        // TODO: Fix the packed attr to be default true in proto3
         let mut opts = desc.options.as_deref().cloned().unwrap_or_default();
 
-        if file.syntax.as_deref() == Some("proto3") && opts.packed.is_none() {
+        let is_proto3 = file.syntax.as_deref() == Some("proto3");
+        if is_proto3 && opts.packed.is_none() {
             opts.packed = Some(true);
         }
+
 
         Self {
             name: set.cache(desc.name.as_ref().unwrap()),
             frequency: match &desc.label {
-                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) => Frequency::Optional,
+                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if !is_proto3 => Frequency::Optional,
+                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 && desc.proto3_optional != Some(true) => {
+                    Frequency::Singular
+                }
                 Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
                 Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
                 Some(FieldDescriptorProtoLabel(label)) => {
@@ -815,8 +816,10 @@ impl FileDef {
         let mut rewrites = HashSet::new();
         for (oi, m) in self.messages.values().enumerate() {
             for (fi, f) in m.fields.by_number.values().enumerate() {
-                if let DataType::Message(m) =  f.typ {
+                if let DataType::Message(m) = f.typ {
+                    let m = m as u32 & LOCAL_ONLY_ID;
                     if let Some((_, mi)) = &self.messages.get_index(m as _) {
+                        // eprintln!("Resolving: {:?}: {:?}", m, self.messages);
                         if mi.is_virtual_map {
                             let k = mi.fields.by_number(1).unwrap();
                             let v = mi.fields.by_number(2).unwrap();
@@ -829,10 +832,13 @@ impl FileDef {
                 }
             }
         }
+        // panic!("Rewriting map fields:{:?}", rewrites);
         for (mi, fi, dt) in rewrites.into_iter() {
-            self.messages.get_index_mut(mi).unwrap()
+            let mut field = self.messages.get_index_mut(mi).unwrap()
                 .1.fields.by_number.get_index_mut(fi)
-                .unwrap().1.typ = dt;
+                .unwrap().1;
+            field.typ = dt;
+            field.frequency = Frequency::Singular;
         }
     }
     pub fn resolve_extensions(&mut self, file_id: usize, prevs: &mut IndexMap<ArcStr, FileDef>) {
@@ -887,7 +893,7 @@ impl FileDef {
                 })
                 .collect(),
             public_imports: vec![],
-            syntax: desc.syntax.as_ref().map(|s| Syntax::from_str(s)).transpose().unwrap().unwrap_or(Syntax::Proto3),
+            syntax: desc.syntax.as_ref().map(|s| Syntax::from_str(s)).transpose().unwrap().unwrap_or(Syntax::Proto2),
             package: set.cache(desc.package.as_ref().unwrap()),
             messages: Default::default(),
             enums: Default::default(),

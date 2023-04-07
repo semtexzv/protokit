@@ -67,6 +67,12 @@ pub const TYPES: &[&str] = &["Option", "Result"];
 
 pub fn rustify_name(n: impl AsRef<str>) -> String {
     let n = n.as_ref();
+    let pos = n.find('.');
+    let n = if let Some(pos) = pos {
+        &n[pos + 1..]
+    } else {
+        n
+    };
     for s in STRICT.iter().chain(RESERVED) {
         if *s == n {
             return format!("r#{n}");
@@ -77,7 +83,8 @@ pub fn rustify_name(n: impl AsRef<str>) -> String {
             return format!("Proto{n}");
         }
     }
-    n.replace('.', "__")
+
+    n.to_string()
 }
 
 pub fn builtin_type_marker(typ: BuiltinType) -> &'static str {
@@ -234,6 +241,9 @@ impl CodeGenerator<'_> {
     }
 
     pub fn message(&mut self, file: &FileDef, msg_name: &ArcStr, msg: &MessageDef) -> Result<()> {
+        if msg.is_virtual_map {
+            return Ok(())
+        }
         let ident = format_ident!("{}", rustify_name(msg_name));
         let borrow = self.borrow();
         let attrs = self.protoattrs();

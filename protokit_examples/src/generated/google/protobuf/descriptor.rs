@@ -136,7 +136,7 @@ pub struct FileDescriptorProto {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct ExtensionRange {
+pub struct DescriptorProtoExtensionRange {
     #[field(1u32, "start", varint, optional)]
     pub start: Option<i32>,
     #[field(2u32, "end", varint, optional)]
@@ -147,7 +147,7 @@ pub struct ExtensionRange {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct ReservedRange {
+pub struct DescriptorProtoReservedRange {
     #[field(1u32, "start", varint, optional)]
     pub start: Option<i32>,
     #[field(2u32, "end", varint, optional)]
@@ -224,7 +224,7 @@ pub struct OneofDescriptorProto {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct EnumReservedRange {
+pub struct EnumDescriptorProtoEnumReservedRange {
     #[field(1u32, "start", varint, optional)]
     pub start: Option<i32>,
     #[field(2u32, "end", varint, optional)]
@@ -415,7 +415,7 @@ pub struct MethodOptions {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct NamePart {
+pub struct UninterpretedOptionNamePart {
     #[field(1u32, "name_part", string, required)]
     pub name_part: String,
     #[field(2u32, "is_extension", bool, required)]
@@ -443,7 +443,7 @@ pub struct UninterpretedOption {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct Location {
+pub struct SourceCodeInfoLocation {
     #[field(1u32, "path", varint, packed)]
     pub path: Vec<i32>,
     #[field(2u32, "span", varint, packed)]
@@ -465,7 +465,7 @@ pub struct SourceCodeInfo {
     pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct Annotation {
+pub struct GeneratedCodeInfoAnnotation {
     #[field(1u32, "path", varint, packed)]
     pub path: Vec<i32>,
     #[field(2u32, "source_file", string, optional)]

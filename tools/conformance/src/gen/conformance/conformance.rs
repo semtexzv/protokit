@@ -52,6 +52,7 @@ pub enum ConformanceRequestOneOfPayload {
     JspbPayload(String),
     #[field(8u32, "text_payload", string, raw)]
     TextPayload(String),
+    __Unused(::core::marker::PhantomData<&'static ()>),
 }
 impl Default for ConformanceRequestOneOfPayload {
     fn default() -> Self {
@@ -106,6 +107,7 @@ pub enum ConformanceResponseOneOfResult {
     JspbPayload(String),
     #[field(8u32, "text_payload", string, raw)]
     TextPayload(String),
+    __Unused(::core::marker::PhantomData<&'static ()>),
 }
 impl Default for ConformanceResponseOneOfResult {
     fn default() -> Self {
