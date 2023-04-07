@@ -1,5 +1,8 @@
+#![allow(unused_imports)]
+#![allow(nonstandard_style)]
+#![allow(unreachable_patterns)]
 use crate::*;
-pub fn register_types(registry: &mut crate::textformat::reflect::Registry) {}
+pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FieldDescriptorProtoType(pub u32);
 #[protoenum]

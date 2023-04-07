@@ -1,5 +1,9 @@
-use std::collections::BTreeMap;
 use core::fmt::{Debug, Formatter};
+use std::collections::BTreeMap;
+
+use binformat::{BinProto, InputStream, OutputStream, SizeStack};
+
+use crate::TextProto;
 
 #[derive(Default, Debug)]
 pub struct Registry {
@@ -12,8 +16,19 @@ impl Registry {
         init(&mut out);
         out
     }
+
     pub fn register(&mut self, msg: &dyn AnyMessage) {
         self.messages.insert(msg.qualified_name(), msg.new());
+    }
+
+    pub fn find(&self, name: &str) -> Option<&Box<dyn AnyMessage>> {
+        self.messages.get(name)
+    }
+}
+
+impl Clone for Box<dyn AnyMessage> {
+    fn clone(&self) -> Self {
+        self.new()
     }
 }
 
@@ -22,10 +37,11 @@ pub trait AnyMessage: Send + Sync + 'static {
     fn new(&self) -> Box<dyn AnyMessage + 'static>;
     fn qualified_name(&self) -> &'static str;
 
-    fn as_bin(&self) -> &dyn binformat::BinProto;
-    fn as_text(&self) -> &dyn crate::TextProto;
+    fn as_bin<'buf>(&self) -> &dyn binformat::BinProto<'buf>;
+    fn as_bin_mut<'buf>(&mut self) -> &mut dyn binformat::BinProto<'buf>;
 
-    fn as_debug(&self) -> &dyn Debug;
+    fn as_text<'buf>(&self) -> &dyn crate::TextProto<'buf>;
+    fn as_text_mut<'buf>(&mut self) -> &mut dyn crate::TextProto<'buf>;
 }
 
 impl Debug for dyn AnyMessage {
@@ -34,53 +50,56 @@ impl Debug for dyn AnyMessage {
     }
 }
 
-// impl<T> AnyMessage for T
-//     where
-//         T: Send
-//         + Sync
-//         + Default
-//         + Debug
-//         + binformat::BinProto
-//         + crate::TextProto
-//         + 'static,
-// {
-//     fn new(&self) -> Box<dyn AnyMessage> {
-//         Box::<T>::default()
-//     }
-//
-//     fn as_debug(&self) -> &dyn Debug {
-//         self
-//     }
-// }
-//
-// impl binformat::BinProto for dyn AnyMessage {
-//     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream) -> binformat::Result<()> {
-//
-//     }
-//
-//     fn encode(&self, stream: &mut OutputStream) {
-//         todo!()
-//     }
-// }
-//
-// impl binformat::Encodable for dyn AnyMessage {
-//     fn qualified_name(&self) -> &'static str {
-//         self.as_bin_encodable().qualified_name()
-//     }
-//
-//     fn encode(&self, buf: &mut binformat::WriteBuffer) -> crate::Result<()> {
-//         self.as_bin_encodable().encode(buf)
-//     }
-// }
-//
-// impl crate::Decodable for dyn AnyMessage {
-//     fn merge_field(&mut self, ctx: &Context, name: &FieldName, value: &FieldValue) -> crate::Result<()> {
-//         self.as_text_decodable().merge_field(ctx, name, value)
-//     }
-// }
-//
-// impl crate::Encodable for dyn AnyMessage {
-//     fn encode(&self, ctx: &Context, pad: usize, out: &mut String) -> crate::Result<()> {
-//         self.as_text_encodable().encode(ctx, pad, out)
-//     }
-// }
+impl<T> AnyMessage for T
+where
+    T: for<'buf> BinProto<'buf> + for<'buf> TextProto<'buf>,
+    T: Default + Debug + Send + Sync + 'static,
+{
+    fn new(&self) -> Box<dyn AnyMessage + 'static> {
+        Box::new(T::default())
+    }
+
+    fn qualified_name(&self) -> &'static str {
+        todo!()
+    }
+
+    fn as_bin<'buf>(&self) -> &dyn BinProto<'buf> {
+        self
+    }
+
+    fn as_bin_mut<'buf>(&mut self) -> &mut dyn BinProto<'buf> {
+        self
+    }
+
+    fn as_text<'buf>(&self) -> &dyn TextProto<'buf> {
+        self
+    }
+
+    fn as_text_mut<'buf>(&mut self) -> &mut dyn TextProto<'buf> {
+        self
+    }
+}
+
+impl<'buf> BinProto<'buf> for dyn AnyMessage {
+    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> binformat::Result<()> {
+        self.as_bin_mut().merge_field(tag_wire, stream)
+    }
+
+    fn size(&self, stack: &mut SizeStack) -> usize {
+        self.as_bin().size(stack)
+    }
+
+    fn encode(&self, stream: &mut OutputStream) {
+        self.as_bin().encode(stream)
+    }
+}
+
+impl<'buf> TextProto<'buf> for dyn AnyMessage {
+    fn merge_field(&mut self, stream: &mut crate::InputStream<'buf>) -> crate::Result<()> {
+        self.as_text_mut().merge_field(stream)
+    }
+
+    fn encode(&self, stream: &mut crate::OutputStream) {
+        self.as_text().encode(stream)
+    }
+}

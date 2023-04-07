@@ -1,16 +1,16 @@
-use std::collections::BTreeMap;
 use core::fmt::Debug;
 use core::hash::Hash;
 use core::ops::{Deref, DerefMut};
 use core::str::Utf8Error;
-use indexmap::IndexMap;
+use std::collections::BTreeMap;
 
+use indexmap::IndexMap;
 pub use stream::{InputStream, OutputStream};
 use thiserror::Error;
 pub use value::{Field, UnknownFields, Value};
 
-mod stream;
-mod value;
+pub mod stream;
+pub mod value;
 
 pub const MASK_WIRE: u8 = 0b111;
 
@@ -57,8 +57,8 @@ pub trait BinProto<'buf>: Debug {
 }
 
 impl<'buf, T> BinProto<'buf> for Box<T>
-    where
-        T: BinProto<'buf>,
+where
+    T: BinProto<'buf>,
 {
     #[inline(always)]
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
@@ -399,26 +399,26 @@ impl<K: Hash + PartialEq + Eq, V> Map<K, V> for indexmap::IndexMap<K, V> {
 
 #[inline(never)]
 pub fn merge_single<'buf, T, F>(this: &mut T, stream: &mut InputStream<'buf>, mapper: F) -> Result<()>
-    where
-        F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
+where
+    F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 {
     mapper(stream, this)
 }
 
 #[inline(never)]
 pub fn merge_optional<'buf, T, F>(this: &mut Option<T>, stream: &mut InputStream<'buf>, mapper: F) -> Result<()>
-    where
-        T: Default,
-        F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
+where
+    T: Default,
+    F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 {
     mapper(stream, this.get_or_insert_with(Default::default))
 }
 
 #[inline(never)]
 pub fn merge_repeated<'buf, T, F>(this: &mut Vec<T>, stream: &mut InputStream<'buf>, mapper: F) -> Result<()>
-    where
-        T: Default,
-        F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
+where
+    T: Default,
+    F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 {
     this.push(T::default());
     unsafe { mapper(stream, this.last_mut().unwrap_unchecked()) }
@@ -426,9 +426,9 @@ pub fn merge_repeated<'buf, T, F>(this: &mut Vec<T>, stream: &mut InputStream<'b
 
 #[inline(never)]
 pub fn merge_packed<'buf, T, F>(this: &mut Vec<T>, stream: &mut InputStream<'buf>, mapper: F) -> Result<()>
-    where
-        T: Default,
-        F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
+where
+    T: Default,
+    F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 {
     this.clear();
     let len = stream._varint::<usize>()?;
@@ -436,7 +436,7 @@ pub fn merge_packed<'buf, T, F>(this: &mut Vec<T>, stream: &mut InputStream<'buf
         return Err(Error::UnexpectedEOF);
     }
     let mut is = InputStream {
-        buf: &stream.buf[stream.pos..stream.pos + len],
+        buf: &stream.buf[stream.pos .. stream.pos + len],
         pos: 0,
         limit: len,
     };
@@ -458,9 +458,9 @@ pub fn merge_map<'buf, K, V, M: Map<K, V>>(
     kmapper: fn(&mut InputStream<'buf>, &mut K) -> Result<()>,
     vmapper: fn(&mut InputStream<'buf>, &mut V) -> Result<()>,
 ) -> Result<()>
-    where
-        K: Default,
-        V: Default,
+where
+    K: Default,
+    V: Default,
 {
     let len = stream._varint::<usize>()?;
     let olimit = stream.limit(len)?;
@@ -639,17 +639,17 @@ impl SizeStack {
 
 #[inline(always)]
 pub fn size_raw<T, F>(v: &T, tag: u32, stack: &mut SizeStack, sizer: F) -> usize
-    where
-        F: Fn(&T, u32, &mut SizeStack) -> usize,
+where
+    F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
     _size_varint(tag) + sizer(v, tag, stack)
 }
 
 #[inline(never)]
 pub fn size_singular<T, F>(v: &T, tag: u32, stack: &mut SizeStack, sizer: F) -> usize
-    where
-        T: PartialEq + Default,
-        F: Fn(&T, u32, &mut SizeStack) -> usize,
+where
+    T: PartialEq + Default,
+    F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
     if v != &Default::default() {
         _size_varint(tag) + sizer(v, tag, stack)
@@ -660,8 +660,8 @@ pub fn size_singular<T, F>(v: &T, tag: u32, stack: &mut SizeStack, sizer: F) -> 
 
 #[inline(never)]
 pub fn size_optional<T, F>(v: &Option<T>, tag: u32, stack: &mut SizeStack, sizer: F) -> usize
-    where
-        F: Fn(&T, u32, &mut SizeStack) -> usize,
+where
+    F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
     if let Some(v) = v {
         _size_varint(tag) + sizer(v, tag, stack)
@@ -672,16 +672,16 @@ pub fn size_optional<T, F>(v: &Option<T>, tag: u32, stack: &mut SizeStack, sizer
 
 #[inline(never)]
 pub fn size_repeated<T, F>(v: &Vec<T>, tag: u32, stack: &mut SizeStack, sizer: F) -> usize
-    where
-        F: Fn(&T, u32, &mut SizeStack) -> usize,
+where
+    F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
     v.iter().rev().map(|v| _size_varint(tag) + sizer(v, tag, stack)).sum()
 }
 
 #[inline(never)]
 pub fn size_packed<T, F>(v: &Vec<T>, tag: u32, stack: &mut SizeStack, sizer: F) -> usize
-    where
-        F: Fn(&T, u32, &mut SizeStack) -> usize,
+where
+    F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
     if v.len() > 0 {
         let len: usize = v.iter().rev().map(|v| sizer(v, tag, stack)).sum();

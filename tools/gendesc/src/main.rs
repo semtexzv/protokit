@@ -1,5 +1,5 @@
 fn main() -> protokit_build::Result<()> {
-    core::env::set_var("RUST_LOG", "trace");
+    std::env::set_var("RUST_LOG", "trace");
     let mut config = protokit_build::Build::without_replacements()
         .out_dir("./protokit_desc/src/generated")
         .include("proto")
@@ -14,6 +14,7 @@ fn main() -> protokit_build::Result<()> {
         .compile("google/protobuf/field_mask.proto")?
         .compile("google/protobuf/timestamp.proto")?
         .compile("google/protobuf/compiler/plugin.proto")?
+        .compile("google/protobuf/any.proto")?
         .compile("validate/validate.proto")?
         .generate()
 }

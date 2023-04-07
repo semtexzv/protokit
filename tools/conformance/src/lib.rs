@@ -71,12 +71,12 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
             ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap())
         }
         (Ok(Output::Proto2(v)), WireFormat::TEXT_FORMAT) => {
-            let out = textformat::encode(&v, &Registry::default()).unwrap();
+            let out = textformat::encode(&v).unwrap();
             // println!("OUT: {out}");
             ConformanceResponseOneOfResult::TextPayload(out)
         }
         (Ok(Output::Proto3(v)), WireFormat::TEXT_FORMAT) => {
-            let out = textformat::encode(&v, &Registry::default()).unwrap();
+            let out = textformat::encode(&v).unwrap();
             // println!("OUT: {out}");
             ConformanceResponseOneOfResult::TextPayload(out)
         }

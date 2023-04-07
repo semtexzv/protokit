@@ -4,9 +4,9 @@
 use crate::*;
 pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-pub struct Duration {
-    #[field(1u32, "seconds", varint, singular)]
-    pub seconds: i64,
-    #[field(2u32, "nanos", varint, singular)]
-    pub nanos: i32,
+pub struct Any {
+    #[field(1u32, "type_url", string, singular)]
+    pub type_url: String,
+    #[field(2u32, "value", bytes, singular)]
+    pub value: Vec<u8>,
 }

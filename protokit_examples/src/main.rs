@@ -13,7 +13,7 @@ fn main() {
     let b = stdin.fill_buf().unwrap();
 
     let book: Book = protokit::binformat::decode(b).unwrap();
-    let out = protokit::textformat::encode(&book, &Default::default()).unwrap();
+    let out = protokit::textformat::encode(&book).unwrap();
     println!("{out:?}");
 }
 

@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
-use std::collections::{HashMap, HashSet};
 use core::fmt::Debug;
 use core::str::FromStr;
+use std::collections::{HashMap, HashSet};
 
 use arcstr::ArcStr;
 pub(crate) use binformat::{BinProto, Bytes, Fixed, Sigint, Varint};

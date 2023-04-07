@@ -298,7 +298,7 @@ fn _impl_proto(
                 } else {
                     format_ident!("merge_{}", freq.textformat_suffix(), span = ident.span())
                 };
-                text_names.push(quote!{ (#name, #tag) });
+                text_names.push(quote! { (#name, #tag) });
                 merge_txt.push(quote_spanned! { ident.span() =>
                     #tag => textformat::#merge(&mut self.#ident, stream),
                 });
@@ -318,9 +318,8 @@ fn _impl_proto(
                     .collect::<Vec<_>>();
 
                 for (n, t) in names.iter().zip(nums) {
-                    text_names.push(quote!{ (#n, #t) });
+                    text_names.push(quote! { (#n, #t) });
                 }
-
 
                 merge_bin.push(quote_spanned! { ident.span() =>
                     #(#tags)|* => binformat::merge_oneof(&mut self.#ident, tag, stream),
@@ -468,7 +467,6 @@ fn _impl_oneof(
         } = it;
 
         let this = quote! { self.#setter() };
-
 
         let size = size_arm(&ident, tag, &Frequency::Raw, kind, &quote! { v });
         size_bin.push(quote_spanned! { ident.span() =>
