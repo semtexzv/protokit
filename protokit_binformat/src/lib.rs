@@ -1,3 +1,5 @@
+#![allow(clippy::ptr_arg)]
+
 use core::fmt::Debug;
 use core::hash::Hash;
 use core::ops::{Deref, DerefMut};
@@ -7,7 +9,7 @@ use std::collections::BTreeMap;
 use indexmap::IndexMap;
 pub use stream::{InputStream, OutputStream};
 use thiserror::Error;
-pub use value::{Field, UnknownFields, Value};
+pub use value::{Field, UnknownFieldsOwned, UnknownFieldsBorrow, Value};
 
 pub mod stream;
 pub mod value;
@@ -75,6 +77,7 @@ where
         self.deref().encode(stream)
     }
 }
+
 
 pub trait Varint: Default + Debug + Clone + Copy + PartialEq + PartialOrd {
     fn from_u64(v: u64) -> Self;
@@ -166,103 +169,103 @@ impl Sigint for i64 {
 }
 
 pub trait Fixed: Default + Sized + Clone + Copy {
-    type WIRE: Sized;
-    fn from_wire(v: Self::WIRE) -> Self;
-    fn to_wire(self) -> Self::WIRE;
+    type Wire: Sized;
+    fn from_wire(v: Self::Wire) -> Self;
+    fn to_wire(self) -> Self::Wire;
 }
 
 impl Fixed for i32 {
-    type WIRE = Self;
+    type Wire = Self;
 
     #[inline(always)]
-    fn from_wire(v: Self::WIRE) -> Self {
+    fn from_wire(v: Self::Wire) -> Self {
         Self::from_le(v)
     }
 
     #[inline(always)]
-    fn to_wire(self) -> Self::WIRE {
+    fn to_wire(self) -> Self::Wire {
         self.to_le()
     }
 }
 
 impl Fixed for i64 {
-    type WIRE = Self;
+    type Wire = Self;
 
     #[inline(always)]
-    fn from_wire(v: Self::WIRE) -> Self {
+    fn from_wire(v: Self::Wire) -> Self {
         Self::from_le(v)
     }
 
     #[inline(always)]
-    fn to_wire(self) -> Self::WIRE {
+    fn to_wire(self) -> Self::Wire {
         self.to_le()
     }
 }
 
 impl Fixed for u32 {
-    type WIRE = u32;
+    type Wire = u32;
 
     #[inline(always)]
-    fn from_wire(v: Self::WIRE) -> Self {
+    fn from_wire(v: Self::Wire) -> Self {
         Self::from_le(v)
     }
 
     #[inline(always)]
-    fn to_wire(self) -> Self::WIRE {
+    fn to_wire(self) -> Self::Wire {
         self.to_le()
     }
 }
 
 impl Fixed for u64 {
-    type WIRE = Self;
+    type Wire = Self;
 
     #[inline(always)]
-    fn from_wire(v: Self::WIRE) -> Self {
+    fn from_wire(v: Self::Wire) -> Self {
         Self::from_le(v)
     }
 
     #[inline(always)]
-    fn to_wire(self) -> Self::WIRE {
+    fn to_wire(self) -> Self::Wire {
         self.to_le()
     }
 }
 
 impl Fixed for f32 {
-    type WIRE = u32;
+    type Wire = u32;
 
     #[inline(always)]
-    fn from_wire(v: Self::WIRE) -> Self {
-        Self::from_bits(Self::WIRE::from_le(v))
+    fn from_wire(v: Self::Wire) -> Self {
+        Self::from_bits(Self::Wire::from_le(v))
     }
 
     #[inline(always)]
-    fn to_wire(self) -> Self::WIRE {
+    fn to_wire(self) -> Self::Wire {
         self.to_bits().to_le()
     }
 }
 
 impl Fixed for f64 {
-    type WIRE = u64;
+    type Wire = u64;
 
     #[inline(always)]
-    fn from_wire(v: Self::WIRE) -> Self {
-        Self::from_bits(Self::WIRE::from_le(v))
+    fn from_wire(v: Self::Wire) -> Self {
+        Self::from_bits(Self::Wire::from_le(v))
     }
 
     #[inline(always)]
-    fn to_wire(self) -> Self::WIRE {
+    fn to_wire(self) -> Self::Wire {
         self.to_bits().to_le()
     }
 }
 
-pub trait Bytes<'a> {
+pub trait BytesLike<'a>: Debug {
     fn blen(&self) -> usize;
     fn bytes(&self) -> &[u8];
     fn clear(&mut self);
     fn push(&mut self, b: &'a [u8]) -> Result<()>;
 }
 
-impl<'a> Bytes<'a> for &'a str {
+impl<'buf> BytesLike<'buf> for &'buf str {
     #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
@@ -279,13 +282,13 @@ impl<'a> Bytes<'a> for &'a str {
     }
 
     #[inline(always)]
-    fn push(&mut self, b: &'a [u8]) -> Result<()> {
+    fn push(&mut self, b: &'buf [u8]) -> Result<()> {
         *self = core::str::from_utf8(b)?;
         Ok(())
     }
 }
 
-impl<'any> Bytes<'any> for String {
+impl<'buf> BytesLike<'buf> for String {
     #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
@@ -308,7 +311,7 @@ impl<'any> Bytes<'any> for String {
     }
 }
 
-impl<'a> Bytes<'a> for &'a [u8] {
+impl<'buf> BytesLike<'buf> for &'buf [u8] {
     #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
@@ -325,13 +328,13 @@ impl<'a> Bytes<'a> for &'a [u8] {
     }
 
     #[inline(always)]
-    fn push(&mut self, b: &'a [u8]) -> Result<()> {
+    fn push(&mut self, b: &'buf [u8]) -> Result<()> {
         *self = b;
         Ok(())
     }
 }
 
-impl<'any> Bytes<'any> for Vec<u8> {
+impl<'buf> BytesLike<'buf> for Vec<u8> {
     #[inline(always)]
     fn blen(&self) -> usize {
         self.len()
@@ -379,7 +382,7 @@ impl<K: PartialOrd + Ord + PartialEq, V> Map<K, V> for BTreeMap<K, V> {
     }
 }
 
-impl<K: Hash + PartialEq + Eq, V> Map<K, V> for indexmap::IndexMap<K, V> {
+impl<K: Hash + PartialEq + Eq, V> Map<K, V> for IndexMap<K, V> {
     fn mlen(&self) -> usize {
         self.len()
     }
@@ -440,7 +443,7 @@ where
         pos: 0,
         limit: len,
     };
-    while is.len() > 0 {
+    while !is.is_empty() {
         this.push(T::default());
         // Safe, we've just pushed an elem into this
         unsafe {
@@ -467,16 +470,16 @@ where
 
     let mut key = K::default();
     let mut val = V::default();
-    while stream.len() > 0 {
+    while !stream.is_empty() {
         // TODO: verify wire types
         match stream._varint::<u32>()? >> 3 {
-            1 => merge_single(&mut key, stream, &kmapper)?,
-            2 => merge_single(&mut val, stream, &vmapper)?,
+            1 => merge_single(&mut key, stream, kmapper)?,
+            2 => merge_single(&mut val, stream, vmapper)?,
             tag => unknown_tag(tag)?,
         }
     }
-    stream.unlimit(olimit);
     this.insert(key, val);
+    stream.unlimit(olimit);
     Ok(())
 }
 
@@ -525,7 +528,7 @@ pub fn emit_repeated<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapp
 
 #[inline(never)]
 pub fn emit_packed<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
-    if this.len() > 0 {
+    if !this.is_empty() {
         stream._varint(tag);
         let mut o = OutputStream::default();
         for v in this {
@@ -563,11 +566,11 @@ pub fn emit_oneof<'buf, T: BinProto<'buf>>(o: &Option<T>, stream: &mut OutputStr
     }
 }
 
-pub fn size_bytes<'x, T: Bytes<'x>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
+pub fn size_bytes<'x, T: BytesLike<'x>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
     _size_varint(v.blen()) + v.blen()
 }
 
-pub fn size_string<'x, T: Bytes<'x>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
+pub fn size_string<'x, T: BytesLike<'x>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
     _size_varint(v.blen()) + v.blen()
 }
 
@@ -630,7 +633,7 @@ impl SizeStack {
         out
     }
     fn top(&self) -> (*const u8, usize) {
-        self.stack.last().unwrap().clone()
+        *self.stack.last().unwrap()
     }
     fn pop(&mut self) -> (*const u8, usize) {
         self.stack.pop().unwrap()
@@ -683,7 +686,7 @@ pub fn size_packed<T, F>(v: &Vec<T>, tag: u32, stack: &mut SizeStack, sizer: F) 
 where
     F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
-    if v.len() > 0 {
+    if !v.is_empty() {
         let len: usize = v.iter().rev().map(|v| sizer(v, tag, stack)).sum();
         _size_varint(tag) + _size_varint(len) + len
     } else {
@@ -725,7 +728,7 @@ pub fn size_map<K, V, M: Map<K, V>>(
 pub fn decode<'buf, T: Default + BinProto<'buf>>(b: &'buf [u8]) -> Result<T> {
     let mut out = T::default();
     let mut is = InputStream::new(b);
-    while is.len() > 0 {
+    while !is.is_empty() {
         let tag = is._varint()?;
         out.merge_field(tag, &mut is)?;
     }

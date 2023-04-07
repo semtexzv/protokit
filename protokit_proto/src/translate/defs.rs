@@ -56,6 +56,7 @@ impl Visitor for FillDefinitions<'_> {
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
                 is_group: false,
+                .. Default::default()
             },
         );
         self.path = qualified_name;
@@ -78,6 +79,7 @@ impl Visitor for FillDefinitions<'_> {
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
                 is_group: true,
+                .. Default::default()
             },
         );
         self.path = qualified_name;
@@ -107,6 +109,7 @@ impl Visitor for FillDefinitions<'_> {
                 variants: enum_fields(self.ctx, item),
                 #[cfg(feature = "descriptors")]
                 options: opts(self.ctx, item),
+                .. Default::default()
             },
         );
     }
@@ -119,6 +122,7 @@ impl Visitor for FillDefinitions<'_> {
             rpc: rpcs(self.ctx, item),
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
+            .. Default::default()
         };
 
         self.unit.services.insert(name, svc);
@@ -140,6 +144,7 @@ impl Visitor for GatherOneOfs<'_> {
                 fields: fields(self.ctx, item),
                 #[cfg(feature = "descriptors")]
                 options: opts(self.ctx, item),
+                .. Default::default()
             },
         );
     }
@@ -180,6 +185,7 @@ impl Visitor for GatherRpcs<'_> {
                 res_stream: rpc.ret_stream,
                 #[cfg(feature = "descriptors")]
                 options: opts(self.ctx, rpc),
+                .. Default::default()
             },
         );
     }

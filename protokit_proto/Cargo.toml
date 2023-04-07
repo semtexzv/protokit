@@ -5,7 +5,7 @@ edition = "2021"
 
 [features]
 default = []
-descriptors = []
+descriptors = ["protokit_desc/descriptors"]
 
 [dependencies.protokit_textformat]
 path = "../protokit_textformat"
@@ -18,10 +18,10 @@ nom = "7.1.1"
 nom_locate = "4.0.0"
 nom-supreme = "0.8.0"
 
-thiserror = "1.0.38"
-miette = { version = "5.5.0", features = ["fancy"]}
+thiserror = "1"
+miette = { version = "5.5.0", default-features = false, features = ["fancy-no-backtrace"] }
 
-indexmap = "1.8.2"
+indexmap = "1"
 lex_core = { package = "lexical-core", version = "*", features = ["parse-integers", "power-of-two"] }
 lex_float = { package = "minimal-lexical", version = "*" }
 

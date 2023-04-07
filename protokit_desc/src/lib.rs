@@ -1,13 +1,14 @@
-#![allow(unused_imports)]
+#![allow(unused_imports, clippy::match_like_matches_macro)]
+
 use core::fmt::Debug;
 use core::str::FromStr;
 use std::collections::{HashMap, HashSet};
 
 use arcstr::ArcStr;
-pub(crate) use binformat::{BinProto, Bytes, Fixed, Sigint, Varint};
+pub(crate) use binformat::{BinProto, BytesLike, Fixed, Sigint, Varint};
 pub(crate) use derive::{protoenum, Proto};
 #[cfg(feature = "descriptors")]
-use generated::google::protobuf::descriptor::*;
+pub use generated::google::protobuf::descriptor::*;
 #[cfg(feature = "descriptors")]
 pub use generated::google::protobuf::*;
 use indexmap::IndexMap;
@@ -15,8 +16,8 @@ pub(crate) use textformat::{TextField as _, TextProto};
 pub use {arcstr, indexmap};
 pub(crate) use {binformat, textformat};
 
-// #[cfg(feature = "descriptors")]
-// pub mod generated;
+#[cfg(feature = "descriptors")]
+pub mod generated;
 
 pub type FieldNum = i32;
 pub type DefId = u64;
@@ -111,8 +112,8 @@ impl BuiltinType {
             BuiltinType::Sfixed32 => false,
             BuiltinType::Double => false,
             BuiltinType::Float => false,
-            BuiltinType::String_ => panic!(),
-            BuiltinType::Bytes_ => panic!(),
+            BuiltinType::String_ => false,
+            BuiltinType::Bytes_ => false,
         }
     }
     pub fn is_zigzag(&self) -> bool {
@@ -168,6 +169,12 @@ pub enum DataType {
     /// Map from builtin to any other data type, Serialized as a simple message
     /// where k has a tag of 0, and v tag 1
     Map(Box<(BuiltinType, DataType)>),
+}
+
+impl Default for DataType {
+    fn default() -> Self {
+        Self::Unresolved(ArcStr::new())
+    }
 }
 
 impl DataType {
@@ -245,7 +252,7 @@ fn type_to_descriptor(typ: &DataType) -> FieldDescriptorProtoType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct FieldDef {
     pub name: ArcStr,
     pub frequency: Frequency,
@@ -323,62 +330,62 @@ impl FieldDef {
         }
     }
 
-    // #[cfg(feature = "descriptors")]
-    // pub fn from_descriptor(
-    //     set: &mut FileSetDef,
-    //     file: &FileDescriptorProto,
-    //     _msg_desc: &DescriptorProto,
-    //     desc: &FieldDescriptorProto,
-    // ) -> Self {
-    //     // eprintln!("{:?}", desc);
-    //     // TODO: Fix the packed attr to be default true in proto3
-    //     let mut opts = desc.options.as_deref().cloned().unwrap_or_default();
-    //
-    //     if file.syntax.as_deref() == Some("proto3") && opts.packed.is_none() {
-    //         opts.packed = Some(true);
-    //     }
-    //
-    //     Self {
-    //         name: set.cache(desc.name.as_ref().unwrap()),
-    //         frequency: match &desc.label {
-    //             Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) => Frequency::Optional,
-    //             Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
-    //             Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
-    //             Some(FieldDescriptorProtoLabel(label)) => {
-    //                 panic!("Unknown label: {label:?}")
-    //             }
-    //             None => Frequency::Singular,
-    //         },
-    //         typ: match *desc.r#type.as_ref().unwrap() {
-    //             FieldDescriptorProtoType::TYPE_DOUBLE => DataType::Builtin(BuiltinType::Double),
-    //             FieldDescriptorProtoType::TYPE_FLOAT => DataType::Builtin(BuiltinType::Float),
-    //             FieldDescriptorProtoType::TYPE_INT64 => DataType::Builtin(BuiltinType::Int64),
-    //             FieldDescriptorProtoType::TYPE_UINT64 => DataType::Builtin(BuiltinType::Uint64),
-    //             FieldDescriptorProtoType::TYPE_INT32 => DataType::Builtin(BuiltinType::Int32),
-    //             FieldDescriptorProtoType::TYPE_FIXED64 => DataType::Builtin(BuiltinType::Fixed64),
-    //             FieldDescriptorProtoType::TYPE_FIXED32 => DataType::Builtin(BuiltinType::Fixed32),
-    //             FieldDescriptorProtoType::TYPE_BOOL => DataType::Builtin(BuiltinType::Bool),
-    //             FieldDescriptorProtoType::TYPE_STRING => DataType::Builtin(BuiltinType::String_),
-    //             FieldDescriptorProtoType::TYPE_GROUP => panic!(),
-    //             FieldDescriptorProtoType::TYPE_MESSAGE => {
-    //                 DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()))
-    //             }
-    //             FieldDescriptorProtoType::TYPE_BYTES => DataType::Builtin(BuiltinType::Bytes_),
-    //             FieldDescriptorProtoType::TYPE_UINT32 => DataType::Builtin(BuiltinType::Uint32),
-    //             FieldDescriptorProtoType::TYPE_ENUM => {
-    //                 DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()))
-    //             }
-    //             FieldDescriptorProtoType::TYPE_SFIXED32 => DataType::Builtin(BuiltinType::Sfixed32),
-    //             FieldDescriptorProtoType::TYPE_SFIXED64 => DataType::Builtin(BuiltinType::Sfixed64),
-    //             FieldDescriptorProtoType::TYPE_SINT32 => DataType::Builtin(BuiltinType::Sint32),
-    //             FieldDescriptorProtoType::TYPE_SINT64 => DataType::Builtin(BuiltinType::Sint64),
-    //
-    //             FieldDescriptorProtoType(_) => panic!(),
-    //         },
-    //         num: desc.number.unwrap(),
-    //         options: opts,
-    //     }
-    // }
+    #[cfg(feature = "descriptors")]
+    pub fn from_descriptor(
+        set: &mut FileSetDef,
+        file: &FileDescriptorProto,
+        _msg_desc: &DescriptorProto,
+        desc: &FieldDescriptorProto,
+    ) -> Self {
+        // eprintln!("{:?}", desc);
+        // TODO: Fix the packed attr to be default true in proto3
+        let mut opts = desc.options.as_deref().cloned().unwrap_or_default();
+
+        if file.syntax.as_deref() == Some("proto3") && opts.packed.is_none() {
+            opts.packed = Some(true);
+        }
+
+        Self {
+            name: set.cache(desc.name.as_ref().unwrap()),
+            frequency: match &desc.label {
+                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) => Frequency::Optional,
+                Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
+                Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
+                Some(FieldDescriptorProtoLabel(label)) => {
+                    panic!("Unknown label: {label:?}")
+                }
+                None => Frequency::Singular,
+            },
+            typ: match *desc.r#type.as_ref().unwrap() {
+                FieldDescriptorProtoType::TYPE_DOUBLE => DataType::Builtin(BuiltinType::Double),
+                FieldDescriptorProtoType::TYPE_FLOAT => DataType::Builtin(BuiltinType::Float),
+                FieldDescriptorProtoType::TYPE_INT64 => DataType::Builtin(BuiltinType::Int64),
+                FieldDescriptorProtoType::TYPE_UINT64 => DataType::Builtin(BuiltinType::Uint64),
+                FieldDescriptorProtoType::TYPE_INT32 => DataType::Builtin(BuiltinType::Int32),
+                FieldDescriptorProtoType::TYPE_FIXED64 => DataType::Builtin(BuiltinType::Fixed64),
+                FieldDescriptorProtoType::TYPE_FIXED32 => DataType::Builtin(BuiltinType::Fixed32),
+                FieldDescriptorProtoType::TYPE_BOOL => DataType::Builtin(BuiltinType::Bool),
+                FieldDescriptorProtoType::TYPE_STRING => DataType::Builtin(BuiltinType::String_),
+                FieldDescriptorProtoType::TYPE_GROUP => DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap())),
+                FieldDescriptorProtoType::TYPE_MESSAGE => {
+                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()))
+                }
+                FieldDescriptorProtoType::TYPE_BYTES => DataType::Builtin(BuiltinType::Bytes_),
+                FieldDescriptorProtoType::TYPE_UINT32 => DataType::Builtin(BuiltinType::Uint32),
+                FieldDescriptorProtoType::TYPE_ENUM => {
+                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()))
+                }
+                FieldDescriptorProtoType::TYPE_SFIXED32 => DataType::Builtin(BuiltinType::Sfixed32),
+                FieldDescriptorProtoType::TYPE_SFIXED64 => DataType::Builtin(BuiltinType::Sfixed64),
+                FieldDescriptorProtoType::TYPE_SINT32 => DataType::Builtin(BuiltinType::Sint32),
+                FieldDescriptorProtoType::TYPE_SINT64 => DataType::Builtin(BuiltinType::Sint64),
+
+                FieldDescriptorProtoType(_) => panic!(),
+            },
+            num: desc.number.unwrap(),
+            options: opts,
+        }
+    }
 
     #[cfg(feature = "descriptors")]
     pub fn to_descriptor(&self, set: &FileSetDef, file: &FileDef, msg: &mut DescriptorProto) -> FieldDescriptorProto {
@@ -409,7 +416,7 @@ impl FieldDef {
             DataType::Map(map) => {
                 let mut name = self.name.clone().to_string();
                 unsafe {
-                    name.as_bytes_mut()[.. 1].make_ascii_uppercase();
+                    name.as_bytes_mut()[..1].make_ascii_uppercase();
                 }
                 let map_entry_name = format!("{name}Entry");
                 fout.type_name = Some(format!(
@@ -464,7 +471,7 @@ impl FieldDef {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct VariantDef {
     pub name: ArcStr,
     pub num: FieldNum,
@@ -552,28 +559,28 @@ impl MessageFields {
     pub fn by_number(&self, n: FieldNum) -> Option<&FieldDef> {
         self.by_number.get(&n)
     }
-    // #[cfg(feature = "descriptors")]
-    // pub fn from_descriptor(
-    //     set: &mut FileSetDef,
-    //     file: &FileDescriptorProto,
-    //     oneof: Option<i32>,
-    //     desc: &DescriptorProto,
-    //     fields: &[FieldDescriptorProto],
-    // ) -> Self {
-    //     let mut this: Self = Default::default();
-    //     for f in fields {
-    //         if f.oneof_index == oneof {
-    //             this.by_name
-    //                 .insert(set.cache(f.name.as_ref().unwrap()), f.number.unwrap());
-    //             this.by_number
-    //                 .insert(f.number.unwrap(), FieldDef::from_descriptor(set, file, desc, f));
-    //         }
-    //     }
-    //     this
-    // }
+    #[cfg(feature = "descriptors")]
+    pub fn from_descriptor(
+        set: &mut FileSetDef,
+        file: &FileDescriptorProto,
+        oneof: Option<i32>,
+        desc: &DescriptorProto,
+        fields: &[FieldDescriptorProto],
+    ) -> Self {
+        let mut this: Self = Default::default();
+        for f in fields {
+            if f.oneof_index == oneof {
+                this.by_name
+                    .insert(set.cache(f.name.as_ref().unwrap()), f.number.unwrap());
+                this.by_number
+                    .insert(f.number.unwrap(), FieldDef::from_descriptor(set, file, desc, f));
+            }
+        }
+        this
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MessageDef {
     pub name: ArcStr,
     pub fields: MessageFields,
@@ -585,49 +592,49 @@ pub struct MessageDef {
 }
 
 impl MessageDef {
-    // #[cfg(feature = "descriptors")]
-    // fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, desc: &DescriptorProto) -> Self {
-    //     MessageDef {
-    //         name: set.cache(desc.name.as_ref().unwrap()),
-    //         fields: MessageFields::from_descriptor(set, file, None, desc, &desc.field),
-    //         options: Default::default(),
-    //         oneofs: desc
-    //             .oneof_decl
-    //             .iter()
-    //             .enumerate()
-    //             .map(|(id, od)| {
-    //                 let name = set.cache(od.name.as_ref().unwrap());
-    //                 (
-    //                     name.clone(),
-    //                     OneOfDef {
-    //                         name,
-    //                         fields: MessageFields::from_descriptor(set, file, Some(id as _), desc, &desc.field),
-    //                         options: Default::default(),
-    //                     },
-    //                 )
-    //             })
-    //             .collect(),
-    //         is_virtual_map: desc.options.as_ref().and_then(|v| v.map_entry).unwrap_or(false),
-    //         is_group: false,
-    //     }
-    // }
-    // #[cfg(feature = "descriptors")]
-    // pub fn to_descriptor(&self, set: &FileSetDef, file: &FileDef) -> DescriptorProto {
-    //     let mut out = DescriptorProto {
-    //         name: Some(self.name.to_string()),
-    //         ..Default::default()
-    //     };
-    //
-    //     for f in self.fields.by_number.values() {
-    //         let f: &FieldDef = f;
-    //         let field = f.to_descriptor(set, file, &mut out);
-    //         out.field.push(field);
-    //     }
-    //     out
-    // }
+    #[cfg(feature = "descriptors")]
+    fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, desc: &DescriptorProto) -> Self {
+        MessageDef {
+            name: set.cache(desc.name.as_ref().unwrap()),
+            fields: MessageFields::from_descriptor(set, file, None, desc, &desc.field),
+            options: Default::default(),
+            oneofs: desc
+                .oneof_decl
+                .iter()
+                .enumerate()
+                .map(|(id, od)| {
+                    let name = set.cache(od.name.as_ref().unwrap());
+                    (
+                        name.clone(),
+                        OneOfDef {
+                            name,
+                            fields: MessageFields::from_descriptor(set, file, Some(id as _), desc, &desc.field),
+                            options: Default::default(),
+                        },
+                    )
+                })
+                .collect(),
+            is_virtual_map: desc.options.as_ref().and_then(|v| v.map_entry).unwrap_or(false),
+            is_group: false,
+        }
+    }
+    #[cfg(feature = "descriptors")]
+    pub fn to_descriptor(&self, set: &FileSetDef, file: &FileDef) -> DescriptorProto {
+        let mut out = DescriptorProto {
+            name: Some(self.name.to_string()),
+            ..Default::default()
+        };
+
+        for f in self.fields.by_number.values() {
+            let f: &FieldDef = f;
+            let field = f.to_descriptor(set, file, &mut out);
+            out.field.push(field);
+        }
+        out
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct OneOfDef {
     pub name: ArcStr,
     pub fields: MessageFields,
@@ -635,7 +642,7 @@ pub struct OneOfDef {
     pub options: OneofOptions,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ServiceDef {
     pub name: ArcStr,
     pub rpc: IndexMap<ArcStr, RpcDef>,
@@ -659,7 +666,7 @@ impl ServiceDef {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct RpcDef {
     pub name: ArcStr,
     pub req_stream: bool,
@@ -864,68 +871,75 @@ impl FileDef {
             }
         }
     }
-    // #[cfg(feature = "descriptors")]
-    // pub fn from_descriptor(set: &mut FileSetDef, desc: FileDescriptorProto) -> Self {
-    //     let mut this = Self {
-    //         name: set.cache(desc.name.as_ref().unwrap()),
-    //         imports: desc
-    //             .dependency
-    //             .iter()
-    //             .map(|v| ImportDef {
-    //                 name: set.cache(v),
-    //                 file_idx: set.files.get_index_of(v.as_str()).unwrap(),
-    //             })
-    //             .collect(),
-    //         public_imports: vec![],
-    //         syntax: Syntax::from_str(desc.syntax.as_ref().unwrap()).unwrap(),
-    //         package: set.cache(desc.package.as_ref().unwrap()),
-    //         messages: Default::default(),
-    //         enums: Default::default(),
-    //         services: Default::default(),
-    //         names: Default::default(),
-    //         extensions: Default::default(),
-    //         extenders: Default::default(),
-    //     };
-    //
-    //     fn parse_enum(set: &mut FileSetDef, this: &mut FileDef, parent: Option<&str>, desc: &EnumDescriptorProto) {
-    //         let name = if let Some(parent) = parent {
-    //             set.cache(&format!("{}.{}", parent, desc.name.as_ref().unwrap()))
-    //         } else {
-    //             set.cache(desc.name.as_ref().unwrap())
-    //         };
-    //         this.enums.insert(name, EnumDef::from_descriptor(set, desc));
-    //     }
-    //
-    //     fn parse_msg(
-    //         set: &mut FileSetDef,
-    //         file: &FileDescriptorProto,
-    //         this: &mut FileDef,
-    //         parent: Option<&str>,
-    //         desc: &DescriptorProto,
-    //     ) {
-    //         let name = if let Some(parent) = parent {
-    //             set.cache(&format!("{}.{}", parent, desc.name.as_ref().unwrap()))
-    //         } else {
-    //             set.cache(desc.name.as_ref().unwrap())
-    //         };
-    //         for desc in &desc.nested_type {
-    //             parse_msg(set, file, this, Some(name.as_str()), desc)
-    //         }
-    //         for desc in &desc.enum_type {
-    //             parse_enum(set, this, Some(name.as_str()), desc);
-    //         }
-    //         this.messages.insert(name, MessageDef::from_descriptor(set, file, desc));
-    //     }
-    //
-    //     for desc in &desc.enum_type {
-    //         parse_enum(set, &mut this, None, desc);
-    //     }
-    //
-    //     for field_desc in &desc.message_type {
-    //         parse_msg(set, &desc, &mut this, None, field_desc);
-    //     }
-    //     this
-    // }
+    #[cfg(feature = "descriptors")]
+    pub fn from_descriptor(set: &mut FileSetDef, src: &FileDescriptorSet, desc: &FileDescriptorProto) -> Self {
+        // panic!("{:#?}", src);
+        let mut this = Self {
+            name: set.cache(desc.name.as_ref().unwrap()),
+            imports: desc
+                .dependency
+                .iter()
+                .map(|v| {
+                    let file_idx = src.file.iter().position(|f| f.name.as_deref() == Some(v.as_str()));
+                    let Some(file_idx) = file_idx else {
+                        panic!("Did not find {:?} in : {:#?}", v, src);
+                    };
+                    ImportDef {
+                        name: set.cache(v),
+                        file_idx,
+                    }
+                })
+                .collect(),
+            public_imports: vec![],
+            syntax: desc.syntax.as_ref().map(|s| Syntax::from_str(s)).transpose().unwrap().unwrap_or(Syntax::Proto3),
+            package: set.cache(desc.package.as_ref().unwrap()),
+            messages: Default::default(),
+            enums: Default::default(),
+            services: Default::default(),
+            names: Default::default(),
+            extensions: Default::default(),
+            extenders: Default::default(),
+        };
+
+        fn parse_enum(set: &mut FileSetDef, this: &mut FileDef, parent: Option<&str>, desc: &EnumDescriptorProto) {
+            let name = if let Some(parent) = parent {
+                set.cache(&format!("{}.{}", parent, desc.name.as_ref().unwrap()))
+            } else {
+                set.cache(desc.name.as_ref().unwrap())
+            };
+            this.enums.insert(name, EnumDef::from_descriptor(set, desc));
+        }
+
+        fn parse_msg(
+            set: &mut FileSetDef,
+            file: &FileDescriptorProto,
+            this: &mut FileDef,
+            parent: Option<&str>,
+            desc: &DescriptorProto,
+        ) {
+            let name = if let Some(parent) = parent {
+                set.cache(&format!("{}.{}", parent, desc.name.as_ref().unwrap()))
+            } else {
+                set.cache(desc.name.as_ref().unwrap())
+            };
+            for desc in &desc.nested_type {
+                parse_msg(set, file, this, Some(name.as_str()), desc)
+            }
+            for desc in &desc.enum_type {
+                parse_enum(set, this, Some(name.as_str()), desc);
+            }
+            this.messages.insert(name, MessageDef::from_descriptor(set, file, desc));
+        }
+
+        for desc in &desc.enum_type {
+            parse_enum(set, &mut this, None, desc);
+        }
+
+        for field_desc in &desc.message_type {
+            parse_msg(set, &desc, &mut this, None, field_desc);
+        }
+        this
+    }
     #[cfg(feature = "descriptors")]
     pub fn to_descriptor(&self, set: &FileSetDef) -> FileDescriptorProto {
         let mut out = FileDescriptorProto {
@@ -935,72 +949,74 @@ impl FileDef {
             ..Default::default()
         };
 
-        // for i in &self.imports {
-        //     out = out.with_dependency(i.name.to_string());
-        // }
-        //
-        // for (i, import) in self.public_imports.iter().enumerate() {
-        //     out = out
-        //         .with_dependency(import.name.to_string())
-        //         .with_public_dependency((self.imports.len() + i) as _);
-        // }
-        //
-        // for m in self.messages.values() {
-        //     println!("Serializing: {:?}", m.name);
-        //     let m: &MessageDef = m;
-        //     let mut name = m.name.as_str();
-        //     let mut parent: Option<&mut DescriptorProto> = None;
-        //     while name.contains('.') {
-        //         let (parent_name, this_name) = name.split_once('.').unwrap();
-        //         parent = if let Some(parent) = parent {
-        //             parent
-        //                 .nested_type
-        //                 .iter_mut()
-        //                 .find(|m| m.name.as_deref() == Some(parent_name))
-        //         } else {
-        //             out.message_type
-        //                 .iter_mut()
-        //                 .find(|m| m.name.as_deref() == Some(parent_name))
-        //         };
-        //         name = this_name;
-        //     }
-        //     if let Some(parent) = parent {
-        //         let desc = m.to_descriptor(set, self).with_name(name.to_string());
-        //         parent.add_nested_type(desc);
-        //     } else {
-        //         out.add_message_type(m.to_descriptor(set, self));
-        //     }
-        // }
-        //
-        // for en in self.enums.values() {
-        //     println!("Serializing: {:?}", en.name);
-        //     let en: &EnumDef = en;
-        //     let mut name = en.name.as_str();
-        //     let mut parent: Option<&mut DescriptorProto> = None;
-        //     while name.contains('.') {
-        //         let (parent_name, this_name) = name.split_once('.').unwrap();
-        //         parent = if let Some(parent) = parent {
-        //             parent
-        //                 .nested_type
-        //                 .iter_mut()
-        //                 .find(|m| m.name.as_deref() == Some(parent_name))
-        //         } else {
-        //             out.message_type
-        //                 .iter_mut()
-        //                 .find(|m| m.name.as_deref() == Some(parent_name))
-        //         };
-        //         name = this_name;
-        //     }
-        //     if let Some(parent) = parent {
-        //         parent.add_enum_type(en.to_descriptor().with_name(name.to_string()));
-        //     } else {
-        //         out.add_enum_type(en.to_descriptor());
-        //     }
-        // }
-        //
-        // for svc in self.services.values() {
-        //     out.add_service(svc.to_descriptor(set, self));
-        // }
+        for i in &self.imports {
+            out.dependency.push(i.name.to_string());
+        }
+
+        for (i, import) in self.public_imports.iter().enumerate() {
+            out.dependency.push(import.name.to_string());
+            out.public_dependency.push((self.imports.len() + i) as _);
+        }
+
+        for m in self.messages.values() {
+            println!("Serializing: {:?}", m.name);
+            let m: &MessageDef = m;
+            let mut name = m.name.as_str();
+            let mut parent: Option<&mut DescriptorProto> = None;
+            while name.contains('.') {
+                let (parent_name, this_name) = name.split_once('.').unwrap();
+                parent = if let Some(parent) = parent {
+                    parent
+                        .nested_type
+                        .iter_mut()
+                        .find(|m| m.name.as_deref() == Some(parent_name))
+                } else {
+                    out.message_type
+                        .iter_mut()
+                        .find(|m| m.name.as_deref() == Some(parent_name))
+                };
+                name = this_name;
+            }
+            if let Some(parent) = parent {
+                let mut desc = m.to_descriptor(set, self);
+                desc.name = name.to_string().into();
+                parent.nested_type.push(desc);
+            } else {
+                out.message_type.push(m.to_descriptor(set, self));
+            }
+        }
+
+        for en in self.enums.values() {
+            println!("Serializing: {:?}", en.name);
+            let en: &EnumDef = en;
+            let mut name = en.name.as_str();
+            let mut parent: Option<&mut DescriptorProto> = None;
+            while name.contains('.') {
+                let (parent_name, this_name) = name.split_once('.').unwrap();
+                parent = if let Some(parent) = parent {
+                    parent
+                        .nested_type
+                        .iter_mut()
+                        .find(|m| m.name.as_deref() == Some(parent_name))
+                } else {
+                    out.message_type
+                        .iter_mut()
+                        .find(|m| m.name.as_deref() == Some(parent_name))
+                };
+                name = this_name;
+            }
+            if let Some(parent) = parent {
+                let mut en = en.to_descriptor();
+                en.name = name.to_string().into();
+                parent.enum_type.push(en);
+            } else {
+                out.enum_type.push(en.to_descriptor());
+            }
+        }
+
+        for svc in self.services.values() {
+            out.service.push(svc.to_descriptor(set, self));
+        }
 
         out
     }
@@ -1104,7 +1120,7 @@ fn try_resolve_within_scopes(names: &HashMap<ArcStr, LocalDefId>, mut scope: &st
         let qualified = format!("{scope}{scope_dot}{symbol}");
         match (names.get(qualified.as_str()), scope.rfind('.')) {
             (Some(v), _) => return Some(*v),
-            (None, Some(p)) => scope = &scope[.. p],
+            (None, Some(p)) => scope = &scope[..p],
             // Resolve globally without the prefix
             (None, None) => return names.get(symbol).copied(),
         }
@@ -1120,14 +1136,14 @@ fn try_resolve_symbol(
     if let Some(without_dot) = symbol.strip_prefix('.') {
         // We're searching for global symbol. If package prefix matches, we can search for the inner part of the symbol
         if let Some(without_package) = without_dot.strip_prefix(file_package) {
-            let localized_symbol = &without_package[1 ..];
+            let localized_symbol = &without_package[1..];
             return names.get(localized_symbol).cloned();
         } else {
             eprintln!("Package mismatch: {} within: {}", without_dot, &file_package);
             return None;
         }
     } else if let Some(localized) = symbol.strip_prefix(file_package) {
-        let localized_symbol = &localized[1 ..];
+        let localized_symbol = &localized[1..];
         return names.get(localized_symbol).cloned();
     }
 
@@ -1145,7 +1161,7 @@ fn try_resolve_symbol(
         ) {
             (Some(v), _) => return Some(v),
             // We need to remove subpackages, because name sections might be of nested messages, not package names
-            (None, Some(v)) => file_package = &file_package[.. v],
+            (None, Some(v)) => file_package = &file_package[..v],
             (None, None) => {
                 return try_resolve_within_scopes(names, "", symbol);
             }
@@ -1227,34 +1243,35 @@ impl FileSetDef {
                 other => panic!("{other:?}"),
             })
     }
-    // #[cfg(feature = "descriptors")]
-    // pub fn from_descriptor(desc: FileDescriptorSet) -> Self {
-    //     let mut this = Self::default();
-    //     for f in desc.file {
-    //         let mut file = FileDef::from_descriptor(&mut this, f);
-    //
-    //         file.fill_names();
-    //         // eprintln!("{:#?}", file);
-    //         file.resolve_types(this.files.len(), &this.files);
-    //         file.resolve_extensions(this.files.len(), &mut this.files);
-    //         this.files.insert(file.name.clone(), file);
-    //     }
-    //     // for f in this.files.values() {}
-    //     this
-    // }
-    // #[cfg(feature = "descriptors")]
-    // pub fn from_bytes(data: &[u8]) -> FileSetDef {
-    //     let desc: FileDescriptorSet = crate::binformat::decode(data).unwrap();
-    //     Self::from_descriptor(desc)
-    // }
-    // #[cfg(feature = "descriptors")]
-    // pub fn to_descriptor(&self) -> FileDescriptorSet {
-    //     let mut desc = FileDescriptorSet::default();
-    //     for f in self.files.values() {
-    //         desc = desc.with_file(f.to_descriptor(self));
-    //     }
-    //     desc
-    // }
+    #[cfg(feature = "descriptors")]
+    pub fn from_descriptor(desc: FileDescriptorSet) -> Self {
+        let mut this = Self::default();
+        for f in desc.file.iter() {
+            let mut file = FileDef::from_descriptor(&mut this, &desc, f);
+
+            file.fill_names();
+            // eprintln!("{:#?}", file);
+            file.resolve_types(this.files.len(), &this.files);
+            file.resolve_extensions(this.files.len(), &mut this.files);
+            this.files.insert(file.name.clone(), file);
+        }
+        // for f in this.files.values() {}
+        this
+    }
+    #[cfg(feature = "descriptors")]
+    pub fn from_bytes(data: &[u8]) -> FileSetDef {
+        let desc: FileDescriptorSet = crate::binformat::decode(data).unwrap();
+        Self::from_descriptor(desc)
+    }
+    #[cfg(feature = "descriptors")]
+    pub fn to_descriptor(&self) -> FileDescriptorSet {
+        let mut desc = FileDescriptorSet::default();
+        for f in self.files.values() {
+            desc.file.push(f.to_descriptor(self));
+            // desc = desc.with_file(f.to_descriptor(self));
+        }
+        desc
+    }
 }
 
 #[test]

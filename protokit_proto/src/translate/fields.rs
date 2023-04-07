@@ -35,6 +35,7 @@ impl Visitor for FieldVisitor<'_> {
             num: item.number,
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
+            .. Default::default()
         })
     }
     fn visit_group(&mut self, item: &mut Group) {
@@ -45,6 +46,7 @@ impl Visitor for FieldVisitor<'_> {
             typ: DataType::Unresolved(name),
             num: item.number,
             // options: Default::default(),
+            .. Default::default()
         })
     }
     fn visit_field(&mut self, item: &mut Field) {
@@ -60,6 +62,7 @@ impl Visitor for FieldVisitor<'_> {
             num: item.number,
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
+            .. Default::default()
         };
 
         self.fields.insert(def);
@@ -86,6 +89,7 @@ impl Visitor for EnumFieldVisitor<'_> {
             num: item.value,
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
+            .. Default::default()
         };
         self.variants.by_name.insert(name, def);
     }

@@ -1,5 +1,8 @@
-use core::fmt::{Debug, Formatter};
+#![allow(clippy::wrong_self_convention, clippy::new_ret_no_self)]
+
+use std::fmt::{Debug, Formatter};
 use std::collections::BTreeMap;
+use std::ops::Deref;
 
 use binformat::{BinProto, InputStream, OutputStream, SizeStack};
 
@@ -21,8 +24,8 @@ impl Registry {
         self.messages.insert(msg.qualified_name(), msg.new());
     }
 
-    pub fn find(&self, name: &str) -> Option<&Box<dyn AnyMessage>> {
-        self.messages.get(name)
+    pub fn find(&self, name: &str) -> Option<&dyn AnyMessage> {
+        self.messages.get(name).map(|v| v.deref())
     }
 }
 
@@ -56,7 +59,8 @@ where
     T: Default + Debug + Send + Sync + 'static,
 {
     fn new(&self) -> Box<dyn AnyMessage + 'static> {
-        Box::new(T::default())
+        Box::<T>::default()
+        // Box::new(T::default())
     }
 
     fn qualified_name(&self) -> &'static str {

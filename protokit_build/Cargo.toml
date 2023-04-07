@@ -4,8 +4,10 @@ version = "0.0.1"
 edition = "2021"
 
 [features]
-default = []
-descriptors = ["protokit_proto/descriptors", "protokit_desc/descriptors"]
+default = ["parser"]
+protoc = ["descriptors"]
+parser = ["protokit_proto", "descriptors"]
+descriptors = ["protokit_desc/descriptors"]
 
 [dependencies.protokit_binformat]
 path = "../protokit_binformat"
@@ -15,9 +17,10 @@ path = "../protokit_desc"
 
 [dependencies.protokit_proto]
 path = "../protokit_proto"
+optional = true
 
 [dependencies]
-anyhow = "1.0.57"
+anyhow = "1"
 quote = "1.0.26"
 
 syn = { version = "2.0.9", default-features = false, features = ["parsing", "proc-macro"]}

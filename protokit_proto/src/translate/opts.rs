@@ -1,11 +1,11 @@
-use crate::translate::TranslateCtx;
+// use crate::translate::TranslateCtx;
 
-/// Visitor that processes opts on definition level, should not recurse
-/// into nested definitions
-struct InnerOptVisitor<'tcx, E> {
-    pub ctx: &'tcx mut TranslateCtx,
-    pub opts: &'tcx mut E,
-}
+// /// Visitor that processes opts on definition level, should not recurse
+// /// into nested definitions
+// struct InnerOptVisitor<'tcx, E> {
+//     pub ctx: &'tcx mut TranslateCtx,
+//     pub opts: &'tcx mut E,
+// }
 
 // impl<E: protokit_textformat::Decodable> Visitor for InnerOptVisitor<'_, E> {
 //     fn visit_opt(&mut self, item: &mut Opt) {

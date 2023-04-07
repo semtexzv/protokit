@@ -13,7 +13,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Struct {
-    pub fields: ::core::collections::HashMap<String, Value>,
+    pub fields: ::std::collections::HashMap<String, Value>,
     pub _unknown: (),
 }
 impl Struct {
@@ -52,7 +52,7 @@ impl textformat::Encodable for Struct {
         out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.fields
-            != <::core::collections::HashMap<String, Value> as Default>::default()
+            != <::std::collections::HashMap<String, Value> as Default>::default()
         {
             out.indent(pad);
             out.push_str("fields ");

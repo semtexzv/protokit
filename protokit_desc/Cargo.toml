@@ -22,7 +22,7 @@ path = "../protokit_derive"
 
 [dependencies]
 arcstr = "1.1.4"
-indexmap = "1.9.1"
+indexmap = "1"
 
 [dev-dependencies]
 maplit = "1.0.2"

@@ -1,5 +1,4 @@
 use core::ops::Deref;
-use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -19,7 +18,6 @@ pub mod opts;
 pub struct TranslateCtx {
     pub current_stack: Vec<PathBuf>,
     pub proto_paths: Vec<PathBuf>,
-    pub replacement: HashMap<String, String>,
     pub def: FileSetDef,
     pub file_counter: usize,
     pub errors: Vec<String>,
@@ -41,7 +39,6 @@ impl TranslateCtx {
         TranslateCtx {
             current_stack: vec![],
             proto_paths: vec![],
-            replacement: HashMap::default(),
             def,
             file_counter: 0,
             errors: vec![],
@@ -49,11 +46,6 @@ impl TranslateCtx {
     }
     pub fn include(&mut self, p: impl Into<PathBuf>) {
         self.proto_paths.push(p.into());
-    }
-
-    pub fn replace_import(&mut self, from: &str, to: &str) -> &mut Self {
-        self.replacement.insert(from.to_string(), to.to_string());
-        self
     }
 
     pub fn resolve_file_in_path(&mut self, p: impl AsRef<Path>) -> io::Result<PathBuf> {

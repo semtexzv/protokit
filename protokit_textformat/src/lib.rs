@@ -1,9 +1,7 @@
 use core::fmt::Display;
-use core::hash::Hash;
 use core::num::{ParseIntError, TryFromIntError};
 use core::ops::{Deref, DerefMut};
 use core::str::{FromStr, Utf8Error};
-use std::collections::BTreeMap;
 
 use binformat::Map;
 use thiserror::Error;
@@ -29,6 +27,11 @@ pub enum Error {
 
     #[error("Unknown identifier: {0}")]
     Unknown(String),
+
+    #[error("Borrowed string requires escaping")]
+    Escape,
+    #[error("Invalid escape sequence")]
+    InvalidEscape,
 
     #[error("Invalid integer: {0}")]
     InvalidInt(#[from] ParseIntError),
@@ -201,7 +204,7 @@ impl<'buf> TextField<'buf> for u64 {
 
 impl<'buf> TextField<'buf> for f32 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
-        *self = stream.f64()? as _;
+        *self = stream.f32()? as _;
         Ok(())
     }
 
@@ -235,7 +238,7 @@ impl<'buf> TextField<'buf> for String {
     }
 
     fn emit(&self, name: &str, stream: &mut OutputStream) {
-        if self.len() > 0 {
+        if !self.is_empty() {
             _emit(self, name, stream)
         }
     }
@@ -250,7 +253,7 @@ impl<'buf> TextField<'buf> for &'buf str {
         stream.string(|s| {
             *self = s;
             if s.contains('\\') {
-                panic!("Need to escape");
+                return Err(crate::Error::Escape)
             }
             Ok(())
         })
@@ -275,7 +278,7 @@ impl<'buf> TextField<'buf> for Vec<u8> {
     }
 
     fn emit(&self, name: &str, stream: &mut OutputStream) {
-        if self.len() > 0 {
+        if !self.is_empty() {
             _emit(self, name, stream)
         }
     }
@@ -349,12 +352,12 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
             // End of the list
             RBracket | EndOfFile if is_list => {
                 // In this case we must advance one past the rbracket
-                stream.next();
+                stream.advance();
                 return Ok(());
             }
             // Comma as elem separator
             Comma if is_list => {
-                stream.next();
+                stream.advance();
                 continue;
             }
             // This was the last entry in this field, return
@@ -367,9 +370,9 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
 }
 
 #[inline(never)]
-pub fn merge_map<'buf, K, V>(field: &mut BTreeMap<K, V>, stream: &mut InputStream<'buf>) -> Result<()>
+pub fn merge_map<'buf, K, V, M: Map<K, V>>(field: &mut M, stream: &mut InputStream<'buf>) -> Result<()>
 where
-    K: TextField<'buf> + Default + PartialEq + Ord + Hash,
+    K: TextField<'buf> + Default,
     V: TextField<'buf> + Default,
 {
     #[derive(Default)]
@@ -397,7 +400,7 @@ where
     // TODO: Improve this, this eats the field identifier
     stream.expect_consume(Ident)?;
     if stream.cur == Colon {
-        stream.next();
+        stream.advance();
     }
     merge_repeated(&mut help, stream)?;
 
@@ -437,15 +440,13 @@ pub fn emit_optional<'buf, F: TextField<'buf> + Default>(
     }
 }
 
-// fn _rep<'buf>(it: &dyn TextField<'buf>, stream: &mut OutputStream) {}
-
 #[inline(never)]
 pub fn emit_repeated<'buf, F: TextField<'buf> + Default + PartialEq>(
     field: &Vec<F>,
     name: &'static str,
     stream: &mut OutputStream,
 ) {
-    if field.len() > 0 {
+    if !field.is_empty() {
         stream.ln();
         stream.push(name);
         if !F::is_message() {
@@ -532,7 +533,7 @@ pub fn decode<'buf, T: TextProto<'buf> + Default>(data: &'buf str, reg: &'buf Re
 }
 
 pub fn encode<'any, T: TextProto<'any>>(b: &T) -> Result<String> {
-    let mut out = OutputStream::new();
+    let mut out = OutputStream::default();
     b.encode(&mut out);
     Ok(out.buf)
 }

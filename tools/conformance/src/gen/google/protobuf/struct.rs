@@ -13,9 +13,9 @@ impl NullValue {
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct Struct {
     #[field(1u32, "fields", map(string, nested), singular)]
-    pub fields: ::std::collections::BTreeMap<String, Value>,
+    pub fields: ::protokit::IndexMap<String, Value>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Clone, PartialEq, Proto)]
 pub enum ValueOneOfKind {
@@ -57,12 +57,12 @@ pub struct Value {
     )]
     pub kind: Option<ValueOneOfKind>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct ListValue {
     #[field(1u32, "values", nested, repeated)]
     pub values: Vec<Value>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }

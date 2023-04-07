@@ -1,18 +1,14 @@
-fn main() {
+fn main() -> protokit_build::Result<()> {
     protokit_build::Build::new()
+        // .borrow()
+        .track_unknowns(true)
+        .out_dir("src/gen")
         .include("../proto")
-        .compile("google/protobuf/descriptor.proto")
-        .unwrap()
-        .compile("google/protobuf/api.proto")
-        .unwrap()
-        .compile("google/protobuf/compiler/plugin.proto")
-        .unwrap()
-        .compile("google/protobuf/struct.proto")
-        .unwrap()
-        .compile("com/book/book.proto")
-        .unwrap()
-        .compile("google/protobuf/timestamp.proto")
-        .unwrap()
+        .compile("google/protobuf/descriptor.proto")?
+        .compile("google/protobuf/api.proto")?
+        .compile("google/protobuf/compiler/plugin.proto")?
+        .compile("google/protobuf/struct.proto")?
+        .compile("com/book/book.proto")?
+        .compile("google/protobuf/timestamp.proto")?
         .generate()
-        .unwrap()
 }

@@ -36,11 +36,12 @@ impl CodeGenerator<'_> {
                 // .with_context(|| format!("{msg_name}.{field_raw_name} in {:?}", file.name))
                 .expect("Resolving name");
 
-            let mut req_type = raw_req_type.clone();
-            let mut res_type = raw_res_type.clone();
 
             let mut rpc_kind_method = quote! { unary };
-            let mut response_type = quote! {};
+
+            let mut req_type = raw_req_type.clone();
+            let res_type;
+            let response_type;
             let mut stream_def = quote! {};
 
             let svc_type = match (&rpc.req_stream, &rpc.res_stream) {
@@ -121,7 +122,7 @@ impl CodeGenerator<'_> {
         }
         quote! {
             mod #mod_name {
-                use super::root;
+                use super::*;
                 use protokit::grpc::*;
                 #[protokit::grpc::async_trait]
                 pub trait #svc_name : Send + Sync + 'static {
@@ -136,11 +137,11 @@ impl CodeGenerator<'_> {
                 }
                 impl<S: #svc_name> From<S> for #server_name<S> {
                     fn from(v: S) -> Self {
-                        Self(::core::sync::Arc::new(v))
+                        Self(::std::sync::Arc::new(v))
                     }
                 }
-                impl<S : #svc_name> From<::core::sync::Arc<S>> for #server_name<S> {
-                    fn from(v: ::core::sync::Arc<S>) -> Self {
+                impl<S : #svc_name> From<::std::sync::Arc<S>> for #server_name<S> {
+                    fn from(v: ::std::sync::Arc<S>) -> Self {
                         Self(v)
                     }
                 }
@@ -151,19 +152,18 @@ impl CodeGenerator<'_> {
                     where
                           S: #svc_name,
                           B: Body + Send + 'static,
-                          B::Error: Into<Box<dyn core::error::Error + Send + Sync + 'static>> + Send + 'static,
+                          B::Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + Send + 'static,
 
                 {
                     type Response = http::Response<tonic::body::BoxBody>;
                     type Error = core::convert::Infallible;
                     type Future = BoxFuture<Self::Response, Self::Error>;
 
-                    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+                    fn poll_ready(&mut self, _: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
                         Poll::Ready(Ok(()))
                     }
 
                     fn call(&mut self, req: http::Request<B>) -> Self::Future {
-                        let inner = self.0.clone();
                         match req.uri().path() {
                             #(#arms)*
                             _ => Box::pin(async move {
@@ -268,7 +268,7 @@ impl CodeGenerator<'_> {
         }
         quote! {
             mod #mod_name {
-                use super::root;
+                use super::*;
                 use protokit::grpc::*;
                 #[derive(Debug, Clone)]
                 pub struct #client_name<C> {

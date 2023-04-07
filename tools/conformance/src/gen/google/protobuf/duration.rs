@@ -10,5 +10,5 @@ pub struct Duration {
     #[field(2u32, "nanos", varint, singular)]
     pub nanos: i32,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }

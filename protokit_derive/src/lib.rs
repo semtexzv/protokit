@@ -24,8 +24,8 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
     let mut merge_txt = vec![];
     let mut emit_txt = vec![];
     for b in &mut block.items {
-        match b {
-            ImplItem::Const(c) => c.attrs.retain(|a| {
+        if let ImplItem::Const(c) = b {
+            c.attrs.retain(|a| {
                 if a.path().is_ident(&format_ident!("var")) {
                     let m = a.parse_args::<VarMeta>().unwrap();
                     let name = m.name;
@@ -36,8 +36,7 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
                 } else {
                     true
                 }
-            }),
-            _ => {}
+            });
         }
     }
 
@@ -67,7 +66,7 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         }
 
     })
-    .into()
+        .into()
 }
 
 #[proc_macro_error]
@@ -83,7 +82,7 @@ pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         }
         _ => abort_call_site!("Unsupported: {data:?}"),
     }
-    .into()
+        .into()
 }
 
 enum Item {
@@ -285,7 +284,7 @@ fn _impl_proto(
                 });
                 let this = quote! { &self.#ident};
                 emit_bin.push(emit_arm(ident, tag, freq, kind, &this));
-                size_bin.push(size_arm(&ident, tag, freq, kind, &this));
+                size_bin.push(size_arm(ident, tag, freq, kind, &this));
 
                 let emit = if let FieldKind::Map(..) = kind {
                     format_ident!("emit_map", span = ident.span())
@@ -310,11 +309,10 @@ fn _impl_proto(
             Item::Oneof { ident, names, nums, .. } => {
                 let tags = nums
                     .iter()
-                    .map(|t| {
+                    .flat_map(|t| {
                         let v = t.base10_parse::<u32>().unwrap() << 3;
                         [v, v + 1, v + 2, v + 3, v + 4, v + 5, v + 6, v + 7]
                     })
-                    .flatten()
                     .collect::<Vec<_>>();
 
                 for (n, t) in names.iter().zip(nums) {
@@ -468,13 +466,13 @@ fn _impl_oneof(
 
         let this = quote! { self.#setter() };
 
-        let size = size_arm(&ident, tag, &Frequency::Raw, kind, &quote! { v });
+        let size = size_arm(ident, tag, &Frequency::Raw, kind, &quote! { v });
         size_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => #size,
         });
 
         merge_bin.push(merge_arm(ident, tag, &Frequency::Singular, kind, &this));
-        let emit = emit_arm(&ident, tag, &Frequency::Raw, kind, &quote! { v });
+        let emit = emit_arm(ident, tag, &Frequency::Raw, kind, &quote! { v });
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });
@@ -516,11 +514,13 @@ fn _impl_oneof(
             fn size(&self, stack: &mut binformat::SizeStack) -> usize {
                 match self {
                     #(#size_bin)*
+                    _ => 0,
                 }
             }
             fn encode(&self, stream: &mut binformat::OutputStream) {
                 match self {
                     #(#emit_bin)*
+                    _ => {},
                 }
             }
         }
@@ -534,6 +534,7 @@ fn _impl_oneof(
             fn encode(&self, stream: &mut textformat::OutputStream) {
                 match self {
                     #(#emit_txt)*
+                    _ => {},
                 }
             }
         }

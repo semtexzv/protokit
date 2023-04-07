@@ -5,8 +5,8 @@ edition = "2021"
 
 [features]
 default = []
-descriptors = ["desc/descriptors"]
 grpc = ["dep:grpc"]
+descriptors = ["desc/descriptors"]
 
 [dependencies.binformat]
 package = "protokit_binformat"
@@ -30,7 +30,8 @@ package = "protokit_derive"
 path = "../protokit_derive"
 
 [dependencies]
-anyhow = "1.0.57"
+anyhow = "1"
+indexmap = "1"
 
 [dev-dependencies]
 maplit = "1.0.2"

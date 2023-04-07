@@ -40,25 +40,7 @@ impl Parse for ProtoMeta {
 
             oname = input.parse()?;
         }
-        panic!()
-        // for f in fields {
-        //     if if f.name == "buf" || f.name == "borrow" {
-        //
-        //         out.buf = Some(f.value);
-        //     } else if f.name == "name" {
-        //         out.name = Some(f.value);
-        //     } else if f.name == "file" {
-        //         out.file = Some(f.value);
-        //     } else if f.name == "package" {
-        //         out.package = Some(f.value)
-        //     } else {
-        //         return Err(syn::Error::new(
-        //             input.span(),
-        //             format!("Unknown key: {}, expected name, file or package", f.name),
-        //         ));
-        //     }
-        // }
-        // Ok(out)
+        Err(Error::new(input.span(), "Could not recognize proto meta"))
     }
 }
 

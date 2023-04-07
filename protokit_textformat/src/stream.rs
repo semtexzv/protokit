@@ -1,3 +1,6 @@
+#![allow(clippy::from_str_radix_10)]
+
+
 use core::fmt::{Display, Write};
 use core::str::FromStr;
 
@@ -11,7 +14,8 @@ use crate::{unexpected, unknown, Result, TextProto, Token};
 pub struct InputStream<'buf> {
     pub(crate) lex: Lexer<'buf, Token>,
     pub(crate) cur: Token,
-    pub(crate) reg: &'buf Registry,
+    // TODO: will be required for any support
+    pub(crate) _reg: &'buf Registry,
     // Whether we are parsing root message, or we're expecting more braces
     root: bool,
 }
@@ -22,15 +26,14 @@ impl<'buf> InputStream<'buf> {
         Self {
             lex,
             cur: StartOfFile,
-            reg,
+            _reg: reg,
             root: true,
         }
     }
-    // pub fn with_registry(data: &'buf str, reg: &Registry) ->
 
-    pub fn next(&mut self) -> Token {
+    #[must_use]
+    pub fn next_token(&mut self) -> Token {
         self.advance();
-        // println!("Move to {:?}: {}", self.cur, self.lex.slice());
         self.cur
     }
 
@@ -55,7 +58,7 @@ impl<'buf> InputStream<'buf> {
         if self.cur != kind {
             return unexpected(kind, self.cur, self.lex.remainder());
         }
-        Ok(self.next())
+        Ok(self.next_token())
     }
 
     fn expect_curr(&self, kind: Token) -> Result<()> {
@@ -68,7 +71,7 @@ impl<'buf> InputStream<'buf> {
     /// If current token == kind, then advance and return true, otherwise return false
     pub fn try_consume(&mut self, kind: Token) -> bool {
         if self.cur == kind {
-            self.next();
+            self.advance();
             true
         } else {
             false
@@ -81,7 +84,7 @@ impl<'buf> InputStream<'buf> {
             let buf = self.buf();
             // TODO: Escape + Trim quotes
             f(&buf[1 .. buf.len() - 1])?;
-            let _ = self.next();
+            let _ = self.next_token();
         }
         Ok(())
     }
@@ -92,17 +95,9 @@ impl<'buf> InputStream<'buf> {
             let buf = self.buf().as_bytes();
             // TODO: Escape + Trim quotes
             f(&buf[1 .. buf.len() - 1])?;
-            let _ = self.next();
+            let _ = self.next_token();
         }
         Ok(())
-    }
-
-    fn ident(&mut self) -> Result<&'buf str> {
-        if self.cur == Ident {
-            return Ok(self.buf());
-        } else {
-            return unexpected(Ident, self.cur, self.lex.remainder());
-        }
     }
 
     pub fn bool(&mut self) -> Result<bool> {
@@ -112,44 +107,44 @@ impl<'buf> InputStream<'buf> {
             (DecLit, x) => Ok(u64::from_str(x).unwrap_or(0) != 0),
             (kind, _) => unexpected(Ident, kind, self.lex.remainder()),
         }?;
-        let _ = self.next();
+        let _ = self.next_token();
         Ok(out)
     }
 
     pub fn u64(&mut self) -> Result<u64> {
         let out = match self.token_and_span() {
             (HexLit, h) => u64::from_str_radix(&h[2 ..], 16)?,
-            (DecLit, h) => u64::from_str_radix(&h, 10)?,
-            (OctLit, h) => u64::from_str_radix(&h, 8)?,
+            (DecLit, h) => u64::from_str_radix(h, 10)?,
+            (OctLit, h) => u64::from_str_radix(h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
         };
-        let _ = self.next();
+        let _ = self.next_token();
         Ok(out)
     }
 
     pub fn u32(&mut self) -> Result<u32> {
         let out = match self.token_and_span() {
             (HexLit, h) => u32::from_str_radix(&h[2 ..], 16)?,
-            (DecLit, h) => u32::from_str_radix(&h, 10)?,
-            (OctLit, h) => u32::from_str_radix(&h, 8)?,
+            (DecLit, h) => u32::from_str_radix(h, 10)?,
+            (OctLit, h) => u32::from_str_radix(h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
         };
-        let _ = self.next();
+        let _ = self.next_token();
         Ok(out)
     }
 
     pub fn i64(&mut self) -> Result<i64> {
         // TODO: There is a bug here, fix
-        let neg = if self.try_consume(Minus) { true } else { false };
+        let neg = self.try_consume(Minus);
         let v = TryInto::<i64>::try_into(self.u64()?)?;
         Ok(if neg { -v } else { v })
     }
 
     pub fn i32(&mut self) -> Result<i32> {
         // TODO: There is a bug here. Fix
-        let neg = if self.try_consume(Minus) { true } else { false };
+        let neg = self.try_consume(Minus);
         let v = TryInto::<i32>::try_into(self.u32()?)?;
-        Ok(if neg { v } else { v })
+        Ok(if neg { -v } else { v })
     }
 
     pub fn f64(&mut self) -> Result<f64> {
@@ -169,11 +164,11 @@ impl<'buf> InputStream<'buf> {
                 (k, _) => return unexpected(FltLit, k, self.lex.remainder()),
             };
 
-        self.next();
+        self.advance();
         Ok(res)
     }
 
-    fn f32(&mut self) -> Result<f64> {
+    pub fn f32(&mut self) -> Result<f64> {
         Ok(self.f64()? as _)
     }
 
@@ -181,21 +176,20 @@ impl<'buf> InputStream<'buf> {
         let allow_eof = self.root;
         self.root = false;
         if self.cur == Colon {
-            self.next();
+            self.advance();
         }
-        // assert!(matches!(self.cur, StartOfFile | LBrace), "{:?}", self.cur);
-        self.next();
+        self.advance();
 
         loop {
             match self.cur {
                 Ident | ExtIdent => {
                     p.merge_field(self)?;
                     if self.cur == Comma || self.cur == Semi {
-                        self.next();
+                        self.advance();
                     }
                 }
                 RBrace => {
-                    self.next();
+                    self.advance();
                     return Ok(());
                 }
                 EndOfFile if allow_eof => return Ok(()),
@@ -205,63 +199,65 @@ impl<'buf> InputStream<'buf> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct OutputStream {
     pub(crate) buf: String,
     pad: usize,
 }
 
 impl OutputStream {
-    pub fn new() -> Self {
-        Self {
-            buf: "".to_string(),
-            pad: 0,
-        }
-    }
     pub fn ln(&mut self) {
         self.buf.push('\n');
         for _ in 0 .. self.pad {
             self.buf.push(' ');
         }
     }
-
+    #[inline(always)]
     pub fn enter(&mut self) {
         self.pad += 4;
     }
+    #[inline(always)]
     pub fn exit(&mut self) {
         self.pad -= 4;
     }
+    #[inline(always)]
     pub fn push(&mut self, i: &str) {
         self.buf.push_str(i);
     }
 
+    #[inline(always)]
     pub fn space(&mut self) {
         self.buf.push(' ');
     }
+    #[inline(always)]
     pub fn disp(&mut self, d: &dyn Display) {
         write!(self.buf, "{d}").unwrap();
     }
+    #[inline(always)]
     pub fn ident(&mut self, id: &str) {
         self.buf.push_str(id);
     }
-
+    #[inline(always)]
     pub fn lbracket(&mut self) {
-        self.buf.push_str("[");
+        self.buf.push('[');
     }
+    #[inline(always)]
     pub fn rbracket(&mut self) {
-        self.buf.push_str("]");
+        self.buf.push(']');
     }
-
+    #[inline(always)]
     pub fn lbrace(&mut self) {
-        self.buf.push_str("{");
+        self.buf.push('{');
     }
+    #[inline(always)]
     pub fn rbrace(&mut self) {
-        self.buf.push_str("}");
+        self.buf.push('}');
     }
-
+    #[inline(always)]
     pub fn colon(&mut self) {
         self.buf.push(':');
     }
+
     pub fn bytes(&mut self, b: &[u8]) {
         self.buf.push('"');
         // TODO: escape

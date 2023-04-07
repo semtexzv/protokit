@@ -22,7 +22,7 @@ pub struct Book {
     pub pack2: Vec<f32>,
     pub category: Vec<Category>,
     pub sections: Vec<Book_Section>,
-    pub test1: ::core::collections::HashMap<String, String>,
+    pub test1: ::std::collections::HashMap<String, String>,
     pub other: Option<Box<Any>>,
     pub book: Option<Box<Book>>,
     pub extfield: String,
@@ -267,7 +267,7 @@ impl textformat::Encodable for Book {
             out.push('\n');
         }
         if self.test1
-            != <::core::collections::HashMap<String, String> as Default>::default()
+            != <::std::collections::HashMap<String, String> as Default>::default()
         {
             out.indent(pad);
             out.push_str("test1 ");

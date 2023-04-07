@@ -4,7 +4,7 @@ use core::mem::{replace, size_of};
 use core::ptr::read_unaligned;
 use core::slice::from_raw_parts;
 
-use crate::{BinProto, Bytes, Error, Fixed, Result, Sigint, SizeStack, Varint, EGRP, VINT_LENS};
+use crate::{BinProto, BytesLike, Error, Fixed, Result, Sigint, SizeStack, Varint, EGRP, VINT_LENS};
 
 pub const MSB: u8 = 0b1000_0000;
 const DROP_MSB: u8 = 0b0111_1111;
@@ -30,22 +30,24 @@ impl<'buf> InputStream<'buf> {
     pub fn len(&self) -> usize {
         min(self.buf.len(), self.limit) - self.pos
     }
+    /// Whether the currently readable subslice is empty
+    #[inline(always)]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     /// Limits the currently readable subslice, and returns previous limit
     pub fn limit(&mut self, limit: usize) -> Result<usize> {
         if self.limit < limit {
             return Err(Error::InvalidLimit);
         }
-        if self.limit < limit {
-            panic!("Limiting back")
-        }
         Ok(replace(&mut self.limit, min(self.pos + limit, self.buf.len())))
     }
 
     #[inline(always)]
     pub fn unlimit(&mut self, limit: usize) {
-        assert!(self.limit <= limit);
-        self.limit = limit;
+        debug_assert!(self.limit <= limit);
+        self.limit = min(self.buf.len(), limit);
     }
 
     pub fn skip(&mut self, tag: u32) -> Result<()> {
@@ -87,7 +89,8 @@ impl<'buf> InputStream<'buf> {
         let mut shift = 0;
 
         let mut success = false;
-        for b in self.buf[self.pos .. self.limit].iter() {
+        // Safety: We must maintain correct limit in order for this to work
+        for b in unsafe { self.buf.get_unchecked(self.pos..self.limit).iter() } {
             let msb_dropped = b & DROP_MSB;
             result |= (msb_dropped as u64) << shift;
             shift += 7;
@@ -115,7 +118,7 @@ impl<'buf> InputStream<'buf> {
         if self.len() < tlen {
             return Err(Error::UnexpectedEOF);
         }
-        let out = unsafe { read_unaligned(self.buf.as_ptr().offset(self.pos as _) as *const T) };
+        let out = unsafe { read_unaligned(self.buf.as_ptr().add(self.pos) as *const T) };
         self.pos += tlen;
         Ok(out)
     }
@@ -126,7 +129,7 @@ impl<'buf> InputStream<'buf> {
             return Err(Error::UnexpectedEOF);
         }
         self.pos += len;
-        Ok(&self.buf[self.pos - len .. self.pos])
+        Ok(&self.buf[self.pos - len..self.pos])
     }
 
     pub fn _string(&mut self) -> Result<&str> {
@@ -170,13 +173,13 @@ impl<'buf> InputStream<'buf> {
         Ok(())
     }
 
-    pub fn bytes<'x, T: Bytes<'buf>>(&mut self, field: &mut T) -> Result<()> {
+    pub fn bytes<'x, T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
         field.clear();
         field.push(self._bytes()?)?;
         Ok(())
     }
 
-    pub fn string<T: Bytes<'buf>>(&mut self, field: &mut T) -> Result<()> {
+    pub fn string<T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
         field.clear();
         field.push(self._bytes()?)?;
         Ok(())
@@ -197,7 +200,7 @@ impl<'buf> InputStream<'buf> {
         }
         let start = self.pos;
         let olimit = self.limit(len)?;
-        while self.len() > 0 {
+        while !self.is_empty() {
             let tag = self._varint()?;
             proto.merge_field(tag, self)?;
         }
@@ -208,7 +211,7 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn _field_group(&mut self, _gtag: u32, proto: &mut dyn BinProto<'buf>) -> Result<()> {
-        while self.len() > 0 {
+        while !self.is_empty() {
             let tag = self._varint()?;
             // If this is the end group tag, we're done with current item.
             if tag & 7 == EGRP as _ {
@@ -230,6 +233,9 @@ impl OutputStream {
     pub fn len(&self) -> usize {
         self.buf.len()
     }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     /// Emits a raw vint onto the wire
     pub(crate) fn _varint<V: Varint + Debug>(&mut self, v: V) {
@@ -238,7 +244,7 @@ impl OutputStream {
         let len = VINT_LENS[n.leading_zeros() as usize] as usize;
         self.buf.reserve(len);
 
-        for _ in 0 .. len - 1 {
+        for _ in 0..len - 1 {
             self.buf.push(MSB | (n as u8 & DROP_MSB));
             n >>= 7;
         }
@@ -267,8 +273,8 @@ impl OutputStream {
 
     pub fn fixed<V: Fixed>(&mut self, _: u32, v: &V) {
         let wire = v.to_wire();
-        let slice = unsafe { from_raw_parts(&wire as *const V::WIRE as *const u8, size_of::<V::WIRE>()) };
-        self.buf.extend_from_slice(&slice);
+        let slice = unsafe { from_raw_parts(&wire as *const V::Wire as *const u8, size_of::<V::Wire>()) };
+        self.buf.extend_from_slice(slice);
     }
 
     pub fn fixed32<V: Fixed>(&mut self, _: u32, v: &V) {
@@ -279,18 +285,18 @@ impl OutputStream {
         self.fixed(0, v)
     }
 
-    pub fn bytes<'x, B: Bytes<'x>>(&mut self, _: u32, b: &B) {
+    pub fn bytes<'x, B: BytesLike<'x>>(&mut self, _: u32, b: &B) {
         self._varint(b.bytes().len());
         self._bytes(b.bytes());
     }
 
-    pub fn string<'out, B: Bytes<'out>>(&mut self, _: u32, b: &B) {
+    pub fn string<'out, B: BytesLike<'out>>(&mut self, _: u32, b: &B) {
         self._varint(b.bytes().len());
         self._bytes(b.bytes());
     }
 
     #[inline(never)]
-    fn _nested<'buf>(&mut self, len: usize, v: &dyn BinProto<'buf>) {
+    fn _nested(&mut self, len: usize, v: &dyn BinProto<'_>) {
         self._varint(len);
         v.encode(self)
     }

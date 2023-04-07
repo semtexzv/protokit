@@ -11,11 +11,5 @@ package = "protokit_binformat"
 path = "../protokit_binformat"
 
 [dependencies]
-lex_core = { package = "lexical-core", version = "*", features = ["parse-integers", "power-of-two"] }
-lex_float = { package = "minimal-lexical", version = "*" }
-
-thiserror = "1.0.40"
 logos = "0.12.1"
-
-fnv = { version = "1.0.7", features = [] }
-const-fnv1a-hash = "1.1.0"
+thiserror = "1"

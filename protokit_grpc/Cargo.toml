@@ -8,12 +8,12 @@ package = "protokit_binformat"
 path = "../protokit_binformat"
 
 [dependencies.tonic]
-version = "0.7.2"
+version = "0.9"
 default-features = false
 features = ["codegen", "transport"]
 
 [dependencies]
-anyhow = "1.0.57"
+anyhow = "1"
 futures = "0.3.21"
 bytes = "1.1.0"
 async-trait = "0.1.56"

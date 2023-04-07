@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 pub use protokit_desc::{BuiltinType, FieldNum, Frequency, ImportType, Syntax};
 
 pub type Span<'a> = nom_locate::LocatedSpan<&'a str>;
@@ -17,14 +18,12 @@ pub enum Const<'i> {
     Str(&'i str),
     Int(i128),
     Float(f64),
-    // Compound(Vec<protokit_textformat::ast::Field<'i>>),
 }
 
 impl AstNode for Const<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        match self {
-            Const::Ident(i) => v.visit_ident_ref(i),
-            _ => {}
+        if let Const::Ident(i) = self {
+            v.visit_ident_ref(i)
         }
     }
 }
@@ -46,7 +45,7 @@ impl AstNode for Field<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
         v.visit_frequency(&mut self.frequency);
         v.visit_type(&mut self.typ);
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         v.visit_field_num(self.number);
         for o in &mut self.opts {
             v.visit_opt(o);
@@ -67,13 +66,14 @@ impl AstNode for MapField<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
         // v.visit_type(&mut self.key_type);
         v.visit_type(&mut self.val_type);
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         v.visit_field_num(self.number);
         for o in &mut self.options {
             v.visit_opt(o);
         }
     }
 }
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct OptName<'i> {
     pub name: Span<'i>,
@@ -88,7 +88,7 @@ pub struct Opt<'i> {
 
 impl AstNode for Opt<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident_ref(&mut self.name.name);
+        v.visit_ident_ref(&self.name.name);
         // if let Some(f)
         // v.visit_ident_ref(&mut self.name.field_name);
         v.visit_const(&mut self.value);
@@ -104,7 +104,7 @@ pub struct EnumField<'i> {
 
 impl AstNode for EnumField<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         v.visit_field_num(self.value);
         for o in &mut self.opts {
             v.visit_opt(o);
@@ -135,7 +135,7 @@ pub struct Enum<'i> {
 
 impl AstNode for Enum<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         for i in &mut self.items {
             match i {
                 EnumItem::Field(f) => v.visit_enum_field(f),
@@ -170,7 +170,7 @@ pub struct OneOf<'i> {
 
 impl AstNode for OneOf<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         for i in &mut self.items {
             v.visit_oneof_item(i);
         }
@@ -258,7 +258,7 @@ pub struct Message<'i> {
 
 impl AstNode for Message<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         for i in &mut self.items {
             v.visit_message_item(i)
         }
@@ -279,7 +279,7 @@ pub struct Rpc<'i> {
 
 impl AstNode for Rpc<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         v.visit_type(&mut self.msg_type);
         v.visit_type(&mut self.ret_type);
         for o in &mut self.options {
@@ -311,7 +311,7 @@ pub struct Service<'i> {
 
 impl AstNode for Service<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         for it in &mut self.items {
             v.visit_service_item(it)
         }
@@ -329,7 +329,7 @@ pub struct Group<'i> {
 impl AstNode for Group<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
         v.visit_frequency(&mut self.frequency);
-        v.visit_ident(&mut self.name);
+        v.visit_ident(&self.name);
         v.visit_field_num(self.number);
         for m in &mut self.items {
             v.visit_message_item(m);
@@ -351,7 +351,7 @@ pub struct Extension<'i> {
 
 impl AstNode for Extension<'_> {
     fn accept<V: Visitor>(&mut self, v: &mut V) {
-        v.visit_ident_ref(&mut self.name);
+        v.visit_ident_ref(&self.name);
         for it in &mut self.items {
             match it {
                 ExtensionItem::Field(f) => v.visit_field(f),

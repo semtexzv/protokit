@@ -1,8 +1,6 @@
 fn main() {
     protokit_build::Build::new()
-        // .borrow()
         .track_unknowns(true)
-        .out_dir("./src/gen")
         .include("../../vendor/protobuf/conformance")
         .include("../../vendor/protobuf/src/")
         .include("../../vendor/protobuf/src/google/protobuf")

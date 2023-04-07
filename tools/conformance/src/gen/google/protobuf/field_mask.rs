@@ -8,5 +8,5 @@ pub struct FieldMask {
     #[field(1u32, "paths", string, repeated)]
     pub paths: Vec<String>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }

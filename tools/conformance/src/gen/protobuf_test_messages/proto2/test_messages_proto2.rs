@@ -209,52 +209,49 @@ pub struct TestAllTypesProto2 {
     #[field(102u32, "unpacked_nested_enum", protoenum, repeated)]
     pub unpacked_nested_enum: Vec<TestAllTypesProto2NestedEnum>,
     #[field(56u32, "map_int32_int32", map(varint, varint), singular)]
-    pub map_int32_int32: ::std::collections::BTreeMap<i32, i32>,
+    pub map_int32_int32: ::protokit::IndexMap<i32, i32>,
     #[field(57u32, "map_int64_int64", map(varint, varint), singular)]
-    pub map_int64_int64: ::std::collections::BTreeMap<i64, i64>,
+    pub map_int64_int64: ::protokit::IndexMap<i64, i64>,
     #[field(58u32, "map_uint32_uint32", map(varint, varint), singular)]
-    pub map_uint32_uint32: ::std::collections::BTreeMap<u32, u32>,
+    pub map_uint32_uint32: ::protokit::IndexMap<u32, u32>,
     #[field(59u32, "map_uint64_uint64", map(varint, varint), singular)]
-    pub map_uint64_uint64: ::std::collections::BTreeMap<u64, u64>,
+    pub map_uint64_uint64: ::protokit::IndexMap<u64, u64>,
     #[field(60u32, "map_sint32_sint32", map(sigint, sigint), singular)]
-    pub map_sint32_sint32: ::std::collections::BTreeMap<i32, i32>,
+    pub map_sint32_sint32: ::protokit::IndexMap<i32, i32>,
     #[field(61u32, "map_sint64_sint64", map(sigint, sigint), singular)]
-    pub map_sint64_sint64: ::std::collections::BTreeMap<i64, i64>,
+    pub map_sint64_sint64: ::protokit::IndexMap<i64, i64>,
     #[field(62u32, "map_fixed32_fixed32", map(fixed32, fixed32), singular)]
-    pub map_fixed32_fixed32: ::std::collections::BTreeMap<u32, u32>,
+    pub map_fixed32_fixed32: ::protokit::IndexMap<u32, u32>,
     #[field(63u32, "map_fixed64_fixed64", map(fixed64, fixed64), singular)]
-    pub map_fixed64_fixed64: ::std::collections::BTreeMap<u64, u64>,
+    pub map_fixed64_fixed64: ::protokit::IndexMap<u64, u64>,
     #[field(64u32, "map_sfixed32_sfixed32", map(fixed32, fixed32), singular)]
-    pub map_sfixed32_sfixed32: ::std::collections::BTreeMap<i32, i32>,
+    pub map_sfixed32_sfixed32: ::protokit::IndexMap<i32, i32>,
     #[field(65u32, "map_sfixed64_sfixed64", map(fixed64, fixed64), singular)]
-    pub map_sfixed64_sfixed64: ::std::collections::BTreeMap<i64, i64>,
+    pub map_sfixed64_sfixed64: ::protokit::IndexMap<i64, i64>,
     #[field(66u32, "map_int32_float", map(varint, fixed32), singular)]
-    pub map_int32_float: ::std::collections::BTreeMap<i32, f32>,
+    pub map_int32_float: ::protokit::IndexMap<i32, f32>,
     #[field(67u32, "map_int32_double", map(varint, fixed64), singular)]
-    pub map_int32_double: ::std::collections::BTreeMap<i32, f64>,
+    pub map_int32_double: ::protokit::IndexMap<i32, f64>,
     #[field(68u32, "map_bool_bool", map(bool, bool), singular)]
-    pub map_bool_bool: ::std::collections::BTreeMap<bool, bool>,
+    pub map_bool_bool: ::protokit::IndexMap<bool, bool>,
     #[field(69u32, "map_string_string", map(string, string), singular)]
-    pub map_string_string: ::std::collections::BTreeMap<String, String>,
+    pub map_string_string: ::protokit::IndexMap<String, String>,
     #[field(70u32, "map_string_bytes", map(string, bytes), singular)]
-    pub map_string_bytes: ::std::collections::BTreeMap<String, Vec<u8>>,
+    pub map_string_bytes: ::protokit::IndexMap<String, Vec<u8>>,
     #[field(71u32, "map_string_nested_message", map(string, nested), singular)]
-    pub map_string_nested_message: ::std::collections::BTreeMap<
+    pub map_string_nested_message: ::protokit::IndexMap<
         String,
         TestAllTypesProto2NestedMessage,
     >,
     #[field(72u32, "map_string_foreign_message", map(string, nested), singular)]
-    pub map_string_foreign_message: ::std::collections::BTreeMap<
-        String,
-        ForeignMessageProto2,
-    >,
+    pub map_string_foreign_message: ::protokit::IndexMap<String, ForeignMessageProto2>,
     #[field(73u32, "map_string_nested_enum", map(string, protoenum), singular)]
-    pub map_string_nested_enum: ::std::collections::BTreeMap<
+    pub map_string_nested_enum: ::protokit::IndexMap<
         String,
         TestAllTypesProto2NestedEnum,
     >,
     #[field(74u32, "map_string_foreign_enum", map(string, protoenum), singular)]
-    pub map_string_foreign_enum: ::std::collections::BTreeMap<String, ForeignEnumProto2>,
+    pub map_string_foreign_enum: ::protokit::IndexMap<String, ForeignEnumProto2>,
     #[field(201u32, "Data", group, optional)]
     pub Data: Option<Box<TestAllTypesProto2Data>>,
     #[field(241u32, "default_int32", varint, optional)]
@@ -347,7 +344,7 @@ pub struct TestAllTypesProto2 {
     )]
     pub oneof_field: Option<TestAllTypesProto2OneOfOneofField>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct TestAllTypesProto2NestedMessage {
@@ -356,7 +353,7 @@ pub struct TestAllTypesProto2NestedMessage {
     #[field(2u32, "corecursive", nested, optional)]
     pub corecursive: Option<Box<TestAllTypesProto2>>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct TestAllTypesProto2Data {
@@ -365,12 +362,12 @@ pub struct TestAllTypesProto2Data {
     #[field(203u32, "group_uint32", varint, optional)]
     pub group_uint32: Option<u32>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct TestAllTypesProto2MessageSetCorrect {
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
@@ -381,7 +378,7 @@ pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
     #[field(25u32, "str", string, optional)]
     pub str: Option<String>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct TestAllTypesProto2MessageSetCorrectExtension2 {
@@ -392,14 +389,14 @@ pub struct TestAllTypesProto2MessageSetCorrectExtension2 {
     #[field(9u32, "i", varint, optional)]
     pub i: Option<i32>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct ForeignMessageProto2 {
     #[field(1u32, "c", varint, optional)]
     pub c: Option<i32>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct UnknownToTestAllTypes {
@@ -416,31 +413,31 @@ pub struct UnknownToTestAllTypes {
     #[field(1011u32, "repeated_int32", varint, repeated)]
     pub repeated_int32: Vec<i32>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct UnknownToTestAllTypesOptionalGroup {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct NullHypothesisProto2 {
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct EnumOnlyProto2 {
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct OneStringProto2 {
     #[field(1u32, "data", string, optional)]
     pub data: Option<String>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct ProtoWithKeywords {
@@ -451,5 +448,5 @@ pub struct ProtoWithKeywords {
     #[field(3u32, "requires", string, repeated)]
     pub requires: Vec<String>,
     #[unknown]
-    pub unknown: protokit::binformat::UnknownFields,
+    pub unknown: binformat::UnknownFieldsOwned,
 }
