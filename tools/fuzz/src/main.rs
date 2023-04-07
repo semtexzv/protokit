@@ -1,5 +1,5 @@
-use std::fs::{read_dir, File};
-use std::io::Read;
+use core::fs::{read_dir, File};
+use core::io::Read;
 
 use protokit::reflect::Registry;
 
@@ -9,7 +9,7 @@ fn main() {
     afl::fuzz!(|data: &[u8]| {
         let mut reg = Registry::default();
         gen::register_types(&mut reg);
-        if let Ok(s) = std::str::from_utf8(data) {
+        if let Ok(s) = core::str::from_utf8(data) {
             protokit::textformat::decode::<crate::gen::com::book::test1::fuzz::Book>(s, &reg);
         }
     });

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use std::hash::Hash;
-use std::marker::PhantomData;
+use core::collections::HashMap;
+use core::hash::Hash;
+use core::marker::PhantomData;
 
 use anyhow::bail;
 use integer_encoding::VarInt;
@@ -51,9 +51,9 @@ impl BytesLike for Box<str> {
     }
 
     fn extend_from_bytes(&mut self, bytes: &[u8]) -> Result<()> {
-        match std::str::from_utf8(bytes) {
+        match core::str::from_utf8(bytes) {
             Ok(s) => {
-                let mut str = std::mem::replace(self, Box::from("")).into_string();
+                let mut str = core::mem::replace(self, Box::from("")).into_string();
                 str.push_str(s);
                 *self = str.into_boxed_str();
                 Ok(())
@@ -78,7 +78,7 @@ impl BytesLike for String {
 
     #[inline(always)]
     fn extend_from_bytes(&mut self, bytes: &[u8]) -> Result<()> {
-        let s = std::str::from_utf8(bytes)?;
+        let s = core::str::from_utf8(bytes)?;
         self.push_str(s);
         Ok(())
     }
@@ -259,7 +259,7 @@ impl Format<RawVInt> for i64 {
     }
 
     fn encode_val(&self, buf: &mut WriteBuffer) -> Result<()> {
-        let target: &u64 = unsafe { std::mem::transmute(self) };
+        let target: &u64 = unsafe { core::mem::transmute(self) };
         let len = target.required_space();
         let olen = buf.len();
         buf.resize(buf.len() + len, 0);
@@ -270,7 +270,7 @@ impl Format<RawVInt> for i64 {
     fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
         let (d, len) = u64::decode_var(buf).ok_or_else(|| anyhow::Error::msg("Missing data"))?;
         unsafe {
-            *self = std::mem::transmute(d);
+            *self = core::mem::transmute(d);
         }
         Ok(&buf[len ..])
     }
@@ -466,12 +466,12 @@ macro_rules! impl_fix {
         }
 
         fn decode<'b>(&mut self, buf: ReadBuffer<'b>) -> Result<ReadBuffer<'b>> {
-            if buf.len() < std::mem::size_of::<$t>() {
+            if buf.len() < core::mem::size_of::<$t>() {
                 bail!("Not enough bytes");
             }
-            let v = <$t>::from_le_bytes(buf[0..std::mem::size_of::<$t>()].try_into()?);
+            let v = <$t>::from_le_bytes(buf[0..core::mem::size_of::<$t>()].try_into()?);
             *self = v;
-            Ok(& buf[::std::mem::size_of::<$t>()..])
+            Ok(& buf[::core::mem::size_of::<$t>()..])
         }
 
     }

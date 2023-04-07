@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::fmt::{Debug, Formatter};
+use core::fmt::{Debug, Formatter};
 
 #[derive(Default, Debug)]
 pub struct Registry {
@@ -29,7 +29,7 @@ pub trait AnyMessage: Send + Sync + 'static {
 }
 
 impl Debug for dyn AnyMessage {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("AnyMessage").field(&self.qualified_name()).finish()
     }
 }

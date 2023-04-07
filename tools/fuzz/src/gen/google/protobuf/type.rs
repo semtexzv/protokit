@@ -2,7 +2,7 @@
 #![allow(unused)]
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
-use std::fmt::Write;
+use core::fmt::Write;
 use ::protokit::*;
 use ::protokit as root;
 use root::types::any::*;
@@ -125,7 +125,7 @@ impl textformat::Encodable for Type {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <String as Default>::default() {
             out.indent(pad);
@@ -381,7 +381,7 @@ impl textformat::Encodable for Field {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.kind != <Field_Kind as Default>::default() {
             out.indent(pad);
@@ -619,7 +619,7 @@ impl textformat::Encodable for Enum {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <String as Default>::default() {
             out.indent(pad);
@@ -767,7 +767,7 @@ impl textformat::Encodable for EnumValue {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <String as Default>::default() {
             out.indent(pad);
@@ -881,7 +881,7 @@ impl textformat::Encodable for ProtoOption {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <String as Default>::default() {
             out.indent(pad);
@@ -1016,7 +1016,7 @@ impl textformat::Field for Field_Kind {
         ctx: &textformat::Context,
         pad: usize,
         out: &mut String,
-    ) -> ::std::fmt::Result {
+    ) -> ::core::fmt::Result {
         let str = match self {
             Field_Kind::TYPE_UNKNOWN => "TYPE_UNKNOWN",
             Field_Kind::TYPE_DOUBLE => "TYPE_DOUBLE",
@@ -1156,7 +1156,7 @@ impl textformat::Field for Field_Cardinality {
         ctx: &textformat::Context,
         pad: usize,
         out: &mut String,
-    ) -> ::std::fmt::Result {
+    ) -> ::core::fmt::Result {
         let str = match self {
             Field_Cardinality::CARDINALITY_UNKNOWN => "CARDINALITY_UNKNOWN",
             Field_Cardinality::CARDINALITY_OPTIONAL => "CARDINALITY_OPTIONAL",
@@ -1230,7 +1230,7 @@ impl textformat::Field for Syntax {
         ctx: &textformat::Context,
         pad: usize,
         out: &mut String,
-    ) -> ::std::fmt::Result {
+    ) -> ::core::fmt::Result {
         let str = match self {
             Syntax::SYNTAX_PROTO2 => "SYNTAX_PROTO2",
             Syntax::SYNTAX_PROTO3 => "SYNTAX_PROTO3",

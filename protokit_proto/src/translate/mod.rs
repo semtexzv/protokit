@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::io;
-use std::ops::Deref;
 use std::path::{Path, PathBuf};
+
+use core::ops::Deref;
+
 
 use protokit_desc::arcstr::ArcStr;
 use protokit_desc::{FileDef, FileSetDef};

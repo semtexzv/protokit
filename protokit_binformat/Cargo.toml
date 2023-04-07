@@ -4,5 +4,8 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
+indexmap = "1.9.3"
 thiserror = "1.0.40"
+memoffset = "0.8.0"
 integer-encoding = "3.0.4"
+

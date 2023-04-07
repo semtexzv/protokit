@@ -1,4 +1,4 @@
-use std::iter::Peekable;
+use core::iter::Peekable;
 
 pub fn escape_bytes_to(bytes: &[u8], buf: &mut String) {
     for c in bytes {

@@ -2,7 +2,7 @@
 #![allow(unused)]
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
-use std::fmt::Write;
+use core::fmt::Write;
 use ::protokit::*;
 use ::protokit as root;
 use root::types::descriptor::*;
@@ -94,7 +94,7 @@ impl textformat::Encodable for Version {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.major != <Option<i32> as Default>::default() {
             out.indent(pad);
@@ -252,7 +252,7 @@ impl textformat::Encodable for CodeGeneratorRequest {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.file_to_generate != <Vec<String> as Default>::default() {
             out.indent(pad);
@@ -389,7 +389,7 @@ impl textformat::Encodable for CodeGeneratorResponse {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.error != <Option<String> as Default>::default() {
             out.indent(pad);
@@ -531,7 +531,7 @@ impl textformat::Encodable for CodeGeneratorResponse_File {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <Option<String> as Default>::default() {
             out.indent(pad);
@@ -637,7 +637,7 @@ impl textformat::Field for CodeGeneratorResponse_Feature {
         ctx: &textformat::Context,
         pad: usize,
         out: &mut String,
-    ) -> ::std::fmt::Result {
+    ) -> ::core::fmt::Result {
         let str = match self {
             CodeGeneratorResponse_Feature::FEATURE_NONE => "FEATURE_NONE",
             CodeGeneratorResponse_Feature::FEATURE_PROTO3_OPTIONAL => {

@@ -6,7 +6,7 @@ use nom::combinator::{cut, map, map_res, opt, recognize, value};
 use nom::error::{context, FromExternalError};
 use nom::multi::{many0, many0_count, many1, separated_list1};
 use nom::sequence::{delimited, pair, preceded, tuple};
-use nom::{Parser, Slice};
+use nom::Slice;
 use nom_supreme::error::GenericErrorTree;
 use nom_supreme::tag::TagError;
 use protokit_desc::{BuiltinType, FieldNum, Frequency, ImportType};

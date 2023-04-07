@@ -1,4 +1,4 @@
-use std::slice::{from_raw_parts, from_raw_parts_mut};
+use core::slice::{from_raw_parts, from_raw_parts_mut};
 
 use protokit::textformat::reflect::Registry;
 use protokit::{binformat, textformat};
@@ -61,7 +61,7 @@ fn input(payload: ConformanceRequestOneOfPayload, proto3: bool) -> anyhow::Resul
 }
 
 fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOneOfResult {
-    let reg = Registry::init(gen::register_types);
+    // let reg = Registry::init(gen::register_types);
 
     match (r, wire) {
         (Ok(Output::Proto2(v)), WireFormat::PROTOBUF) => {

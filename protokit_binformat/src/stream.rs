@@ -1,10 +1,10 @@
-use std::cmp::min;
-use std::fmt::Debug;
-use std::mem::{replace, size_of};
-use std::ptr::read_unaligned;
-use std::slice::from_raw_parts;
+use core::cmp::min;
+use core::fmt::Debug;
+use core::mem::{replace, size_of};
+use core::ptr::read_unaligned;
+use core::slice::from_raw_parts;
 
-use crate::{BinProto, Bytes, Error, Fixed, Result, Sigint, Varint, EGRP};
+use crate::{BinProto, Bytes, Error, Fixed, Result, Sigint, SizeStack, Varint, EGRP, VINT_LENS};
 
 pub const MSB: u8 = 0b1000_0000;
 const DROP_MSB: u8 = 0b0111_1111;
@@ -87,7 +87,7 @@ impl<'buf> InputStream<'buf> {
         let mut shift = 0;
 
         let mut success = false;
-        for b in self.buf[self.pos..self.limit].iter() {
+        for b in self.buf[self.pos .. self.limit].iter() {
             let msb_dropped = b & DROP_MSB;
             result |= (msb_dropped as u64) << shift;
             shift += 7;
@@ -126,36 +126,44 @@ impl<'buf> InputStream<'buf> {
             return Err(Error::UnexpectedEOF);
         }
         self.pos += len;
-        Ok(&self.buf[self.pos - len..self.pos])
+        Ok(&self.buf[self.pos - len .. self.pos])
     }
 
     pub fn _string(&mut self) -> Result<&str> {
-        Ok(std::str::from_utf8(self._bytes()?)?)
+        Ok(core::str::from_utf8(self._bytes()?)?)
     }
 
     pub fn varint<T: Varint>(&mut self, field: &mut T) -> Result<()> {
         *field = self._varint()?;
         Ok(())
     }
+
+    #[inline(always)]
     pub fn sigint<T: Sigint + Default>(&mut self, field: &mut T) -> Result<()> {
         *field = self._sigint()?;
         Ok(())
     }
+
+    #[inline(always)]
     pub fn protoenum<T: From<u32>>(&mut self, field: &mut T) -> Result<()> {
         *field = self._varint::<u32>()?.into();
         Ok(())
     }
+
+    #[inline(always)]
     pub fn bool(&mut self, field: &mut bool) -> Result<()> {
         *field = self._varint::<u64>()? > 0;
         Ok(())
     }
 
+    #[inline(always)]
     pub fn fixed32<T: Default + Fixed>(&mut self, field: &mut T) -> Result<()> {
         debug_assert_eq!(size_of::<T>(), 4);
         *field = self._fixed()?;
         Ok(())
     }
 
+    #[inline(always)]
     pub fn fixed64<T: Fixed>(&mut self, field: &mut T) -> Result<()> {
         debug_assert_eq!(size_of::<T>(), 8);
         *field = self._fixed()?;
@@ -214,6 +222,7 @@ impl<'buf> InputStream<'buf> {
 
 #[derive(Default)]
 pub struct OutputStream {
+    pub(crate) stack: SizeStack,
     pub(crate) buf: Vec<u8>,
 }
 
@@ -226,11 +235,13 @@ impl OutputStream {
     pub(crate) fn _varint<V: Varint + Debug>(&mut self, v: V) {
         let mut n = v.into_u64();
 
-        while n >= 0x80 {
+        let len = VINT_LENS[n.leading_zeros() as usize] as usize;
+        self.buf.reserve(len);
+
+        for _ in 0 .. len - 1 {
             self.buf.push(MSB | (n as u8 & DROP_MSB));
             n >>= 7;
         }
-
         self.buf.push(n as u8);
     }
 
@@ -279,24 +290,15 @@ impl OutputStream {
     }
 
     #[inline(never)]
-    fn _nested<'buf>(&mut self, v: &dyn BinProto<'buf>) {
-        let len = v.size();
+    fn _nested<'buf>(&mut self, len: usize, v: &dyn BinProto<'buf>) {
         self._varint(len);
         v.encode(self)
     }
 
     pub fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P) {
-        self._nested(v)
-        // let mut inner = OutputStream::default();
-        // let size = v.size();
-        // v.encode(&mut inner);
-        // // Migration, verify that we're getting correct values
-        // if size != inner.len() {
-        //     panic!("{:?} {:?} {:#?}", size, inner.len(), v);
-        // }
-        // // assert_eq!(size, inner.len());
-        // self._varint(inner.len());
-        // self._bytes(&inner.buf);
+        assert_eq!(v as *const P as *const u8, self.stack.top().0);
+        let len = self.stack.pop().1;
+        self._nested(len, v);
     }
 
     pub fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P) {

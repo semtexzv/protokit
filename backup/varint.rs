@@ -1,5 +1,5 @@
 #![allow(unused_parens)]
-use std::ops::{BitOrAssign, Shl};
+use core::ops::{BitOrAssign, Shl};
 
 pub fn decode<T>(buf: &[u8]) -> (T, u8)
 where

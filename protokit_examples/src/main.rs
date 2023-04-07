@@ -1,5 +1,5 @@
 use std::io::{stdin, BufRead};
-use protokit::BinProto;
+
 use crate::gen::com::book::test1::book::Book;
 
 pub mod gen {
@@ -7,7 +7,6 @@ pub mod gen {
 }
 
 // use crate::gen::com::book::test1::book::Book;
-
 
 fn main() {
     let mut stdin = stdin().lock();

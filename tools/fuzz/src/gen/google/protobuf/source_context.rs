@@ -2,7 +2,7 @@
 #![allow(unused)]
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
-use std::fmt::Write;
+use core::fmt::Write;
 use ::protokit::*;
 use ::protokit as root;
 pub fn register_types(registry: &mut reflect::Registry) {
@@ -47,7 +47,7 @@ impl textformat::Encodable for SourceContext {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.file_name != <String as Default>::default() {
             out.indent(pad);

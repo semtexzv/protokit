@@ -2,16 +2,16 @@ mod util;
 
 extern crate proc_macro;
 
-use std::ops::Deref;
-use convert_case::Case;
-use convert_case::Casing;
+use core::ops::Deref;
+
+use convert_case::{Case, Casing};
 use proc_macro2::Ident;
 use proc_macro_error::{abort_call_site, proc_macro_error};
-use quote::{format_ident, quote, quote_spanned, ToTokens};
+use quote::{format_ident, quote, quote_spanned};
 use syn::spanned::Spanned;
 use syn::{
-    parse_macro_input, Attribute, Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics,
-    ImplItem, LitInt, LitStr, Type,
+    parse_macro_input, Attribute, Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics, ImplItem, LitInt,
+    LitStr, Type,
 };
 
 use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta};
@@ -67,7 +67,7 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         }
 
     })
-        .into()
+    .into()
 }
 
 #[proc_macro_error]
@@ -83,7 +83,7 @@ pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         }
         _ => abort_call_site!("Unsupported: {data:?}"),
     }
-        .into()
+    .into()
 }
 
 enum Item {
@@ -92,14 +92,14 @@ enum Item {
     },
     Field {
         ident: Ident,
-        tag: LitInt,
+        num: LitInt,
         name: LitStr,
         kind: FieldKind,
         freq: Frequency,
     },
     Oneof {
         ident: Ident,
-        tags: Vec<LitInt>,
+        nums: Vec<LitInt>,
         names: Vec<LitStr>,
     },
 }
@@ -186,7 +186,7 @@ fn size_arm(
         let ktag = 1u32 << 3 | kind.deref().0.wire_type() as u32;
         let vtag = 2u32 << 3 | kind.deref().1.wire_type() as u32;
 
-        quote_spanned! { ident.span() => binformat::size_map(#this, #tag, #ktag, #vtag, binformat::#kv, binformat::#vv) }
+        quote_spanned! { ident.span() => binformat::size_map(#this, #tag, #ktag, #vtag, stack, binformat::#kv, binformat::#vv) }
     } else {
         let wrapper = format_ident!("size_{}", freq.to_string());
         let sizer = format_ident!("size_{}", kind.to_string());
@@ -198,7 +198,7 @@ fn size_arm(
         }
         let tag = num << 3 | wt as u32;
 
-        quote_spanned! { ident.span() => binformat::#wrapper(#this, #tag, binformat::#sizer) }
+        quote_spanned! { ident.span() => binformat::#wrapper(#this, #tag, stack, binformat::#sizer) }
     }
 }
 
@@ -225,7 +225,7 @@ fn _impl_proto(
                     let fmeta: FieldMeta = a.parse_args()?;
                     return Ok(Item::Field {
                         ident: field.ident.clone().unwrap(),
-                        tag: fmeta.num,
+                        num: fmeta.num,
                         name: fmeta.name,
                         kind: fmeta.kind,
                         freq: fmeta.freq,
@@ -234,7 +234,7 @@ fn _impl_proto(
                     let ometa: OneOfMeta = a.parse_args()?;
                     return Ok(Item::Oneof {
                         ident: field.ident.clone().unwrap(),
-                        tags: ometa.nums,
+                        nums: ometa.nums,
                         names: ometa.names,
                     });
                 } else if a.path().is_ident(&format_ident!("unknown")) {
@@ -250,6 +250,7 @@ fn _impl_proto(
         })
         .collect::<Result<Vec<_>, _>>()?;
 
+    let mut text_names = vec![];
     let mut size_bin = vec![];
     let mut merge_bin = vec![];
     let mut emit_bin = vec![];
@@ -269,7 +270,7 @@ fn _impl_proto(
             Item::Field {
                 ident,
                 name,
-                tag,
+                num: tag,
                 kind,
                 freq,
                 ..
@@ -286,7 +287,6 @@ fn _impl_proto(
                 emit_bin.push(emit_arm(ident, tag, freq, kind, &this));
                 size_bin.push(size_arm(&ident, tag, freq, kind, &this));
 
-
                 let emit = if let FieldKind::Map(..) = kind {
                     format_ident!("emit_map", span = ident.span())
                 } else {
@@ -298,17 +298,17 @@ fn _impl_proto(
                 } else {
                     format_ident!("merge_{}", freq.textformat_suffix(), span = ident.span())
                 };
-
+                text_names.push(quote!{ (#name, #tag) });
                 merge_txt.push(quote_spanned! { ident.span() =>
-                    #name => textformat::#merge(&mut self.#ident, stream),
+                    #tag => textformat::#merge(&mut self.#ident, stream),
                 });
                 emit_txt.push(quote_spanned! { ident.span() =>
                     textformat::#emit(&self.#ident, #name, stream);
                 });
             }
 
-            Item::Oneof { ident, names, tags, .. } => {
-                let tags = tags
+            Item::Oneof { ident, names, nums, .. } => {
+                let tags = nums
                     .iter()
                     .map(|t| {
                         let v = t.base10_parse::<u32>().unwrap() << 3;
@@ -317,6 +317,11 @@ fn _impl_proto(
                     .flatten()
                     .collect::<Vec<_>>();
 
+                for (n, t) in names.iter().zip(nums) {
+                    text_names.push(quote!{ (#n, #t) });
+                }
+
+
                 merge_bin.push(quote_spanned! { ident.span() =>
                     #(#tags)|* => binformat::merge_oneof(&mut self.#ident, tag, stream),
                 });
@@ -324,11 +329,11 @@ fn _impl_proto(
                     binformat::emit_oneof(&self.#ident, stream);
                 });
                 size_bin.push(quote_spanned! { ident.span() =>
-                    binformat::size_oneof(&self.#ident)
+                    binformat::size_oneof(&self.#ident, stack)
                 });
 
                 merge_txt.push(quote_spanned! { ident.span() =>
-                    #(#names)|* => textformat::merge_oneof(&mut self.#ident, stream),
+                    #(#nums)|* => textformat::merge_oneof(&mut self.#ident, stream),
                 });
                 emit_txt.push(quote_spanned! { ident.span() =>
                     textformat::emit_oneof(&self.#ident, stream);
@@ -337,6 +342,7 @@ fn _impl_proto(
         }
     }
 
+    size_bin.reverse();
     let (_, type_gen, where_gen) = generics.split_for_impl();
     let lp = generics.lifetimes();
     let tp = generics.type_params();
@@ -356,7 +362,7 @@ fn _impl_proto(
                     other => stream.skip(other),
                 }
             }
-            fn size(&self) -> usize {
+            fn size(&self, stack: &mut binformat::SizeStack) -> usize {
                 0 #(+ #size_bin)*
             }
             fn encode(&self, stream: &mut binformat::OutputStream) {
@@ -367,9 +373,10 @@ fn _impl_proto(
 
         impl<#text_impl_params> textformat::TextProto< #buf_param > for #ident #type_gen #where_gen {
             fn merge_field(&mut self, stream: &mut textformat::InputStream< #buf_param >) -> textformat::Result<()> {
-                match stream.field() {
+                const FIELDS: &[(&str, u32)] = &[#(#text_names,)*];
+                match textformat::_find(stream, FIELDS) {
                     #(#merge_txt)*
-                    name => textformat::unknown(name),
+                    name => textformat::unknown(stream.field()),
                 }
             }
             fn encode(&self, stream: &mut textformat::OutputStream) {
@@ -443,8 +450,10 @@ fn _impl_oneof(
     });
 
     let mut size_bin = vec![];
+
     let mut merge_bin = vec![];
     let mut emit_bin = vec![];
+
     let mut merge_txt = vec![];
     let mut emit_txt = vec![];
 
@@ -459,18 +468,20 @@ fn _impl_oneof(
         } = it;
 
         let this = quote! { self.#setter() };
+
+
+        let size = size_arm(&ident, tag, &Frequency::Raw, kind, &quote! { v });
+        size_bin.push(quote_spanned! { ident.span() =>
+            Self::#ident(v) => #size,
+        });
+
         merge_bin.push(merge_arm(ident, tag, &Frequency::Singular, kind, &this));
         let emit = emit_arm(&ident, tag, &Frequency::Raw, kind, &quote! { v });
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });
-        let size = size_arm(&ident, tag, &Frequency::Raw, kind, &quote!{ v });
-        size_bin.push(quote_spanned! { ident.span() =>
-            Self::#ident(v) => #size,
-        });
 
         let emit = format_ident!("emit_raw", span = ident.span());
-
         merge_txt.push(quote_spanned! { ident.span() =>
             #name =>  self.#setter().merge_text(stream),
         });
@@ -478,6 +489,7 @@ fn _impl_oneof(
             Self::#ident(v) => textformat::#emit(v, #name, stream),
         });
     }
+    size_bin.reverse();
 
     let (orig_impl_gen, type_gen, where_gen) = generics.split_for_impl();
     let lp = generics.lifetimes();
@@ -501,10 +513,9 @@ fn _impl_oneof(
                 match tag {
                     #(#merge_bin)*
                     other => stream.skip(other),
-                    // other => binformat::unknown_tag(other),
                 }
             }
-            fn size(&self) -> usize {
+            fn size(&self, stack: &mut binformat::SizeStack) -> usize {
                 match self {
                     #(#size_bin)*
                 }
@@ -517,7 +528,6 @@ fn _impl_oneof(
         }
         impl<#text_impl_params> textformat::TextProto<#buf_param> for #ident #type_gen #where_gen {
             fn merge_field(&mut self, stream: &mut textformat::InputStream<#buf_param>) -> textformat::Result<()> {
-                println!("Field {} {}", stream.field(), std::any::type_name::<Self>());
                 match stream.field() {
                     #(#merge_txt)*
                     name => textformat::unknown(name),

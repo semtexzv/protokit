@@ -1,5 +1,5 @@
-use std::cmp::{max, min};
-use std::io::IoSlice;
+use core::cmp::{max, min};
+use core::io::IoSlice;
 
 use byteorder::{ByteOrder, LittleEndian};
 use integer_encoding::VarInt;
@@ -54,7 +54,7 @@ impl Buffer {
     fn grow_hint(&mut self, hint: usize) {
         let size = max(self.curr.len(), hint);
 
-        let old = std::mem::replace(&mut self.curr, vec![0; size].into_boxed_slice());
+        let old = core::mem::replace(&mut self.curr, vec![0; size].into_boxed_slice());
         self.clen += old.len() - self.left;
         self.nodes.push(Node {
             dat: old,

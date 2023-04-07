@@ -1,6 +1,3 @@
-use std::marker::PhantomData;
-use std::ops::Deref;
-
 pub use anyhow::Result;
 pub use binformat::{BinProto, Bytes, Fixed, Sigint, Varint};
 pub use derive::{protoenum, Proto};
@@ -9,9 +6,9 @@ pub use grpc;
 pub use textformat::{TextField as _, TextProto};
 pub use {binformat, textformat};
 
-
 #[cfg(test)]
 mod test {
+    use core::collections::BTreeMap;
     use std::collections::BTreeMap;
 
     use textformat::reflect::Registry;
@@ -30,7 +27,7 @@ mod test {
                     rep: "World",
                     ..Default::default()
                 }
-                    .into(),
+                .into(),
             )),
         };
         let enc = binformat::encode(&orig).unwrap();

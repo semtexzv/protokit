@@ -1,5 +1,8 @@
+#![allow(unused_imports)]
+#![allow(nonstandard_style)]
+#![allow(unreachable_patterns)]
 use ::protokit::*;
-pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {}
+pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
 use super::super::super::google::protobuf::any::*;
 use super::super::super::google::protobuf::duration::*;
 use super::super::super::google::protobuf::field_mask::*;

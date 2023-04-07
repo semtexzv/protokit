@@ -1,9 +1,8 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 pub use async_trait::async_trait;
 pub use futures::future::LocalBoxFuture;
 pub use futures::stream::Stream;
-use tonic::codec::{Codec, DecodeBuf, Decoder, EncodeBuf, Encoder};
 pub use tonic::codegen::*;
 pub use tonic::{Code, Status};
 pub use {futures, tonic};
@@ -22,8 +21,8 @@ impl<E, D> Default for TonicCodec<E, D> {
 
 // impl<E, D> Codec for TonicCodec<E, D>
 // where
-//     E: binformat::BinProto + Send + 'static,
-//     D: binformat::BinProto + Default + Send + 'static,
+//     E: binformat::BinProto<'static> + Send + 'static,
+//     D: binformat::BinProto<'static> + Default + Send + 'static,
 // {
 //     type Encode = E;
 //     type Decode = D;
@@ -44,19 +43,18 @@ impl<E, D> Default for TonicCodec<E, D> {
 #[derive(Debug, Clone, Default)]
 pub struct TonicEncoder<T>(PhantomData<T>);
 
-// impl<T: binformat::BinProto> Encoder for TonicEncoder<T> {
+// impl<'buf, T: binformat::BinProto<'buf>> Encoder for TonicEncoder<T> {
 //     type Item = T;
 //     type Error = Status;
 //
 //     fn encode(&mut self, item: Self::Item, buf: &mut EncodeBuf<'_>) -> Result<(), Self::Error> {
-//         todo!()
-//         // use bytes::BufMut;
-//         //
-//         // let mut tmp = WriteBuffer::new();
-//         // item.encode(&mut tmp).expect("Message only errors if not enough space");
-//         // buf.put_slice(&tmp);
-//         //
-//         // Ok(())
+//         use bytes::BufMut;
+//
+//         let mut tmp = WriteBuffer::new();
+//         item.encode(&mut tmp).expect("Message only errors if not enough space");
+//         buf.put_slice(&tmp);
+//
+//         Ok(())
 //     }
 // }
 
@@ -64,7 +62,7 @@ pub struct TonicEncoder<T>(PhantomData<T>);
 #[derive(Debug, Clone, Default)]
 pub struct TonicDecoder<D>(PhantomData<D>);
 
-// impl<D: binformat::BinProto + Default> Decoder for TonicDecoder<D> {
+// impl<'buf, D: binformat::BinProto<'buf> + Default> Decoder for TonicDecoder<D> {
 //     type Item = D;
 //     type Error = Status;
 //
@@ -79,9 +77,8 @@ pub struct TonicDecoder<D>(PhantomData<D>);
 //     }
 // }
 
-
-fn from_decode_error(error: anyhow::Error) -> tonic::Status {
-    // Map Protobuf parse errors to an INTERNAL status code, as per
-    // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
-    Status::new(Code::Internal, error.to_string())
-}
+// fn from_decode_error(error: anyhow::Error) -> tonic::Status {
+//     // Map Protobuf parse errors to an INTERNAL status code, as per
+//     // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+//     Status::new(Code::Internal, error.to_string())
+// }

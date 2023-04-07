@@ -63,8 +63,6 @@ impl Visitor for FillDefinitions<'_> {
         self.path = before;
     }
     fn visit_group(&mut self, item: &mut Group) {
-        let name = self.ctx.def.cache(*item.name);
-
         let before = self.path.clone();
         let (_name, qualified_name) = self.qualify(*item.name);
 

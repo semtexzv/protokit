@@ -1,6 +1,6 @@
 use std::collections::HashSet;
-use std::ops::Deref;
-use std::str::FromStr;
+use core::ops::Deref;
+use core::str::FromStr;
 
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
@@ -140,14 +140,14 @@ impl CodeGenerator<'_> {
             DataType::Unresolved(_) => panic!(),
             DataType::Builtin(b) => builtin_type_marker(*b),
             DataType::Message(m) => {
-                let (m,_) = self.context.def.message_by_id(*m).unwrap();
+                let (m, _) = self.context.def.message_by_id(*m).unwrap();
                 if m.is_group {
                     "group"
                 } else {
                     "nested"
                 }
-            },
-            DataType::Enum(m) => "protoenum",
+            }
+            DataType::Enum(_) => "protoenum",
             DataType::Map(k) => {
                 return TokenStream::from_str(&format!(
                     "map({}, {})",
@@ -210,19 +210,19 @@ impl CodeGenerator<'_> {
         }
     }
 
-    pub fn file(&mut self, file_id: usize, f: &FileDef) -> Result<()> {
+    pub fn file(&mut self, f: &FileDef) -> Result<()> {
         self.proto3 = f.syntax == Syntax::Proto3;
-        for (index, (name, en)) in f.enums.iter().enumerate() {
+        for (_, en) in f.enums.iter() {
             self.r#enum(en)?;
         }
-        for (index, (name, msg)) in f.messages.iter().enumerate() {
-            self.message(file_id, index, name, msg)?
+        for (name, msg) in f.messages.iter() {
+            self.message(name, msg)?
         }
 
         Ok(())
     }
 
-    pub fn message(&mut self, file_id: usize, msg_id: usize, msg_name: &ArcStr, msg: &MessageDef) -> Result<()> {
+    pub fn message(&mut self, msg_name: &ArcStr, msg: &MessageDef) -> Result<()> {
         let ident = format_ident!("{}", rustify_name(msg_name));
         let borrow = self.borrow();
         let attrs = self.protoattrs();
@@ -266,7 +266,7 @@ impl CodeGenerator<'_> {
         let field_ident = format_ident!("{}", rustify_name(&def.name));
         let oneof_type = format_ident!("{msg_name}OneOf{}", def.name.as_str().to_case(Case::Pascal));
         let borrow = self.borrow();
-        let borrow_or_static = self.options.lifetime_arg.clone().unwrap_or_else(|| quote! { 'static });
+        // let borrow_or_static = self.options.lifetime_arg.clone().unwrap_or_else(|| quote! { 'static });
         let attrs = self.protoattrs();
 
         let mut nums = vec![];
@@ -306,7 +306,7 @@ impl CodeGenerator<'_> {
             #attrs
             pub enum #oneof_type #borrow {
                 #(#vars)*
-                // __Unused(::std::marker::PhantomData< & #borrow_or_static ()>),
+                // __Unused(::core::marker::PhantomData< & #borrow_or_static ()>),
             }
             #default
         });
@@ -370,7 +370,7 @@ struct FileOutput {
     imports: HashSet<usize>,
 }
 
-pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, file_id: usize, file: &FileDef) -> Result<()> {
+pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, file: &FileDef) -> Result<()> {
     let mut generator = CodeGenerator {
         context: ctx,
         options: opts,
@@ -378,7 +378,7 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, file_id:
         output: vec![],
     };
 
-    generator.file(file_id, file)?;
+    generator.file(file)?;
     //
     // let root = opts.import_root.clone();
     //
@@ -419,7 +419,7 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, file_id:
     //     #![deny(unused_must_use)]
     //     #![allow(clippy::derive_partial_eq_without_eq)]
     //
-    //     use std::fmt::Write;
+    //     use core::fmt::Write;
     //
     //     use #root::*;
     //     use #root as root;
@@ -482,9 +482,12 @@ pub fn generate_file(ctx: &TranslateCtx, opts: &Options, name: PathBuf, file_id:
     });
     let output = generator.output;
     let output = quote! {
+        #![allow(unused_imports)]
+        #![allow(nonstandard_style)]
+        #![allow(unreachable_patterns)]
         use #root::*;
 
-        pub fn register_types(registry: &mut #root::textformat::reflect::Registry) {
+        pub fn register_types(_registry: &mut #root::textformat::reflect::Registry) {
             // #(#files::register_types(registry);)*
         }
 

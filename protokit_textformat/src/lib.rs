@@ -1,10 +1,12 @@
 use std::collections::BTreeMap;
-use std::fmt::Display;
-use std::num::{ParseIntError, TryFromIntError};
-use std::ops::{Deref, DerefMut};
-use std::str::{FromStr, Utf8Error};
+use core::fmt::Display;
+use core::hash::Hash;
+use core::num::{ParseIntError, TryFromIntError};
+use core::ops::{Deref, DerefMut};
+use core::str::{FromStr, Utf8Error};
 
 use thiserror::Error;
+use binformat::Map;
 
 mod escape;
 mod lex;
@@ -18,7 +20,7 @@ pub use stream::{InputStream, OutputStream};
 use crate::escape::unescape;
 use crate::reflect::Registry;
 
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -40,7 +42,11 @@ pub enum Error {
 
 #[cold]
 pub fn unexpected<T>(exp: Token, got: Token, rest: &str) -> Result<T> {
-    Err(Error::Unexpected { exp, got, rest: rest.to_string() })
+    Err(Error::Unexpected {
+        exp,
+        got,
+        rest: rest.to_string(),
+    })
 }
 
 #[cold]
@@ -220,7 +226,7 @@ impl<'buf> TextField<'buf> for String {
         stream.string(|s| {
             if s.contains('\\') {
                 let unescaped = unescape(s.bytes()).collect::<Vec<_>>();
-                self.push_str(std::str::from_utf8(&unescaped)?);
+                self.push_str(core::str::from_utf8(&unescaped)?);
             } else {
                 self.push_str(s);
             }
@@ -310,10 +316,7 @@ impl<'buf, F> TextField<'buf> for F
 }
 
 #[inline(never)]
-pub fn merge_single<'buf, T: TextField<'buf>>(
-    v: &mut T,
-    stream: &mut InputStream<'buf>,
-) -> Result<()> {
+pub fn merge_single<'buf, T: TextField<'buf>>(v: &mut T, stream: &mut InputStream<'buf>) -> Result<()> {
     v.merge_text(stream)
 }
 
@@ -364,12 +367,10 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
 }
 
 #[inline(never)]
-pub fn merge_map<'buf, K, V>(
-    field: &mut BTreeMap<K, V>,
-    stream: &mut InputStream<'buf>,
-) -> Result<()>
-    where K: TextField<'buf> + Default + PartialEq + Ord,
-          V: TextField<'buf> + Default
+pub fn merge_map<'buf, K, V>(field: &mut BTreeMap<K, V>, stream: &mut InputStream<'buf>) -> Result<()>
+    where
+        K: TextField<'buf> + Default + PartialEq + Ord + Hash,
+        V: TextField<'buf> + Default,
 {
     #[derive(Default)]
     struct Help<K, V> {
@@ -378,10 +379,10 @@ pub fn merge_map<'buf, K, V>(
     }
     impl<'buf, K: TextField<'buf> + Default, V: TextField<'buf> + Default> TextProto<'buf> for Help<K, V> {
         fn merge_field(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
-            match stream.field() {
-                "key" => merge_optional(&mut self.key, stream),
-                "value" => merge_single(&mut self.value, stream),
-                other => unknown(other),
+            match _find(stream, &[("key", 0), ("value", 1)]) {
+                0 => merge_optional(&mut self.key, stream),
+                1 => merge_single(&mut self.value, stream),
+                _ => unknown(stream.field())
             }
         }
 
@@ -436,6 +437,8 @@ pub fn emit_optional<'buf, F: TextField<'buf> + Default>(
     }
 }
 
+// fn _rep<'buf>(it: &dyn TextField<'buf>, stream: &mut OutputStream) {}
+
 #[inline(never)]
 pub fn emit_repeated<'buf, F: TextField<'buf> + Default + PartialEq>(
     field: &Vec<F>,
@@ -475,21 +478,23 @@ pub fn emit_repeated<'buf, F: TextField<'buf> + Default + PartialEq>(
 }
 
 #[inline(never)]
-pub fn emit_map<'buf, K: TextField<'buf>, V: TextField<'buf>>(
-    field: &BTreeMap<K, V>,
+pub fn emit_map<'buf, K: TextField<'buf>, V: TextField<'buf>, M: Map<K, V>>(
+    field: &M,
     name: &'static str,
     stream: &mut OutputStream,
 ) {
-    if field.len() > 0 {
+    if field.mlen() > 0 {
         stream.ln();
         stream.push(name);
         stream.space();
         stream.lbracket();
         stream.enter();
-        field.iter().enumerate().for_each(|(i,(k, v))| {
-            if i > 0  {
+        let mut first = true;
+        field.for_each(|(k, v)| {
+            if !first {
                 stream.push(",");
             }
+            first = false;
             stream.ln();
             stream.lbrace();
             stream.enter();
@@ -512,9 +517,13 @@ pub fn emit_oneof<'any, P: TextProto<'any>>(o: &Option<P>, stream: &mut OutputSt
     }
 }
 
-pub fn decode<'buf, T: TextProto<'buf> + Default>(data: &'buf str, reg: &Registry) -> Result<T> {
+pub fn _find(s: &InputStream, hay: &'static [(&'static str, u32)]) -> u32 {
+    hay.iter().find(|(k, _)| *k == s.field()).map(|v| v.1).unwrap_or(u32::MAX)
+}
+
+pub fn decode<'buf, T: TextProto<'buf> + Default>(data: &'buf str, reg: &'buf Registry) -> Result<T> {
     let mut out = T::default();
-    let mut stream = InputStream::new(data);
+    let mut stream = InputStream::new(data, reg);
     out.decode(&mut stream)?;
     Ok(out)
 }

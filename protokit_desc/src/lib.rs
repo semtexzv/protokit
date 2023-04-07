@@ -1,10 +1,9 @@
 #![allow(unused_imports)]
 use std::collections::{HashMap, HashSet};
-use std::fmt::Debug;
-use std::str::FromStr;
+use core::fmt::Debug;
+use core::str::FromStr;
 
 use arcstr::ArcStr;
-
 pub(crate) use binformat::{BinProto, Bytes, Fixed, Sigint, Varint};
 pub(crate) use derive::{protoenum, Proto};
 #[cfg(feature = "descriptors")]

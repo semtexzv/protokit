@@ -2,7 +2,7 @@
 #![allow(unused)]
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
-use std::fmt::Write;
+use core::fmt::Write;
 use ::protokit::*;
 use ::protokit as root;
 pub fn register_types(registry: &mut reflect::Registry) {
@@ -13,7 +13,7 @@ pub fn register_types(registry: &mut reflect::Registry) {
 #[repr(C)]
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Struct {
-    pub fields: ::std::collections::HashMap<String, Value>,
+    pub fields: ::core::collections::HashMap<String, Value>,
     pub _unknown: (),
 }
 impl Struct {
@@ -49,10 +49,10 @@ impl textformat::Encodable for Struct {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.fields
-            != <::std::collections::HashMap<String, Value> as Default>::default()
+            != <::core::collections::HashMap<String, Value> as Default>::default()
         {
             out.indent(pad);
             out.push_str("fields ");
@@ -205,7 +205,7 @@ impl textformat::Encodable for Value {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         match &self.kind {
             ValueOneOfKind::NullValue(value) => {
@@ -393,7 +393,7 @@ impl textformat::Encodable for ListValue {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.values != <Vec<Value> as Default>::default() {
             out.indent(pad);
@@ -464,7 +464,7 @@ impl textformat::Field for NullValue {
         ctx: &textformat::Context,
         pad: usize,
         out: &mut String,
-    ) -> ::std::fmt::Result {
+    ) -> ::core::fmt::Result {
         let str = match self {
             NullValue::NULL_VALUE => "NULL_VALUE",
             NullValue::Unknown(n) => {

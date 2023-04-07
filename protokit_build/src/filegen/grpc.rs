@@ -136,11 +136,11 @@ impl CodeGenerator<'_> {
                 }
                 impl<S: #svc_name> From<S> for #server_name<S> {
                     fn from(v: S) -> Self {
-                        Self(::std::sync::Arc::new(v))
+                        Self(::core::sync::Arc::new(v))
                     }
                 }
-                impl<S : #svc_name> From<::std::sync::Arc<S>> for #server_name<S> {
-                    fn from(v: ::std::sync::Arc<S>) -> Self {
+                impl<S : #svc_name> From<::core::sync::Arc<S>> for #server_name<S> {
+                    fn from(v: ::core::sync::Arc<S>) -> Self {
                         Self(v)
                     }
                 }
@@ -151,11 +151,11 @@ impl CodeGenerator<'_> {
                     where
                           S: #svc_name,
                           B: Body + Send + 'static,
-                          B::Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + Send + 'static,
+                          B::Error: Into<Box<dyn core::error::Error + Send + Sync + 'static>> + Send + 'static,
 
                 {
                     type Response = http::Response<tonic::body::BoxBody>;
-                    type Error = std::convert::Infallible;
+                    type Error = core::convert::Infallible;
                     type Future = BoxFuture<Self::Response, Self::Error>;
 
                     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -277,7 +277,7 @@ impl CodeGenerator<'_> {
                 impl #client_name<tonic::transport::Channel> {
                     pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
                     where
-                        D: std::convert::TryInto<tonic::transport::Endpoint>,
+                        D: core::convert::TryInto<tonic::transport::Endpoint>,
                         D::Error: Into<StdError>,
                     {
                         let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;

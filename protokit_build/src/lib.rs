@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::str::FromStr;
+use core::str::FromStr;
 
 pub use anyhow::Result;
 use quote::__private::TokenStream;
@@ -92,7 +92,7 @@ impl Build {
 
         // TODO: Use package name + file name
         let mut generated_names = vec![];
-        for (file_idx, file) in self.ctx.def.files.values().enumerate() {
+        for (_, file) in self.ctx.def.files.values().enumerate() {
             if self.ctx.replacement.contains_key(file.name.as_str()) {
                 continue;
             }
@@ -101,7 +101,7 @@ impl Build {
                 file.package.replace('.', "/") + "/" + path.with_extension("rs").file_name().unwrap().to_str().unwrap();
             let out_name = out_dir.join(&file_name);
             generated_names.push(file_name.clone());
-            filegen::generate_file(&self.ctx, &self.options, out_name, file_idx, file)?;
+            filegen::generate_file(&self.ctx, &self.options, out_name, file)?;
         }
 
         let dirs: Vec<Vec<&str>> = generated_names.iter().map(|v| v.split('/').collect()).collect();

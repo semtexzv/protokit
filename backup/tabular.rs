@@ -1,9 +1,9 @@
-use std::cmp::min;
-use std::fmt::{Debug, Formatter};
-use std::marker::PhantomData;
-use std::mem::size_of;
-use std::os::raw::c_void;
-use std::{mem, usize};
+use core::cmp::min;
+use core::fmt::{Debug, Formatter};
+use core::marker::PhantomData;
+use core::mem::size_of;
+use core::os::raw::c_void;
+use core::{mem, usize};
 
 use integer_encoding::VarInt;
 pub use memoffset::offset_of;
@@ -50,7 +50,7 @@ impl MessageInfo {
 }
 
 impl Debug for MessageInfo {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("MessageInfo")
             .field("name", &self.name)
             .field("fields", &&self.fields)
@@ -66,7 +66,7 @@ pub struct FieldInfo {
 }
 
 impl Debug for FieldInfo {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("FieldInfo")
             .field("tag", &self.tag)
             .field("offset", &self.offset)
@@ -345,9 +345,9 @@ pub trait ExtendFromBytes {
 
 impl ExtendFromBytes for Box<str> {
     fn extend_from_bytes(&mut self, bytes: &[u8], state: &mut Option<Box<String>>) -> bool {
-        match std::str::from_utf8(bytes) {
+        match core::str::from_utf8(bytes) {
             Ok(s) => {
-                let mut str = std::mem::replace(self, Box::from("")).into_string();
+                let mut str = core::mem::replace(self, Box::from("")).into_string();
                 str.push_str(s);
                 *self = str.into_boxed_str();
                 true
@@ -363,7 +363,7 @@ impl ExtendFromBytes for Box<str> {
 impl ExtendFromBytes for String {
     #[inline(always)]
     fn extend_from_bytes(&mut self, bytes: &[u8], state: &mut Option<Box<String>>) -> bool {
-        match std::str::from_utf8(bytes) {
+        match core::str::from_utf8(bytes) {
             Ok(s) => {
                 self.push_str(s);
                 true
@@ -379,7 +379,7 @@ impl ExtendFromBytes for String {
 impl ExtendFromBytes for Vec<String> {
     #[inline(always)]
     fn extend_from_bytes(&mut self, bytes: &[u8], state: &mut Option<Box<String>>) -> bool {
-        match std::str::from_utf8(bytes) {
+        match core::str::from_utf8(bytes) {
             Ok(s) => {
                 self.push(s.to_string());
                 true
@@ -401,7 +401,7 @@ impl ExtendFromBytes for Vec<u8> {
 
 impl ExtendFromBytes for Box<[u8]> {
     fn extend_from_bytes(&mut self, bytes: &[u8], _state: &mut Option<Box<String>>) -> bool {
-        let mut v = std::mem::take(self).into_vec();
+        let mut v = core::mem::take(self).into_vec();
         v.extend_from_slice(bytes);
         *self = v.into_boxed_slice();
         true

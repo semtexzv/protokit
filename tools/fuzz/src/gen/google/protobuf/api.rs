@@ -2,7 +2,7 @@
 #![allow(unused)]
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
-use std::fmt::Write;
+use core::fmt::Write;
 use ::protokit::*;
 use ::protokit as root;
 use super::source_context::*;
@@ -137,7 +137,7 @@ impl textformat::Encodable for Api {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <String as Default>::default() {
             out.indent(pad);
@@ -361,7 +361,7 @@ impl textformat::Encodable for Method {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <String as Default>::default() {
             out.indent(pad);
@@ -521,7 +521,7 @@ impl textformat::Encodable for Mixin {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.name != <String as Default>::default() {
             out.indent(pad);

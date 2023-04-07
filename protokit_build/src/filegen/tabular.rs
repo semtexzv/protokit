@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use core::str::FromStr;
 use anyhow::bail;
 use quote::__private::TokenStream;
 use quote::quote;

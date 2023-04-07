@@ -2,7 +2,7 @@
 #![allow(unused)]
 #![deny(unused_must_use)]
 #![allow(clippy::derive_partial_eq_without_eq)]
-use std::fmt::Write;
+use core::fmt::Write;
 use ::protokit::*;
 use ::protokit as root;
 use root::types::any::*;
@@ -22,7 +22,7 @@ pub struct Book {
     pub pack2: Vec<f32>,
     pub category: Vec<Category>,
     pub sections: Vec<Book_Section>,
-    pub test1: ::std::collections::HashMap<String, String>,
+    pub test1: ::core::collections::HashMap<String, String>,
     pub other: Option<Box<Any>>,
     pub book: Option<Box<Book>>,
     pub extfield: String,
@@ -222,7 +222,7 @@ impl textformat::Encodable for Book {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.title != <String as Default>::default() {
             out.indent(pad);
@@ -267,7 +267,7 @@ impl textformat::Encodable for Book {
             out.push('\n');
         }
         if self.test1
-            != <::std::collections::HashMap<String, String> as Default>::default()
+            != <::core::collections::HashMap<String, String> as Default>::default()
         {
             out.indent(pad);
             out.push_str("test1 ");
@@ -464,7 +464,7 @@ impl textformat::Encodable for Book_Section {
         &self,
         ctx: &textformat::Context,
         pad: usize,
-        out: &mut std::string::String,
+        out: &mut core::string::String,
     ) -> textformat::Result<()> {
         if self.contents != <String as Default>::default() {
             out.indent(pad);
@@ -541,7 +541,7 @@ impl textformat::Field for Category {
         ctx: &textformat::Context,
         pad: usize,
         out: &mut String,
-    ) -> ::std::fmt::Result {
+    ) -> ::core::fmt::Result {
         let str = match self {
             Category::ADULT => "ADULT",
             Category::CHILDREN => "CHILDREN",
@@ -604,11 +604,11 @@ mod BookSvc_server {
     }
     impl<S: BookSvc> From<S> for BookSvcServer<S> {
         fn from(v: S) -> Self {
-            Self(::std::sync::Arc::new(v))
+            Self(::core::sync::Arc::new(v))
         }
     }
-    impl<S: BookSvc> From<::std::sync::Arc<S>> for BookSvcServer<S> {
-        fn from(v: ::std::sync::Arc<S>) -> Self {
+    impl<S: BookSvc> From<::core::sync::Arc<S>> for BookSvcServer<S> {
+        fn from(v: ::core::sync::Arc<S>) -> Self {
             Self(v)
         }
     }
@@ -660,11 +660,11 @@ mod BookSvc_server {
     where
         S: BookSvc,
         B: Body + Send + 'static,
-        B::Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + Send
+        B::Error: Into<Box<dyn core::error::Error + Send + Sync + 'static>> + Send
             + 'static,
     {
         type Response = http::Response<tonic::body::BoxBody>;
-        type Error = std::convert::Infallible;
+        type Error = core::convert::Infallible;
         type Future = BoxFuture<Self::Response, Self::Error>;
         fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
             Poll::Ready(Ok(()))
@@ -746,7 +746,7 @@ mod BookSvc_client {
     impl BookSvcClient<tonic::transport::Channel> {
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
-            D: std::convert::TryInto<tonic::transport::Endpoint>,
+            D: core::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
             let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;

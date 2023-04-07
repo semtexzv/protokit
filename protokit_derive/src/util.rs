@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use core::fmt::{Display, Formatter};
 
 use proc_macro2::{Ident, Span};
 use syn::parse::{Parse, ParseStream};
@@ -140,7 +140,7 @@ impl FieldKind {
 }
 
 impl Display for FieldKind {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
             FieldKind::Varint => write!(f, "varint"),
             FieldKind::Sigint => write!(f, "sigint"),
@@ -261,7 +261,7 @@ impl Parse for Frequency {
 }
 
 impl Display for Frequency {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
             Frequency::Raw => write!(f, "raw"),
             Frequency::Singular => write!(f, "singular"),

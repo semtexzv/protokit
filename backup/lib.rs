@@ -2,8 +2,8 @@
 #![feature(const_mut_refs)]
 #![feature(new_uninit)]
 
-use std::collections::HashMap;
-use std::ops::{Deref, DerefMut};
+use core::collections::HashMap;
+use core::ops::{Deref, DerefMut};
 
 pub use anyhow::Result;
 use anyhow::{anyhow, bail};

@@ -1,4 +1,4 @@
-use crate::{emit_raw, unknown_tag, unknown_wire, BinProto, Error, InputStream, OutputStream, MAP_WIRE};
+use crate::{emit_raw, unknown_tag, unknown_wire, BinProto, Error, InputStream, OutputStream, SizeStack, MASK_WIRE};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value {
@@ -28,7 +28,7 @@ impl<'buf> BinProto<'buf> for UnknownFields {
         Self::merge_one(f, tag_wire, stream)
     }
 
-    fn size(&self) -> usize {
+    fn size(&self, _stack: &mut SizeStack) -> usize {
         todo!()
     }
 
@@ -59,7 +59,7 @@ impl UnknownFields {
         if tag >> 3 == 0 {
             return unknown_tag(tag);
         }
-        match (tag as u8 & MAP_WIRE) as u8 {
+        match (tag as u8 & MASK_WIRE) as u8 {
             crate::VARINT => fields.push(Field {
                 num: tag >> 3,
                 val: Value::Varint(stream._varint()?),

@@ -1,4 +1,3 @@
-use crate::ast::*;
 use crate::translate::TranslateCtx;
 
 /// Visitor that processes opts on definition level, should not recurse

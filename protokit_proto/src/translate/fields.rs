@@ -24,7 +24,7 @@ impl Visitor for FieldVisitor<'_> {
             Type::Builtin(b) => DataType::Builtin(*b),
             Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u)),
             Type::Map(_, _) => {
-                self.ctx.error("Nested maps are not supported".to_string());
+                self.ctx.error("Nested maps are not supported".to_string()).unwrap();
                 DataType::Builtin(BuiltinType::Bool)
             }
         };

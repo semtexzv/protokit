@@ -1,5 +1,8 @@
+#![allow(unused_imports)]
+#![allow(nonstandard_style)]
+#![allow(unreachable_patterns)]
 use ::protokit::*;
-pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {}
+pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WireFormat(pub u32);
 #[protoenum]
