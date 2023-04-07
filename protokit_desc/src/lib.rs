@@ -97,31 +97,6 @@ pub enum BuiltinType {
 }
 
 impl BuiltinType {
-    pub fn is_varint(&self) -> bool {
-        match self {
-            BuiltinType::Int32 => true,
-            BuiltinType::Int64 => true,
-            BuiltinType::Uint32 => true,
-            BuiltinType::Uint64 => true,
-            BuiltinType::Sint32 => true,
-            BuiltinType::Sint64 => true,
-            BuiltinType::Bool => false,
-            BuiltinType::Fixed64 => false,
-            BuiltinType::Sfixed64 => false,
-            BuiltinType::Fixed32 => false,
-            BuiltinType::Sfixed32 => false,
-            BuiltinType::Double => false,
-            BuiltinType::Float => false,
-            BuiltinType::String_ => false,
-            BuiltinType::Bytes_ => false,
-        }
-    }
-    pub fn is_zigzag(&self) -> bool {
-        match self {
-            BuiltinType::Sint32 | BuiltinType::Sint64 => true,
-            _ => false,
-        }
-    }
     pub fn is_scalar(&self) -> bool {
         match self {
             Self::String_ | Self::Bytes_ => false,
@@ -789,7 +764,6 @@ impl FileDef {
         });
         self.services.values_mut().for_each(|m: &mut ServiceDef| {
             m.rpc.values_mut().for_each(|r: &mut RpcDef| {
-                // rintln!("Resolving: {:?} for field {}", f.typ, f.name);
                 if !resolve_type(
                     &mut r.req_typ,
                     &self.names,
@@ -837,7 +811,29 @@ impl FileDef {
                     );
                 }
             })
-        })
+        });
+        let mut rewrites = HashSet::new();
+        for (oi, m) in self.messages.values().enumerate() {
+            for (fi, f) in m.fields.by_number.values().enumerate() {
+                if let DataType::Message(m) =  f.typ {
+                    if let Some((_, mi)) = &self.messages.get_index(m as _) {
+                        if mi.is_virtual_map {
+                            let k = mi.fields.by_number(1).unwrap();
+                            let v = mi.fields.by_number(2).unwrap();
+                            let DataType::Builtin(k) = k.typ else {
+                                panic!()
+                            };
+                            rewrites.insert((oi, fi, DataType::Map(Box::new((k, v.typ.clone())))));
+                        }
+                    }
+                }
+            }
+        }
+        for (mi, fi, dt) in rewrites.into_iter() {
+            self.messages.get_index_mut(mi).unwrap()
+                .1.fields.by_number.get_index_mut(fi)
+                .unwrap().1.typ = dt;
+        }
     }
     pub fn resolve_extensions(&mut self, file_id: usize, prevs: &mut IndexMap<ArcStr, FileDef>) {
         for (i, m) in self.extensions.iter() {
@@ -1250,12 +1246,10 @@ impl FileSetDef {
             let mut file = FileDef::from_descriptor(&mut this, &desc, f);
 
             file.fill_names();
-            // eprintln!("{:#?}", file);
             file.resolve_types(this.files.len(), &this.files);
             file.resolve_extensions(this.files.len(), &mut this.files);
             this.files.insert(file.name.clone(), file);
         }
-        // for f in this.files.values() {}
         this
     }
     #[cfg(feature = "descriptors")]
