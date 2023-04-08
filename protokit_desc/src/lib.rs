@@ -2,15 +2,13 @@
 
 use core::fmt::Debug;
 use core::str::FromStr;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use arcstr::ArcStr;
 pub(crate) use binformat::{BinProto, BytesLike, Fixed, Sigint, Varint};
 pub(crate) use derive::{protoenum, Proto};
 #[cfg(feature = "descriptors")]
 pub use generated::google::protobuf::descriptor::*;
-#[cfg(feature = "descriptors")]
-pub use generated::google::protobuf::*;
 use indexmap::IndexMap;
 pub(crate) use textformat::{TextField as _, TextProto};
 pub use {arcstr, indexmap};
@@ -132,13 +130,22 @@ impl FromStr for BuiltinType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum UnresolvedHint {
+    Message,
+    Group,
+    Enum,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DataType {
     /// Was not yet resolved to message or an enum
-    Unresolved(ArcStr),
+    Unresolved(ArcStr, UnresolvedHint),
     /// One of the builtin types
     Builtin(BuiltinType),
     /// Message definition - LenPrefixed wire type
     Message(DefId),
+    /// A message encoded with group wire format
+    Group(DefId),
     /// Enum definition - Varint wire type
     Enum(DefId),
     /// Map from builtin to any other data type, Serialized as a simple message
@@ -148,7 +155,7 @@ pub enum DataType {
 
 impl Default for DataType {
     fn default() -> Self {
-        Self::Unresolved(ArcStr::new())
+        Self::Unresolved(ArcStr::new(), UnresolvedHint::Message)
     }
 }
 
@@ -219,9 +226,10 @@ fn type_to_descriptor(typ: &DataType) -> FieldDescriptorProtoType {
     match typ {
         DataType::Builtin(bt) => builtin_to_descriptor(bt),
         DataType::Message(_) => FieldDescriptorProtoType::TYPE_MESSAGE,
+        DataType::Group(_) => FieldDescriptorProtoType::TYPE_GROUP,
         DataType::Enum(_) => FieldDescriptorProtoType::TYPE_ENUM,
         DataType::Map(_) => FieldDescriptorProtoType::TYPE_MESSAGE,
-        DataType::Unresolved(u) => panic!("Unresolved type: {u:?}"),
+        DataType::Unresolved(u, _) => panic!("Unresolved type: {u:?}"),
     }
 }
 
@@ -252,8 +260,9 @@ impl FieldDef {
             },
             Map(_) => WireType::LenDelim,
             Message(_) => WireType::LenDelim,
+            Group(_) => WireType::StartGroup,
             Enum(_) => WireType::Varint,
-            Unresolved(_p) => panic!("Was not resolved"),
+            Unresolved(_p, _) => panic!("Was not resolved"),
         };
 
         let second = match normal {
@@ -310,13 +319,9 @@ impl FieldDef {
         _msg_desc: &DescriptorProto,
         desc: &FieldDescriptorProto,
     ) -> Self {
-        let mut opts = desc.options.as_deref().cloned().unwrap_or_default();
+        let opts = desc.options.as_deref().cloned().unwrap_or_default();
 
         let is_proto3 = file.syntax.as_deref() == Some("proto3");
-        if is_proto3 && opts.packed.is_none() {
-            opts.packed = Some(true);
-        }
-
 
         Self {
             name: set.cache(desc.name.as_ref().unwrap()),
@@ -324,6 +329,9 @@ impl FieldDef {
                 Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if !is_proto3 => Frequency::Optional,
                 Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 && desc.proto3_optional != Some(true) => {
                     Frequency::Singular
+                }
+                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 => {
+                    Frequency::Optional
                 }
                 Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
                 Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
@@ -342,14 +350,17 @@ impl FieldDef {
                 FieldDescriptorProtoType::TYPE_FIXED32 => DataType::Builtin(BuiltinType::Fixed32),
                 FieldDescriptorProtoType::TYPE_BOOL => DataType::Builtin(BuiltinType::Bool),
                 FieldDescriptorProtoType::TYPE_STRING => DataType::Builtin(BuiltinType::String_),
-                FieldDescriptorProtoType::TYPE_GROUP => DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap())),
+                FieldDescriptorProtoType::TYPE_GROUP => {
+                    // TODO: Need to mark groups properly. It's a bit complicated
+                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Group)
+                }
                 FieldDescriptorProtoType::TYPE_MESSAGE => {
-                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()))
+                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Message)
                 }
                 FieldDescriptorProtoType::TYPE_BYTES => DataType::Builtin(BuiltinType::Bytes_),
                 FieldDescriptorProtoType::TYPE_UINT32 => DataType::Builtin(BuiltinType::Uint32),
                 FieldDescriptorProtoType::TYPE_ENUM => {
-                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()))
+                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Enum)
                 }
                 FieldDescriptorProtoType::TYPE_SFIXED32 => DataType::Builtin(BuiltinType::Sfixed32),
                 FieldDescriptorProtoType::TYPE_SFIXED64 => DataType::Builtin(BuiltinType::Sfixed64),
@@ -381,7 +392,7 @@ impl FieldDef {
         fout.r#type = Some(type_to_descriptor(&self.typ));
 
         match &self.typ {
-            DataType::Message(m) => {
+            DataType::Message(m) | DataType::Group(m) => {
                 let (message, file) = set.message_by_id(*m).unwrap();
                 fout.type_name = Some(format!(".{}.{}", file.package, message.name))
             }
@@ -440,7 +451,7 @@ impl FieldDef {
                 });
             }
             DataType::Builtin(_) => {}
-            DataType::Unresolved(u) => panic!("Unresolved type: {u:?}"),
+            DataType::Unresolved(u, _) => panic!("Unresolved type: {u:?}"),
         }
 
         fout
@@ -492,13 +503,14 @@ pub struct EnumDef {
 
 impl EnumDef {
     #[cfg(feature = "descriptors")]
-    pub fn from_descriptor(set: &mut FileSetDef, desc: &EnumDescriptorProto) -> Self {
+    pub fn from_descriptor(set: &mut FileSetDef, name: &ArcStr, desc: &EnumDescriptorProto) -> Self {
         Self {
-            name: set.cache(desc.name.as_ref().unwrap().as_str()),
+            name: name.clone(),
             variants: EnumFields::from_descriptor(set, &desc.value),
             options: Default::default(),
         }
     }
+
     #[cfg(feature = "descriptors")]
     pub fn to_descriptor(&self) -> EnumDescriptorProto {
         let mut out = EnumDescriptorProto {
@@ -564,14 +576,17 @@ pub struct MessageDef {
     pub options: MessageOptions,
     pub oneofs: IndexMap<ArcStr, OneOfDef>,
     pub is_virtual_map: bool,
-    pub is_group: bool,
 }
 
 impl MessageDef {
     #[cfg(feature = "descriptors")]
-    fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, desc: &DescriptorProto) -> Self {
+    fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, name: &ArcStr, desc: &DescriptorProto) -> Self {
+        let is_virtual_map = desc.options.as_ref().and_then(|v| v.map_entry).unwrap_or(false);
+        if is_virtual_map {
+            eprintln!("{:?} is virtual map: {:?}", desc.name, desc);
+        }
         MessageDef {
-            name: set.cache(desc.name.as_ref().unwrap()),
+            name: name.clone(),
             fields: MessageFields::from_descriptor(set, file, None, desc, &desc.field),
             options: Default::default(),
             oneofs: desc
@@ -590,8 +605,7 @@ impl MessageDef {
                     )
                 })
                 .collect(),
-            is_virtual_map: desc.options.as_ref().and_then(|v| v.map_entry).unwrap_or(false),
-            is_group: false,
+            is_virtual_map,
         }
     }
     #[cfg(feature = "descriptors")]
@@ -746,7 +760,6 @@ impl FileDef {
                 .values_mut()
                 .chain(m.oneofs.values_mut().flat_map(|v| v.fields.by_number.values_mut()))
                 .for_each(|f: &mut FieldDef| {
-                    // eprintln!("Resolving: {:?} for field {}", f.typ, f.name);
                     if !resolve_type(
                         &mut f.typ,
                         &self.names,
@@ -813,34 +826,41 @@ impl FileDef {
                 }
             })
         });
-        let mut rewrites = HashSet::new();
-        for (oi, m) in self.messages.values().enumerate() {
-            for (fi, f) in m.fields.by_number.values().enumerate() {
-                if let DataType::Message(m) = f.typ {
-                    let m = m as u32 & LOCAL_ONLY_ID;
-                    if let Some((_, mi)) = &self.messages.get_index(m as _) {
-                        // eprintln!("Resolving: {:?}: {:?}", m, self.messages);
-                        if mi.is_virtual_map {
-                            let k = mi.fields.by_number(1).unwrap();
-                            let v = mi.fields.by_number(2).unwrap();
+
+
+        let mut rewrites = BTreeMap::new();
+        for (owner_idx, msg) in self.messages.values().enumerate() {
+            for (field_idx, field) in msg.fields.by_number.values().enumerate() {
+                if let DataType::Message(inner_id) = field.typ {
+                    // Map fields can be only in same file.
+                    if inner_id >> 32 != prevs.len() as _ {
+                        continue;
+                    }
+                    let inner_id = inner_id as u32 & LOCAL_ONLY_ID;
+                    if let Some((_, inner)) = &self.messages.get_index(inner_id as _) {
+                        if inner.is_virtual_map {
+                            let k = inner.fields.by_number(1).unwrap();
+                            let v = inner.fields.by_number(2).unwrap();
                             let DataType::Builtin(k) = k.typ else {
                                 panic!()
                             };
-                            rewrites.insert((oi, fi, DataType::Map(Box::new((k, v.typ.clone())))));
+                            rewrites.insert((owner_idx, field_idx), DataType::Map(Box::new((k, v.typ.clone()))));
                         }
                     }
                 }
             }
         }
-        // panic!("Rewriting map fields:{:?}", rewrites);
-        for (mi, fi, dt) in rewrites.into_iter() {
-            let mut field = self.messages.get_index_mut(mi).unwrap()
-                .1.fields.by_number.get_index_mut(fi)
-                .unwrap().1;
-            field.typ = dt;
+
+        eprintln!("Rewriting map fields:{:?}", rewrites);
+        for ((msg_id, field_id), change_to) in rewrites.into_iter() {
+            let msg = self.messages.get_index_mut(msg_id).unwrap().1;
+            let mut field = msg.fields.by_number.get_index_mut(field_id).unwrap().1;
+            eprintln!("Changing field {:?} {} {} in {:?} from : {:?}, to {:?}", field.name, msg_id, field_id, msg.name, field.typ, change_to);
+            field.typ = change_to;
             field.frequency = Frequency::Singular;
         }
     }
+
     pub fn resolve_extensions(&mut self, file_id: usize, prevs: &mut IndexMap<ArcStr, FileDef>) {
         for (i, m) in self.extensions.iter() {
             let name = resolve_name(
@@ -909,7 +929,8 @@ impl FileDef {
             } else {
                 set.cache(desc.name.as_ref().unwrap())
             };
-            this.enums.insert(name, EnumDef::from_descriptor(set, desc));
+            let def = EnumDef::from_descriptor(set,&name, desc);
+            this.enums.insert(name, def);
         }
 
         fn parse_msg(
@@ -930,7 +951,8 @@ impl FileDef {
             for desc in &desc.enum_type {
                 parse_enum(set, this, Some(name.as_str()), desc);
             }
-            this.messages.insert(name, MessageDef::from_descriptor(set, file, desc));
+            let def = MessageDef::from_descriptor(set, file, &name, desc);
+            this.messages.insert(name, def);
         }
 
         for desc in &desc.enum_type {
@@ -938,7 +960,7 @@ impl FileDef {
         }
 
         for field_desc in &desc.message_type {
-            parse_msg(set, &desc, &mut this, None, field_desc);
+            parse_msg(set, desc, &mut this, None, field_desc);
         }
         this
     }
@@ -1028,9 +1050,13 @@ fn local_to_global(file_id: usize, local_id: LocalDefId) -> DefId {
     (file_id as u64) << 32 | (local_id as u64)
 }
 
-fn global_to_type(def_id: DefId) -> DataType {
+fn global_to_type(def_id: DefId, hint: &UnresolvedHint) -> DataType {
     if def_id & LOCAL_DEFID_MSG as u64 != 0 {
-        return DataType::Message(def_id);
+        return if let UnresolvedHint::Group = hint {
+            DataType::Group(def_id)
+        } else {
+            DataType::Message(def_id)
+        };
     }
     if def_id & LOCAL_DEFID_ENUM as u64 != 0 {
         return DataType::Enum(def_id);
@@ -1048,7 +1074,7 @@ fn resolve_type(
     files: &IndexMap<ArcStr, FileDef>,
 ) -> bool {
     match to_resolve {
-        DataType::Unresolved(u) => {
+        DataType::Unresolved(u, hint) => {
             let resolved = resolve_name(
                 files,
                 local_names,
@@ -1060,14 +1086,14 @@ fn resolve_type(
             );
 
             if let Some(sym) = resolved {
-                *to_resolve = global_to_type(sym);
+                *to_resolve = global_to_type(sym, hint);
                 true
             } else {
                 false
             }
         }
         DataType::Map(maptype) => {
-            if let DataType::Unresolved(_u) = &mut maptype.1 {
+            if let DataType::Unresolved(_u, _) = &mut maptype.1 {
                 return resolve_type(
                     &mut maptype.1,
                     local_names,
@@ -1093,7 +1119,6 @@ fn resolve_name(
     scope: &str,
     sym: &str,
 ) -> Option<DefId> {
-    // eprintln!("{file_idx:?}");
     let resolved = try_resolve_symbol(names, package, scope, sym);
     if let Some(local_id) = resolved {
         return Some(local_to_global(file_idx, local_id));
@@ -1230,21 +1255,6 @@ impl FileSetDef {
         })
     }
 
-    pub fn message_by_name(&self, name: &str) -> Option<(&MessageDef, &FileDef)> {
-        self.files
-            .values()
-            .enumerate()
-            .filter_map(|(i, f): (usize, &FileDef)| {
-                let defid = resolve_name(&self.files, &f.names, &f.imports, i, &f.package, "", name);
-
-                defid.map(global_to_type)
-            })
-            .next()
-            .and_then(|v| match v {
-                DataType::Message(m) => self.message_by_id(m),
-                other => panic!("{other:?}"),
-            })
-    }
     #[cfg(feature = "descriptors")]
     pub fn from_descriptor(desc: FileDescriptorSet) -> Self {
         let mut this = Self::default();

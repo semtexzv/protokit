@@ -1,12 +1,13 @@
 #![allow(unused_imports)]
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
+#![allow(clippy::module_inception)]
 use crate::*;
 pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
 use super::super::descriptor::*;
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CodeGeneratorResponseFeature(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl CodeGeneratorResponseFeature {
     #[var(0u32, "FEATURE_NONE")]
     pub const FEATURE_NONE: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(

@@ -7,4 +7,4 @@ publish = false
 [dependencies.protokit_build]
 path = "../../protokit_build"
 default-features = false
-#features = ["descriptors"]
+features = ["parser"]

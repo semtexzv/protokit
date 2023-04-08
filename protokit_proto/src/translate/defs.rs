@@ -1,5 +1,5 @@
 use protokit_desc::arcstr::ArcStr;
-use protokit_desc::{DataType, EnumDef, ExtendDef, FileDef, ImportDef, MessageDef, OneOfDef, RpcDef, ServiceDef};
+use protokit_desc::{DataType, EnumDef, ExtendDef, FileDef, ImportDef, MessageDef, OneOfDef, RpcDef, ServiceDef, UnresolvedHint};
 
 use crate::ast::*;
 use crate::deps::*;
@@ -55,7 +55,6 @@ impl Visitor for FillDefinitions<'_> {
                 options: opts(self.ctx, item),
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
-                is_group: false,
                 .. Default::default()
             },
         );
@@ -78,7 +77,6 @@ impl Visitor for FillDefinitions<'_> {
                 options: opts(self.ctx, item),
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
-                is_group: true,
                 .. Default::default()
             },
         );
@@ -173,13 +171,13 @@ impl Visitor for GatherRpcs<'_> {
                 name,
                 req_typ: match &rpc.msg_type {
                     Type::Builtin(b) => DataType::Builtin(*b),
-                    Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u)),
+                    Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u), UnresolvedHint::Message),
                     other => panic!("{other:?} Not supported as rpc type"),
                 },
                 req_stream: rpc.msg_stream,
                 res_typ: match &rpc.ret_type {
                     Type::Builtin(b) => DataType::Builtin(*b),
-                    Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u)),
+                    Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u), UnresolvedHint::Message),
                     other => panic!("{other:?} Not supported as rpc type"),
                 },
                 res_stream: rpc.ret_stream,

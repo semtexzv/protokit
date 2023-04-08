@@ -1,11 +1,12 @@
 #![allow(unused_imports)]
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
+#![allow(clippy::module_inception)]
 use crate::*;
 pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FieldDescriptorProtoType(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl FieldDescriptorProtoType {
     #[var(1u32, "TYPE_DOUBLE")]
     pub const TYPE_DOUBLE: FieldDescriptorProtoType = FieldDescriptorProtoType(1u32);
@@ -46,7 +47,7 @@ impl FieldDescriptorProtoType {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FieldDescriptorProtoLabel(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl FieldDescriptorProtoLabel {
     #[var(1u32, "LABEL_OPTIONAL")]
     pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
@@ -63,7 +64,7 @@ impl FieldDescriptorProtoLabel {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileOptionsOptimizeMode(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl FileOptionsOptimizeMode {
     #[var(1u32, "SPEED")]
     pub const SPEED: FileOptionsOptimizeMode = FileOptionsOptimizeMode(1u32);
@@ -74,7 +75,7 @@ impl FileOptionsOptimizeMode {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FieldOptionsCType(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl FieldOptionsCType {
     #[var(0u32, "STRING")]
     pub const STRING: FieldOptionsCType = FieldOptionsCType(0u32);
@@ -85,7 +86,7 @@ impl FieldOptionsCType {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FieldOptionsJSType(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl FieldOptionsJSType {
     #[var(0u32, "JS_NORMAL")]
     pub const JS_NORMAL: FieldOptionsJSType = FieldOptionsJSType(0u32);
@@ -96,7 +97,7 @@ impl FieldOptionsJSType {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MethodOptionsIdempotencyLevel(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl MethodOptionsIdempotencyLevel {
     #[var(0u32, "IDEMPOTENCY_UNKNOWN")]
     pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(

@@ -16,6 +16,25 @@ use syn::{
 
 use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta};
 
+// enum Openness {
+//     Open,
+//     Close,
+// }
+//
+// impl Parse for Openness {
+//     fn parse(input: ParseStream) -> syn::Result<Self> {
+//         Ok(input.parse::<Ident>().and_then(|i|
+//             if i == "open" {
+//                 Ok(Openness::Open)
+//             } else if i == "closed" {
+//                 Ok(Openness::Close)
+//             } else {
+//                 Err(syn::Error::new(i.span(), ""))
+//             }
+//         ).map_err(|e| syn::Error::new(e.span(), "Expected 'protoenum(open)' or 'protoenum(closed)'"))?)
+//     }
+// }
+
 #[proc_macro_error]
 #[proc_macro_attribute]
 pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {

@@ -1,9 +1,8 @@
 use std::io::{stdin, BufRead};
 
-// pub mod gen {
-//     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
-// }
-pub mod gen;
+pub mod gen {
+    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+}
 use crate::gen::com::book::test1::book::Book;
 
 fn main() {

@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
+#![allow(clippy::module_inception)]
 use crate::*;
 pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
 use super::super::google::protobuf::descriptor::*;
@@ -8,7 +9,7 @@ use super::super::google::protobuf::duration::*;
 use super::super::google::protobuf::timestamp::*;
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct KnownRegex(pub u32);
-#[protoenum]
+#[protoenum(closed)]
 impl KnownRegex {
     #[var(0u32, "UNKNOWN")]
     pub const UNKNOWN: KnownRegex = KnownRegex(0u32);
@@ -61,6 +62,7 @@ pub enum FieldRulesOneOfType {
     Duration(DurationRules),
     #[field(22u32, "timestamp", nested, raw)]
     Timestamp(TimestampRules),
+    __Unused(::core::marker::PhantomData<&'static ()>),
 }
 impl Default for FieldRulesOneOfType {
     fn default() -> Self {
@@ -374,6 +376,7 @@ pub enum StringRulesOneOfWellKnown {
     Uuid(bool),
     #[field(24u32, "well_known_regex", protoenum, raw)]
     WellKnownRegex(KnownRegex),
+    __Unused(::core::marker::PhantomData<&'static ()>),
 }
 impl Default for StringRulesOneOfWellKnown {
     fn default() -> Self {
@@ -448,6 +451,7 @@ pub enum BytesRulesOneOfWellKnown {
     Ipv4(bool),
     #[field(12u32, "ipv6", bool, raw)]
     Ipv6(bool),
+    __Unused(::core::marker::PhantomData<&'static ()>),
 }
 impl Default for BytesRulesOneOfWellKnown {
     fn default() -> Self {

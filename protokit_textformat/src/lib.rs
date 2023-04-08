@@ -225,7 +225,7 @@ impl<'buf> TextField<'buf> for f64 {
 }
 
 impl<'buf> TextField<'buf> for String {
-    fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         stream.string(|s| {
             if s.contains('\\') {
                 let unescaped = unescape(s.bytes()).collect::<Vec<_>>();
@@ -265,7 +265,7 @@ impl<'buf> TextField<'buf> for &'buf str {
 }
 
 impl<'buf> TextField<'buf> for Vec<u8> {
-    fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         stream.bytes(|s| {
             if s.contains(&b'\\') {
                 let unescaped = unescape(s.iter().cloned()).collect::<Vec<_>>();
@@ -277,10 +277,21 @@ impl<'buf> TextField<'buf> for Vec<u8> {
         })
     }
 
-    fn emit(&self, name: &str, stream: &mut OutputStream) {
-        if !self.is_empty() {
-            _emit(self, name, stream)
-        }
+    fn emit_value(&self, stream: &mut OutputStream) {
+        stream.bytes(self);
+    }
+}
+
+impl<'buf> TextField<'buf> for &'buf [u8] {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
+        stream.bytes(|s| {
+            if s.contains(&b'\\') {
+                return Err(crate::Error::Escape);
+            } else {
+                *self = s;
+            }
+            Ok(())
+        })
     }
 
     fn emit_value(&self, stream: &mut OutputStream) {

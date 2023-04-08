@@ -4,10 +4,9 @@ use anyhow::bail;
 use protokit::textformat::reflect::Registry;
 use protokit::{binformat, textformat};
 
-// pub mod gen {
-//     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
-// }
-pub mod gen;
+pub mod gen {
+    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+}
 
 use crate::gen::conformance::conformance::{
     self,

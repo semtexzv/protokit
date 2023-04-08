@@ -1,4 +1,4 @@
-use protokit_desc::{BuiltinType, DataType, EnumFields, FieldDef, MessageFields, VariantDef};
+use protokit_desc::{BuiltinType, DataType, EnumFields, FieldDef, MessageFields, UnresolvedHint, VariantDef};
 
 use crate::ast::*;
 // use crate::translate::opts::opts;
@@ -22,7 +22,7 @@ impl Visitor for FieldVisitor<'_> {
     fn visit_map_field(&mut self, item: &mut MapField) {
         let val_type = match &item.val_type {
             Type::Builtin(b) => DataType::Builtin(*b),
-            Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u)),
+            Type::Named(u) => DataType::Unresolved(self.ctx.def.cache(u), UnresolvedHint::Message),
             Type::Map(_, _) => {
                 self.ctx.error("Nested maps are not supported".to_string()).unwrap();
                 DataType::Builtin(BuiltinType::Bool)
@@ -43,7 +43,7 @@ impl Visitor for FieldVisitor<'_> {
         self.fields.insert(FieldDef {
             name: name.clone(),
             frequency: Default::default(),
-            typ: DataType::Unresolved(name),
+            typ: DataType::Unresolved(name, UnresolvedHint::Group),
             num: item.number,
             // options: Default::default(),
             .. Default::default()
@@ -52,8 +52,8 @@ impl Visitor for FieldVisitor<'_> {
     fn visit_field(&mut self, item: &mut Field) {
         let dtyp = match &item.typ {
             Type::Builtin(b) => DataType::Builtin(*b),
-            Type::Named(e) => DataType::Unresolved(self.ctx.def.cache(e)),
-            Type::Map(k, v) => DataType::Map(Box::new((*k, DataType::Unresolved(self.ctx.def.cache(v))))),
+            Type::Named(e) => DataType::Unresolved(self.ctx.def.cache(e), UnresolvedHint::Message),
+            Type::Map(k, v) => DataType::Map(Box::new((*k, DataType::Unresolved(self.ctx.def.cache(v), UnresolvedHint::Message)))),
         };
         let def = FieldDef {
             name: self.ctx.def.cache(*item.name),

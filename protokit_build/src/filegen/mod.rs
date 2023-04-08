@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
 use proc_macro2::{TokenStream};
 use quote::{format_ident, quote};
-use protokit_desc::Syntax::Proto3;
+use protokit_desc::Syntax::{Proto2, Proto3};
 
 use crate::deps::*;
 
@@ -67,12 +67,12 @@ pub const TYPES: &[&str] = &["Option", "Result"];
 
 pub fn rustify_name(n: impl AsRef<str>) -> String {
     let n = n.as_ref();
-    let pos = n.find('.');
-    let n = if let Some(pos) = pos {
-        &n[pos + 1..]
-    } else {
-        n
-    };
+    // let pos = n.find('.');
+    // let n = if let Some(pos) = pos {
+    //     &n[pos + 1..]
+    // } else {
+    //     n
+    // };
     for s in STRICT.iter().chain(RESERVED) {
         if *s == n {
             return format!("r#{n}");
@@ -84,7 +84,7 @@ pub fn rustify_name(n: impl AsRef<str>) -> String {
         }
     }
 
-    n.to_string()
+    n.replace('.', "")
 }
 
 pub fn builtin_type_marker(typ: BuiltinType) -> &'static str {
@@ -150,24 +150,20 @@ impl CodeGenerator<'_> {
         }).unwrap()
     }
 
-    pub fn type_marker(&self, typ: &DataType) -> TokenStream {
+    pub fn type_marker(typ: &DataType) -> TokenStream {
         TokenStream::from_str(match typ {
-            DataType::Unresolved(_) => panic!(),
+            DataType::Unresolved(_, _) => panic!(),
             DataType::Builtin(b) => builtin_type_marker(*b),
-            DataType::Message(m) => {
-                let (m, _) = self.context.message_by_id(*m).unwrap();
-                if m.is_group {
-                    "group"
-                } else {
-                    "nested"
-                }
-            }
+            DataType::Message(_) => "nested",
+            DataType::Group(_) => "group",
             DataType::Enum(_) => "protoenum",
+
             DataType::Map(k) => {
+                eprintln!("{:?} to {:?}", typ, k);
                 return TokenStream::from_str(&format!(
                     "map({}, {})",
                     builtin_type_marker(k.0),
-                    self.type_marker(&k.1)
+                    Self::type_marker(&k.1)
                 ))
                     .unwrap();
             }
@@ -177,11 +173,11 @@ impl CodeGenerator<'_> {
 
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
         Ok(match typ {
-            DataType::Unresolved(path) => {
+            DataType::Unresolved(path, _) => {
                 panic!("Name {path} was not resolved to actual type")
             }
             DataType::Builtin(bt) => return Ok(self.builtin_rusttype(*bt)),
-            DataType::Message(id) => {
+            DataType::Message(id) | DataType::Group(id) => {
                 let borrow = self.borrow();
                 let ident = format_ident!("{}", self.resolve_name(*id)?);
 
@@ -225,12 +221,11 @@ impl CodeGenerator<'_> {
 
     pub fn file(&mut self, f: &FileDef) -> Result<()> {
         for (_, en) in f.enums.iter() {
-            self.r#enum(en)?;
+            self.r#enum(f, en)?;
         }
         for (name, msg) in f.messages.iter() {
             self.message(f, name, msg)?
         }
-
 
         for (_name, svc) in f.services.iter() {
             self.output.push(self.generate_server(f, svc));
@@ -242,7 +237,7 @@ impl CodeGenerator<'_> {
 
     pub fn message(&mut self, file: &FileDef, msg_name: &ArcStr, msg: &MessageDef) -> Result<()> {
         if msg.is_virtual_map {
-            return Ok(())
+            return Ok(());
         }
         let ident = format_ident!("{}", rustify_name(msg_name));
         let borrow = self.borrow();
@@ -302,7 +297,7 @@ impl CodeGenerator<'_> {
             let typ = self.base_type(&var.typ)?;
             let num = var.num as u32;
             let name = var.name.as_str();
-            let kind = self.type_marker(&var.typ);
+            let kind = Self::type_marker(&var.typ);
 
             vars.push(quote! {
                 #[field(#num, #name, #kind, raw)]
@@ -328,7 +323,7 @@ impl CodeGenerator<'_> {
             #attrs
             pub enum #oneof_type #borrow {
                 #(#vars)*
-                __Unused(::core::marker::PhantomData< & #borrow_or_static ()>),
+                __Unused(::core::marker::PhantomData<& #borrow_or_static ()>),
             }
             #default
         });
@@ -339,8 +334,13 @@ impl CodeGenerator<'_> {
         })
     }
 
-    pub fn r#enum(&mut self, def: &EnumDef) -> Result<()> {
+    pub fn r#enum(&mut self, _: &FileDef, def: &EnumDef) -> Result<()> {
         let ident = format_ident!("{}", rustify_name(def.name.as_str()));
+        // let open = if file.syntax == Proto3 {
+        //     quote!{ open }
+        // } else {
+        //     quote!{ closed }
+        // };
         let variants = def.variants.by_name.iter().map(|(_, def)| {
             let name = def.name.as_str();
             let var_ident = format_ident!("{}", def.name.as_str());
@@ -365,10 +365,23 @@ impl CodeGenerator<'_> {
     pub fn field(&self, file: &FileDef, def: &FieldDef) -> Result<TokenStream> {
         let typ = self.field_type(def)?;
         let fname = format_ident!("{}", rustify_name(def.name.as_str()));
-        let name = def.name.as_str();
+        let name = if let DataType::Group(id) = def.typ {
+            self.resolve_name(id).unwrap()
+        } else {
+            def.name.to_string()
+        };
+
+        if let DataType::Enum(id) = def.typ {
+            if let Some((en, efile)) = self.context.enum_by_id(id) {
+                if file.syntax == Proto3 && efile.syntax == Proto2 {
+                    panic!("Can't use proto2 enum ({}) in proto3 file", en.name);
+                }
+            }
+        }
+
         let num = def.num as u32;
 
-        let kind = self.type_marker(&def.typ);
+        let kind = Self::type_marker(&def.typ);
         let freq = TokenStream::from_str(match def.frequency {
             Frequency::Singular if def.typ.is_message() => "optional",
             Frequency::Singular => "singular",
@@ -501,6 +514,7 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
         #![allow(unused_imports)]
         #![allow(nonstandard_style)]
         #![allow(unreachable_patterns)]
+        #![allow(clippy::module_inception)]
         use #root::*;
 
         pub fn register_types(_registry: &mut #root::textformat::reflect::Registry) {

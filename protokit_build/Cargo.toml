@@ -4,9 +4,10 @@ version = "0.0.1"
 edition = "2021"
 
 [features]
-default = ["parser"]
+default = ["protoc"]
 protoc = ["descriptors"]
-parser = ["protokit_proto", "descriptors"]
+parser = ["protokit_proto"]
+
 descriptors = ["protokit_desc/descriptors"]
 
 [dependencies.protokit_binformat]
@@ -17,6 +18,7 @@ path = "../protokit_desc"
 
 [dependencies.protokit_proto]
 path = "../protokit_proto"
+default-features = false
 optional = true
 
 [dependencies]

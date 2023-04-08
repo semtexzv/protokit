@@ -44,12 +44,14 @@ impl ParserContext {
     }
 }
 
+#[cfg(feature = "protoc")]
 #[derive(Default, Debug)]
 pub struct ProtocContext {
     pub includes: Vec<PathBuf>,
     pub proto_paths: Vec<PathBuf>,
 }
 
+#[cfg(feature = "protoc")]
 impl ProtocContext {
     pub fn include(&mut self, p: impl Into<PathBuf>) {
         self.includes.push(p.into());
@@ -105,7 +107,7 @@ fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: P
             file.package.replace('.', "/") + "/" + path.with_extension("rs").file_name().unwrap().to_str().unwrap();
         let out_name = out_dir.join(&file_name);
         generated_names.push(file_name.clone());
-        filegen::generate_file(set, &opts, out_name, file)?;
+        filegen::generate_file(set, opts, out_name, file)?;
     }
 
     let dirs: Vec<Vec<&str>> = generated_names.iter().map(|v| v.split('/').collect()).collect();
@@ -124,7 +126,7 @@ fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: P
 
     for (k, v) in &subdirs {
         eprintln!("Creating module in: {:?}", out_dir.join(k));
-        filegen::generate_mod(out_dir.join(k), &opts, v.iter().copied())?;
+        filegen::generate_mod(out_dir.join(k), opts, v.iter().copied())?;
     }
 
     // #[cfg(feature = "descriptors")]
