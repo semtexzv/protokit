@@ -6,7 +6,6 @@ use core::ops::Deref;
 
 use convert_case::{Case, Casing};
 use proc_macro2::Ident;
-use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::{format_ident, quote, quote_spanned};
 use syn::spanned::Spanned;
 use syn::{
@@ -35,7 +34,6 @@ use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta
 //     }
 // }
 
-#[proc_macro_error]
 #[proc_macro_attribute]
 pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut block = parse_macro_input!(input as syn::ItemImpl);
@@ -85,10 +83,9 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         }
 
     })
-        .into()
+    .into()
 }
 
-#[proc_macro_error]
 #[proc_macro_derive(Proto, attributes(proto, field, oneof, unknown))]
 pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -99,9 +96,11 @@ pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Data::Enum(s) => {
             _impl_oneof(s, input.ident, input.attrs, input.generics).unwrap_or_else(Error::into_compile_error)
         }
-        _ => abort_call_site!("Unsupported: {data:?}"),
+        Data::Union(_) => {
+            panic!("Unions are not supported")
+        }
     }
-        .into()
+    .into()
 }
 
 enum Item {

@@ -35,7 +35,7 @@ impl Visitor for FieldVisitor<'_> {
             num: item.number,
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
-            .. Default::default()
+            ..Default::default()
         })
     }
     fn visit_group(&mut self, item: &mut Group) {
@@ -46,14 +46,17 @@ impl Visitor for FieldVisitor<'_> {
             typ: DataType::Unresolved(name, UnresolvedHint::Group),
             num: item.number,
             // options: Default::default(),
-            .. Default::default()
+            ..Default::default()
         })
     }
     fn visit_field(&mut self, item: &mut Field) {
         let dtyp = match &item.typ {
             Type::Builtin(b) => DataType::Builtin(*b),
             Type::Named(e) => DataType::Unresolved(self.ctx.def.cache(e), UnresolvedHint::Message),
-            Type::Map(k, v) => DataType::Map(Box::new((*k, DataType::Unresolved(self.ctx.def.cache(v), UnresolvedHint::Message)))),
+            Type::Map(k, v) => DataType::Map(Box::new((
+                *k,
+                DataType::Unresolved(self.ctx.def.cache(v), UnresolvedHint::Message),
+            ))),
         };
         let def = FieldDef {
             name: self.ctx.def.cache(*item.name),
@@ -62,7 +65,7 @@ impl Visitor for FieldVisitor<'_> {
             num: item.number,
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
-            .. Default::default()
+            ..Default::default()
         };
 
         self.fields.insert(def);
@@ -89,7 +92,7 @@ impl Visitor for EnumFieldVisitor<'_> {
             num: item.value,
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
-            .. Default::default()
+            ..Default::default()
         };
         self.variants.by_name.insert(name, def);
     }

@@ -1,5 +1,8 @@
 use std::marker::PhantomData;
-use crate::{emit_raw, unknown_tag, unknown_wire, BinProto, Error, InputStream, OutputStream, SizeStack, MASK_WIRE, BytesLike};
+
+use crate::{
+    emit_raw, unknown_tag, unknown_wire, BinProto, BytesLike, Error, InputStream, OutputStream, SizeStack, MASK_WIRE,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value<B> {
@@ -15,7 +18,6 @@ pub struct Field<B> {
     pub num: u32,
     pub val: Value<B>,
     pub _m: PhantomData<B>,
-
 }
 
 #[repr(transparent)]

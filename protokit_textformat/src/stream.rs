@@ -1,6 +1,5 @@
 #![allow(clippy::from_str_radix_10)]
 
-
 use core::fmt::{Display, Write};
 use core::str::FromStr;
 

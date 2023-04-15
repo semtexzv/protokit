@@ -4,5 +4,7 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
+bumpalo = { version = "3", features = ["boxed", "collections", "allocator_api"]}
+
 indexmap = "1"
 thiserror = "1"

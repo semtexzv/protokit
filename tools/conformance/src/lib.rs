@@ -1,6 +1,6 @@
 use core::slice::{from_raw_parts, from_raw_parts_mut};
-use anyhow::bail;
 
+use anyhow::bail;
 use protokit::textformat::reflect::Registry;
 use protokit::{binformat, textformat};
 
@@ -8,13 +8,12 @@ pub mod gen {
     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
 }
 
-use crate::gen::conformance::conformance::{
-    self,
-    ConformanceRequestOneOfPayload, ConformanceResponse, ConformanceResponseOneOfResult, FailureSet, WireFormat,
-};
-
 use gen::protobuf_test_messages::proto2::test_messages_proto2::TestAllTypesProto2;
 use gen::protobuf_test_messages::proto3::test_messages_proto3::TestAllTypesProto3;
+
+use crate::gen::conformance::conformance::{
+    self, ConformanceRequestOneOfPayload, ConformanceResponse, ConformanceResponseOneOfResult, FailureSet, WireFormat,
+};
 
 #[derive(Debug)]
 enum Output {
@@ -107,12 +106,15 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
         }
     } else {
         ConformanceResponse {
-            result: Some(ConformanceResponseOneOfResult::RuntimeError(format!("Unknown req: {:?}", msg_type))),
+            result: Some(ConformanceResponseOneOfResult::RuntimeError(format!(
+                "Unknown req: {:?}",
+                msg_type
+            ))),
             ..Default::default()
         }
     };
     let out = binformat::encode(&out).unwrap();
     let outslice = from_raw_parts_mut(odata, olen as usize);
-    outslice[0..out.len()].copy_from_slice(&out);
+    outslice[0 .. out.len()].copy_from_slice(&out);
     out.len() as u32
 }

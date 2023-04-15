@@ -11,5 +11,5 @@ package = "protokit_binformat"
 path = "../protokit_binformat"
 
 [dependencies]
-logos = "0.12.1"
+logos = { version = "0.12.1", default-features = false, features = ["export_derive"] }
 thiserror = "1"

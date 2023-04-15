@@ -1,5 +1,7 @@
 use protokit_desc::arcstr::ArcStr;
-use protokit_desc::{DataType, EnumDef, ExtendDef, FileDef, ImportDef, MessageDef, OneOfDef, RpcDef, ServiceDef, UnresolvedHint};
+use protokit_desc::{
+    DataType, EnumDef, ExtendDef, FileDef, ImportDef, MessageDef, OneOfDef, RpcDef, ServiceDef, UnresolvedHint,
+};
 
 use crate::ast::*;
 use crate::deps::*;
@@ -55,7 +57,7 @@ impl Visitor for FillDefinitions<'_> {
                 options: opts(self.ctx, item),
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
-                .. Default::default()
+                ..Default::default()
             },
         );
         self.path = qualified_name;
@@ -77,7 +79,7 @@ impl Visitor for FillDefinitions<'_> {
                 options: opts(self.ctx, item),
                 oneofs: oneofs(self.ctx, item),
                 is_virtual_map: false,
-                .. Default::default()
+                ..Default::default()
             },
         );
         self.path = qualified_name;
@@ -107,7 +109,7 @@ impl Visitor for FillDefinitions<'_> {
                 variants: enum_fields(self.ctx, item),
                 #[cfg(feature = "descriptors")]
                 options: opts(self.ctx, item),
-                .. Default::default()
+                ..Default::default()
             },
         );
     }
@@ -120,7 +122,7 @@ impl Visitor for FillDefinitions<'_> {
             rpc: rpcs(self.ctx, item),
             #[cfg(feature = "descriptors")]
             options: opts(self.ctx, item),
-            .. Default::default()
+            ..Default::default()
         };
 
         self.unit.services.insert(name, svc);
@@ -142,7 +144,7 @@ impl Visitor for GatherOneOfs<'_> {
                 fields: fields(self.ctx, item),
                 #[cfg(feature = "descriptors")]
                 options: opts(self.ctx, item),
-                .. Default::default()
+                ..Default::default()
             },
         );
     }
@@ -183,7 +185,7 @@ impl Visitor for GatherRpcs<'_> {
                 res_stream: rpc.ret_stream,
                 #[cfg(feature = "descriptors")]
                 options: opts(self.ctx, rpc),
-                .. Default::default()
+                ..Default::default()
             },
         );
     }

@@ -30,6 +30,7 @@ impl<'buf> InputStream<'buf> {
     pub fn len(&self) -> usize {
         min(self.buf.len(), self.limit) - self.pos
     }
+
     /// Whether the currently readable subslice is empty
     #[inline(always)]
     pub fn is_empty(&self) -> bool {
@@ -44,12 +45,14 @@ impl<'buf> InputStream<'buf> {
         Ok(replace(&mut self.limit, min(self.pos + limit, self.buf.len())))
     }
 
+    /// Reverts previous slice limit
     #[inline(always)]
     pub fn unlimit(&mut self, limit: usize) {
         debug_assert!(self.limit <= limit);
         self.limit = min(self.buf.len(), limit);
     }
 
+    /// Skips next field with given tag
     pub fn skip(&mut self, tag: u32) -> Result<()> {
         if tag >> 3 == 0 {
             return crate::unknown_tag(0);
@@ -68,7 +71,7 @@ impl<'buf> InputStream<'buf> {
                 self._fixed::<u64>()?;
             }
             crate::SGRP => {
-                self.skip_grp((tag & !0b111) | EGRP as u32)?;
+                self.skip_until_tag((tag & !0b111) | EGRP as u32)?;
             }
             other => return crate::unknown_wire(other),
         }
@@ -76,21 +79,25 @@ impl<'buf> InputStream<'buf> {
         Ok(())
     }
 
-    pub fn skip_grp(&mut self, egrp_tag: u32) -> Result<()> {
+    /// Skip next set of values, until we find the provided tag.
+    /// Used for traversing through groups
+    pub fn skip_until_tag(&mut self, next_tag: u32) -> Result<()> {
         let tag = self._varint()?;
-        if tag == egrp_tag {
+        if tag == next_tag {
             return Ok(());
         }
         self.skip(tag)
     }
 
+    /// Decode a single varint from the stream.
+    /// Currently we read it as u64, and then truncate.
     pub fn _varint<T: Varint>(&mut self) -> Result<T> {
         let mut result: u64 = 0;
         let mut shift = 0;
 
         let mut success = false;
         // Safety: We must maintain correct limit in order for this to work
-        for b in unsafe { self.buf.get_unchecked(self.pos..self.limit).iter() } {
+        for b in unsafe { self.buf.get_unchecked(self.pos .. self.limit).iter() } {
             let msb_dropped = b & DROP_MSB;
             result |= (msb_dropped as u64) << shift;
             shift += 7;
@@ -109,10 +116,12 @@ impl<'buf> InputStream<'buf> {
         }
     }
 
+    /// Skip a single zigzag encoded varint from the stream
     pub fn _sigint<T: Sigint>(&mut self) -> Result<T> {
         Ok(T::decode(self._varint::<T::Varint>()?))
     }
 
+    /// Read fixed values from the stream
     pub fn _fixed<T: Fixed>(&mut self) -> Result<T> {
         let tlen = size_of::<T>();
         if self.len() < tlen {
@@ -123,16 +132,18 @@ impl<'buf> InputStream<'buf> {
         Ok(out)
     }
 
+    /// Read a length-prefixed slice from the stream
     pub fn _bytes(&mut self) -> Result<&'buf [u8]> {
         let len: usize = self._varint()?;
         if self.len() < len {
             return Err(Error::UnexpectedEOF);
         }
         self.pos += len;
-        Ok(&self.buf[self.pos - len..self.pos])
+        Ok(&self.buf[self.pos - len .. self.pos])
     }
 
-    pub fn _string(&mut self) -> Result<&str> {
+    /// Read length-prefixed slice from the stream and decode it a string
+    pub fn _string(&mut self) -> Result<&'buf str> {
         Ok(core::str::from_utf8(self._bytes()?)?)
     }
 
@@ -175,13 +186,13 @@ impl<'buf> InputStream<'buf> {
 
     pub fn bytes<'x, T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
         field.clear();
-        field.push(self._bytes()?)?;
+        field.merge(self._bytes()?)?;
         Ok(())
     }
 
     pub fn string<T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
         field.clear();
-        field.push(self._bytes()?)?;
+        field.merge(self._bytes()?)?;
         Ok(())
     }
 
@@ -244,7 +255,7 @@ impl OutputStream {
         let len = VINT_LENS[n.leading_zeros() as usize] as usize;
         self.buf.reserve(len);
 
-        for _ in 0..len - 1 {
+        for _ in 0 .. len - 1 {
             self.buf.push(MSB | (n as u8 & DROP_MSB));
             n >>= 7;
         }

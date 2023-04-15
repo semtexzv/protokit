@@ -36,7 +36,6 @@ impl CodeGenerator<'_> {
                 // .with_context(|| format!("{msg_name}.{field_raw_name} in {:?}", file.name))
                 .expect("Resolving name");
 
-
             let mut rpc_kind_method = quote! { unary };
 
             let mut req_type = raw_req_type.clone();

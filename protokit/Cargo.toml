@@ -32,6 +32,7 @@ path = "../protokit_derive"
 [dependencies]
 anyhow = "1"
 indexmap = "1"
+bumpalo = { version = "3", features = ["boxed", "collections"]}
 
 [dev-dependencies]
 maplit = "1.0.2"

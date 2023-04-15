@@ -116,9 +116,9 @@ fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: P
 
     // Generate a valid module file in every subdirectory
     for path in &dirs {
-        for i in 0..path.len() {
+        for i in 0 .. path.len() {
             subdirs
-                .entry(path[0..i].join("/"))
+                .entry(path[0 .. i].join("/"))
                 .or_insert_with(HashSet::new)
                 .insert(path[i]);
         }
@@ -154,7 +154,7 @@ impl Build {
         self
     }
 
-    pub fn borrow(mut self) -> Self {
+    pub fn borrow_bufs(mut self) -> Self {
         self.options.lifetime_arg = Some(quote! { 'buf });
         self.options.string_type = quote! {&'buf str };
         self.options.bytes_type = quote! {&'buf [u8] };
@@ -162,6 +162,13 @@ impl Build {
         self.options.protoattrs.push(quote! { borrow = 'buf });
         self
     }
+
+    pub fn allocator_api(mut self) -> Self {
+        self.options.msg_gen_arg = Some(quote! { A: std::alloc::Allocator });
+        self.options.indirect_arg_suffix = Some(quote! {, A });
+        self
+    }
+
     pub fn track_unknowns(mut self, t: bool) -> Self {
         self.options.track_unknowns = t;
         self

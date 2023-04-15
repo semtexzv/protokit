@@ -253,7 +253,7 @@ impl<'buf> TextField<'buf> for &'buf str {
         stream.string(|s| {
             *self = s;
             if s.contains('\\') {
-                return Err(crate::Error::Escape)
+                return Err(crate::Error::Escape);
             }
             Ok(())
         })

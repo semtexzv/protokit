@@ -4,12 +4,13 @@ use core::fmt::Debug;
 use core::hash::Hash;
 use core::ops::{Deref, DerefMut};
 use core::str::Utf8Error;
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use indexmap::IndexMap;
 pub use stream::{InputStream, OutputStream};
 use thiserror::Error;
-pub use value::{Field, UnknownFieldsOwned, UnknownFieldsBorrow, Value};
+pub use value::{Field, UnknownFieldsBorrow, UnknownFieldsOwned, Value};
 
 pub mod stream;
 pub mod value;
@@ -78,67 +79,31 @@ where
     }
 }
 
+pub trait DefaultIn<C> {
+    fn default_in(ctx: &C) -> Self;
+}
 
-pub trait Varint: Default + Debug + Clone + Copy + PartialEq + PartialOrd {
+pub trait Varint: Default + Debug + Clone + Copy + PartialEq + PartialOrd + Eq + Ord {
     fn from_u64(v: u64) -> Self;
-
     fn into_u64(self) -> u64;
 }
 
-impl Varint for u32 {
-    #[inline(always)]
-    fn from_u64(v: u64) -> Self {
-        v as _
-    }
-    #[inline(always)]
-    fn into_u64(self) -> u64 {
-        self as _
-    }
+macro_rules! impl_varint {
+    ($($ty:ty),*) => {$(
+        impl Varint for $ty {
+            #[inline(always)]
+            fn from_u64(v: u64) -> Self {
+                v as _
+            }
+            #[inline(always)]
+            fn into_u64(self) -> u64 {
+                self as _
+            }
+        })*
+    };
 }
 
-impl Varint for u64 {
-    #[inline(always)]
-    fn from_u64(v: u64) -> Self {
-        v as _
-    }
-    #[inline(always)]
-    fn into_u64(self) -> u64 {
-        self as _
-    }
-}
-
-impl Varint for i32 {
-    #[inline(always)]
-    fn from_u64(v: u64) -> Self {
-        v as _
-    }
-    #[inline(always)]
-    fn into_u64(self) -> u64 {
-        self as _
-    }
-}
-
-impl Varint for i64 {
-    #[inline(always)]
-    fn from_u64(v: u64) -> Self {
-        v as _
-    }
-    #[inline(always)]
-    fn into_u64(self) -> u64 {
-        self as _
-    }
-}
-
-impl Varint for usize {
-    #[inline(always)]
-    fn from_u64(v: u64) -> Self {
-        v as _
-    }
-    #[inline(always)]
-    fn into_u64(self) -> u64 {
-        self as _
-    }
-}
+impl_varint!(i32, u32, i64, u64, usize);
 
 pub trait Sigint: Default + Clone + Copy {
     type Varint: Varint;
@@ -258,11 +223,11 @@ impl Fixed for f64 {
     }
 }
 
-pub trait BytesLike<'a>: Debug {
+pub trait BytesLike<'a>: Debug + Default {
     fn blen(&self) -> usize;
     fn bytes(&self) -> &[u8];
     fn clear(&mut self);
-    fn push(&mut self, b: &'a [u8]) -> Result<()>;
+    fn merge(&mut self, b: &'a [u8]) -> Result<()>;
 }
 
 impl<'buf> BytesLike<'buf> for &'buf str {
@@ -282,7 +247,7 @@ impl<'buf> BytesLike<'buf> for &'buf str {
     }
 
     #[inline(always)]
-    fn push(&mut self, b: &'buf [u8]) -> Result<()> {
+    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
         *self = core::str::from_utf8(b)?;
         Ok(())
     }
@@ -305,11 +270,48 @@ impl<'buf> BytesLike<'buf> for String {
     }
 
     #[inline(always)]
-    fn push(&mut self, b: &[u8]) -> Result<()> {
+    fn merge(&mut self, b: &[u8]) -> Result<()> {
         self.push_str(core::str::from_utf8(b)?);
         Ok(())
     }
 }
+
+impl<'buf> BytesLike<'buf> for Cow<'buf, str> {
+    fn blen(&self) -> usize {
+        self.len()
+    }
+
+    fn bytes(&self) -> &[u8] {
+        self.as_bytes()
+    }
+
+    fn clear(&mut self) {
+        *self = Cow::Borrowed("");
+    }
+
+    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+        todo!()
+    }
+}
+
+// impl<'buf, 'arena> BytesLike<'buf> for bumpalo::collections::Vec<'arena, u8> {
+//     fn blen(&self) -> usize {
+//         self.len()
+//     }
+//
+//     fn bytes(&self) -> &[u8] {
+//         self.as_slice()
+//     }
+//
+//     fn clear(&mut self) {
+//         self.clear()
+//     }
+//
+//     fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+//         self.extend_from_slice(b);
+//         Ok(())
+//     }
+// }
 
 impl<'buf> BytesLike<'buf> for &'buf [u8] {
     #[inline(always)]
@@ -328,7 +330,7 @@ impl<'buf> BytesLike<'buf> for &'buf [u8] {
     }
 
     #[inline(always)]
-    fn push(&mut self, b: &'buf [u8]) -> Result<()> {
+    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
         *self = b;
         Ok(())
     }
@@ -351,9 +353,33 @@ impl<'buf> BytesLike<'buf> for Vec<u8> {
     }
 
     #[inline(always)]
-    fn push(&mut self, b: &[u8]) -> Result<()> {
+    fn merge(&mut self, b: &[u8]) -> Result<()> {
         self.extend_from_slice(b);
         Ok(())
+    }
+}
+
+impl<'buf> BytesLike<'buf> for Cow<'buf, [u8]> {
+    #[inline(always)]
+    fn blen(&self) -> usize {
+        self.len()
+    }
+
+    #[inline(always)]
+    fn bytes(&self) -> &[u8] {
+        self
+    }
+
+    #[inline(always)]
+    fn clear(&mut self) {
+        *self = Cow::Borrowed(&[]);
+    }
+
+    #[inline(always)]
+    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+        unimplemented!()
+        // *self = b;
+        // Ok(())
     }
 }
 

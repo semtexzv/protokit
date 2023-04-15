@@ -3,9 +3,9 @@ use core::marker::PhantomData;
 pub use async_trait::async_trait;
 pub use futures::future::LocalBoxFuture;
 pub use futures::stream::Stream;
+use tonic::codec::{Codec, DecodeBuf, Decoder, EncodeBuf, Encoder};
 pub use tonic::codegen::*;
 pub use tonic::{Code, Status};
-use tonic::codec::{Codec, DecodeBuf, Decoder, EncodeBuf, Encoder};
 pub use {futures, tonic};
 
 /// A [`Codec`] that implements `application/grpc+proto` via the protokit library..

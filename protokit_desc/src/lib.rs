@@ -330,9 +330,7 @@ impl FieldDef {
                 Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 && desc.proto3_optional != Some(true) => {
                     Frequency::Singular
                 }
-                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 => {
-                    Frequency::Optional
-                }
+                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 => Frequency::Optional,
                 Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
                 Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
                 Some(FieldDescriptorProtoLabel(label)) => {
@@ -403,7 +401,7 @@ impl FieldDef {
             DataType::Map(map) => {
                 let mut name = self.name.clone().to_string();
                 unsafe {
-                    name.as_bytes_mut()[..1].make_ascii_uppercase();
+                    name.as_bytes_mut()[.. 1].make_ascii_uppercase();
                 }
                 let map_entry_name = format!("{name}Entry");
                 fout.type_name = Some(format!(
@@ -580,7 +578,12 @@ pub struct MessageDef {
 
 impl MessageDef {
     #[cfg(feature = "descriptors")]
-    fn from_descriptor(set: &mut FileSetDef, file: &FileDescriptorProto, name: &ArcStr, desc: &DescriptorProto) -> Self {
+    fn from_descriptor(
+        set: &mut FileSetDef,
+        file: &FileDescriptorProto,
+        name: &ArcStr,
+        desc: &DescriptorProto,
+    ) -> Self {
         let is_virtual_map = desc.options.as_ref().and_then(|v| v.map_entry).unwrap_or(false);
         if is_virtual_map {
             eprintln!("{:?} is virtual map: {:?}", desc.name, desc);
@@ -827,7 +830,6 @@ impl FileDef {
             })
         });
 
-
         let mut rewrites = BTreeMap::new();
         for (owner_idx, msg) in self.messages.values().enumerate() {
             for (field_idx, field) in msg.fields.by_number.values().enumerate() {
@@ -855,7 +857,10 @@ impl FileDef {
         for ((msg_id, field_id), change_to) in rewrites.into_iter() {
             let msg = self.messages.get_index_mut(msg_id).unwrap().1;
             let mut field = msg.fields.by_number.get_index_mut(field_id).unwrap().1;
-            eprintln!("Changing field {:?} {} {} in {:?} from : {:?}, to {:?}", field.name, msg_id, field_id, msg.name, field.typ, change_to);
+            eprintln!(
+                "Changing field {:?} {} {} in {:?} from : {:?}, to {:?}",
+                field.name, msg_id, field_id, msg.name, field.typ, change_to
+            );
             field.typ = change_to;
             field.frequency = Frequency::Singular;
         }
@@ -913,7 +918,13 @@ impl FileDef {
                 })
                 .collect(),
             public_imports: vec![],
-            syntax: desc.syntax.as_ref().map(|s| Syntax::from_str(s)).transpose().unwrap().unwrap_or(Syntax::Proto2),
+            syntax: desc
+                .syntax
+                .as_ref()
+                .map(|s| Syntax::from_str(s))
+                .transpose()
+                .unwrap()
+                .unwrap_or(Syntax::Proto2),
             package: set.cache(desc.package.as_ref().unwrap()),
             messages: Default::default(),
             enums: Default::default(),
@@ -929,7 +940,7 @@ impl FileDef {
             } else {
                 set.cache(desc.name.as_ref().unwrap())
             };
-            let def = EnumDef::from_descriptor(set,&name, desc);
+            let def = EnumDef::from_descriptor(set, &name, desc);
             this.enums.insert(name, def);
         }
 
@@ -1147,7 +1158,7 @@ fn try_resolve_within_scopes(names: &HashMap<ArcStr, LocalDefId>, mut scope: &st
         let qualified = format!("{scope}{scope_dot}{symbol}");
         match (names.get(qualified.as_str()), scope.rfind('.')) {
             (Some(v), _) => return Some(*v),
-            (None, Some(p)) => scope = &scope[..p],
+            (None, Some(p)) => scope = &scope[.. p],
             // Resolve globally without the prefix
             (None, None) => return names.get(symbol).copied(),
         }
@@ -1163,14 +1174,14 @@ fn try_resolve_symbol(
     if let Some(without_dot) = symbol.strip_prefix('.') {
         // We're searching for global symbol. If package prefix matches, we can search for the inner part of the symbol
         if let Some(without_package) = without_dot.strip_prefix(file_package) {
-            let localized_symbol = &without_package[1..];
+            let localized_symbol = &without_package[1 ..];
             return names.get(localized_symbol).cloned();
         } else {
             eprintln!("Package mismatch: {} within: {}", without_dot, &file_package);
             return None;
         }
     } else if let Some(localized) = symbol.strip_prefix(file_package) {
-        let localized_symbol = &localized[1..];
+        let localized_symbol = &localized[1 ..];
         return names.get(localized_symbol).cloned();
     }
 
@@ -1188,7 +1199,7 @@ fn try_resolve_symbol(
         ) {
             (Some(v), _) => return Some(v),
             // We need to remove subpackages, because name sections might be of nested messages, not package names
-            (None, Some(v)) => file_package = &file_package[..v],
+            (None, Some(v)) => file_package = &file_package[.. v],
             (None, None) => {
                 return try_resolve_within_scopes(names, "", symbol);
             }

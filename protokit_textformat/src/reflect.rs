@@ -1,7 +1,7 @@
 #![allow(clippy::wrong_self_convention, clippy::new_ret_no_self)]
 
-use std::fmt::{Debug, Formatter};
 use std::collections::BTreeMap;
+use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
 
 use binformat::{BinProto, InputStream, OutputStream, SizeStack};

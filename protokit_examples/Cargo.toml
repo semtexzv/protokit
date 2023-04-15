@@ -10,6 +10,3 @@ protokit = { path = "../protokit", features = [] }
 
 [build-dependencies]
 protokit_build = { path = "../protokit_build" }
-
-[dev-dependencies]
-include_dir = "0.7.2"
