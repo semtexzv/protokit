@@ -323,50 +323,59 @@ impl FieldDef {
 
         let is_proto3 = file.syntax.as_deref() == Some("proto3");
 
-        Self {
-            name: set.cache(desc.name.as_ref().unwrap()),
-            frequency: match &desc.label {
-                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if !is_proto3 => Frequency::Optional,
-                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 && desc.proto3_optional != Some(true) => {
-                    Frequency::Singular
-                }
-                Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 => Frequency::Optional,
-                Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
-                Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
-                Some(FieldDescriptorProtoLabel(label)) => {
-                    panic!("Unknown label: {label:?}")
-                }
-                None => Frequency::Singular,
-            },
-            typ: match *desc.r#type.as_ref().unwrap() {
-                FieldDescriptorProtoType::TYPE_DOUBLE => DataType::Builtin(BuiltinType::Double),
-                FieldDescriptorProtoType::TYPE_FLOAT => DataType::Builtin(BuiltinType::Float),
-                FieldDescriptorProtoType::TYPE_INT64 => DataType::Builtin(BuiltinType::Int64),
-                FieldDescriptorProtoType::TYPE_UINT64 => DataType::Builtin(BuiltinType::Uint64),
-                FieldDescriptorProtoType::TYPE_INT32 => DataType::Builtin(BuiltinType::Int32),
-                FieldDescriptorProtoType::TYPE_FIXED64 => DataType::Builtin(BuiltinType::Fixed64),
-                FieldDescriptorProtoType::TYPE_FIXED32 => DataType::Builtin(BuiltinType::Fixed32),
-                FieldDescriptorProtoType::TYPE_BOOL => DataType::Builtin(BuiltinType::Bool),
-                FieldDescriptorProtoType::TYPE_STRING => DataType::Builtin(BuiltinType::String_),
-                FieldDescriptorProtoType::TYPE_GROUP => {
-                    // TODO: Need to mark groups properly. It's a bit complicated
-                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Group)
-                }
-                FieldDescriptorProtoType::TYPE_MESSAGE => {
-                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Message)
-                }
-                FieldDescriptorProtoType::TYPE_BYTES => DataType::Builtin(BuiltinType::Bytes_),
-                FieldDescriptorProtoType::TYPE_UINT32 => DataType::Builtin(BuiltinType::Uint32),
-                FieldDescriptorProtoType::TYPE_ENUM => {
-                    DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Enum)
-                }
-                FieldDescriptorProtoType::TYPE_SFIXED32 => DataType::Builtin(BuiltinType::Sfixed32),
-                FieldDescriptorProtoType::TYPE_SFIXED64 => DataType::Builtin(BuiltinType::Sfixed64),
-                FieldDescriptorProtoType::TYPE_SINT32 => DataType::Builtin(BuiltinType::Sint32),
-                FieldDescriptorProtoType::TYPE_SINT64 => DataType::Builtin(BuiltinType::Sint64),
+        let mut name = set.cache(desc.name.as_ref().unwrap());
 
-                FieldDescriptorProtoType(_) => panic!(),
-            },
+        let frequency = match &desc.label {
+            Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if !is_proto3 => Frequency::Optional,
+            Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 && desc.proto3_optional != Some(true) => {
+                Frequency::Singular
+            }
+            Some(FieldDescriptorProtoLabel::LABEL_OPTIONAL) if is_proto3 => Frequency::Optional,
+            Some(FieldDescriptorProtoLabel::LABEL_REQUIRED) => Frequency::Required,
+            Some(FieldDescriptorProtoLabel::LABEL_REPEATED) => Frequency::Repeated,
+            Some(FieldDescriptorProtoLabel(label)) => {
+                panic!("Unknown label: {label:?}")
+            }
+            None => Frequency::Singular,
+        };
+
+        let typ = match *desc.r#type.as_ref().unwrap() {
+            FieldDescriptorProtoType::TYPE_DOUBLE => DataType::Builtin(BuiltinType::Double),
+            FieldDescriptorProtoType::TYPE_FLOAT => DataType::Builtin(BuiltinType::Float),
+            FieldDescriptorProtoType::TYPE_INT64 => DataType::Builtin(BuiltinType::Int64),
+            FieldDescriptorProtoType::TYPE_UINT64 => DataType::Builtin(BuiltinType::Uint64),
+            FieldDescriptorProtoType::TYPE_INT32 => DataType::Builtin(BuiltinType::Int32),
+            FieldDescriptorProtoType::TYPE_FIXED64 => DataType::Builtin(BuiltinType::Fixed64),
+            FieldDescriptorProtoType::TYPE_FIXED32 => DataType::Builtin(BuiltinType::Fixed32),
+            FieldDescriptorProtoType::TYPE_BOOL => DataType::Builtin(BuiltinType::Bool),
+            FieldDescriptorProtoType::TYPE_STRING => DataType::Builtin(BuiltinType::String_),
+            FieldDescriptorProtoType::TYPE_GROUP => {
+                let mut n = desc.type_name.as_deref().unwrap();
+                while let Some(p) = n.find('.') {
+                    n = &n[p + 1..]
+                }
+                name = set.cache(n);
+                DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Group)
+            }
+            FieldDescriptorProtoType::TYPE_MESSAGE => {
+                DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Message)
+            }
+            FieldDescriptorProtoType::TYPE_BYTES => DataType::Builtin(BuiltinType::Bytes_),
+            FieldDescriptorProtoType::TYPE_UINT32 => DataType::Builtin(BuiltinType::Uint32),
+            FieldDescriptorProtoType::TYPE_ENUM => {
+                DataType::Unresolved(set.cache(desc.type_name.as_ref().unwrap()), UnresolvedHint::Enum)
+            }
+            FieldDescriptorProtoType::TYPE_SFIXED32 => DataType::Builtin(BuiltinType::Sfixed32),
+            FieldDescriptorProtoType::TYPE_SFIXED64 => DataType::Builtin(BuiltinType::Sfixed64),
+            FieldDescriptorProtoType::TYPE_SINT32 => DataType::Builtin(BuiltinType::Sint32),
+            FieldDescriptorProtoType::TYPE_SINT64 => DataType::Builtin(BuiltinType::Sint64),
+
+            FieldDescriptorProtoType(_) => panic!(),
+        };
+        Self {
+            name,
+            frequency,
+            typ,
             num: desc.number.unwrap(),
             options: opts,
         }
@@ -401,7 +410,7 @@ impl FieldDef {
             DataType::Map(map) => {
                 let mut name = self.name.clone().to_string();
                 unsafe {
-                    name.as_bytes_mut()[.. 1].make_ascii_uppercase();
+                    name.as_bytes_mut()[..1].make_ascii_uppercase();
                 }
                 let map_entry_name = format!("{name}Entry");
                 fout.type_name = Some(format!(
@@ -1158,7 +1167,7 @@ fn try_resolve_within_scopes(names: &HashMap<ArcStr, LocalDefId>, mut scope: &st
         let qualified = format!("{scope}{scope_dot}{symbol}");
         match (names.get(qualified.as_str()), scope.rfind('.')) {
             (Some(v), _) => return Some(*v),
-            (None, Some(p)) => scope = &scope[.. p],
+            (None, Some(p)) => scope = &scope[..p],
             // Resolve globally without the prefix
             (None, None) => return names.get(symbol).copied(),
         }
@@ -1174,14 +1183,14 @@ fn try_resolve_symbol(
     if let Some(without_dot) = symbol.strip_prefix('.') {
         // We're searching for global symbol. If package prefix matches, we can search for the inner part of the symbol
         if let Some(without_package) = without_dot.strip_prefix(file_package) {
-            let localized_symbol = &without_package[1 ..];
+            let localized_symbol = &without_package[1..];
             return names.get(localized_symbol).cloned();
         } else {
             eprintln!("Package mismatch: {} within: {}", without_dot, &file_package);
             return None;
         }
     } else if let Some(localized) = symbol.strip_prefix(file_package) {
-        let localized_symbol = &localized[1 ..];
+        let localized_symbol = &localized[1..];
         return names.get(localized_symbol).cloned();
     }
 
@@ -1199,7 +1208,7 @@ fn try_resolve_symbol(
         ) {
             (Some(v), _) => return Some(v),
             // We need to remove subpackages, because name sections might be of nested messages, not package names
-            (None, Some(v)) => file_package = &file_package[.. v],
+            (None, Some(v)) => file_package = &file_package[..v],
             (None, None) => {
                 return try_resolve_within_scopes(names, "", symbol);
             }

@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use protokit_desc::Syntax::{Proto2, Proto3};
 use quote::{format_ident, quote};
 
@@ -12,11 +12,38 @@ use crate::deps::*;
 
 pub mod grpc;
 
+#[derive(Debug, Default)]
+pub struct Generics {
+    pub buf_arg: Option<TokenStream>,
+    pub alloc_arg: Option<TokenStream>,
+}
+
+impl Generics {
+    fn liftetime_arg(&self) -> Option<TokenStream> {
+        self.buf_arg.clone()
+    }
+    fn struct_def_generics(&self) -> TokenStream {
+        match (&self.buf_arg, &self.alloc_arg) {
+            (Some(b), Some(a)) => quote! { < #b, #a : std::alloc::Allocator + Debug> },
+            (Some(b), None) => quote! { <#b> },
+            (None, Some(a)) => quote! { <#a: std::alloc::Allocator > },
+            _ => quote! { },
+        }
+    }
+
+    fn struct_use_generics(&self) -> TokenStream {
+        match (&self.buf_arg, &self.alloc_arg) {
+            (Some(b), Some(a)) => quote! { < #b, #a> },
+            (Some(b), None) => quote! { <#b> },
+            (None, Some(a)) => quote! { <#a> },
+            _ => quote! { },
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Options {
     pub replacement: HashMap<String, String>,
-
-    pub lifetime_arg: Option<TokenStream>,
     pub import_root: TokenStream,
 
     pub string_type: TokenStream,
@@ -24,10 +51,8 @@ pub struct Options {
     pub map_type: TokenStream,
     pub unknown_type: TokenStream,
 
+    pub generics: Generics,
     pub protoattrs: Vec<TokenStream>,
-
-    pub msg_gen_arg: Option<TokenStream>,
-    pub indirect_arg_suffix: Option<TokenStream>,
 
     pub track_unknowns: bool,
 }
@@ -43,15 +68,13 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             replacement: Default::default(),
-            lifetime_arg: None,
             import_root: quote! { ::protokit },
             string_type: quote! { String },
             bytes_type: quote! { Vec<u8> },
             map_type: quote! { ::protokit::IndexMap },
             unknown_type: quote! { binformat::UnknownFieldsOwned },
+            generics: Generics::default(),
             protoattrs: vec![],
-            msg_gen_arg: None,
-            indirect_arg_suffix: None,
             track_unknowns: false,
         }
     }
@@ -153,7 +176,7 @@ impl CodeGenerator<'_> {
             BuiltinType::String_ => return self.options.string_type.clone(),
             BuiltinType::Bytes_ => return self.options.bytes_type.clone(),
         })
-        .unwrap()
+            .unwrap()
     }
 
     pub fn type_marker(typ: &DataType) -> TokenStream {
@@ -171,10 +194,10 @@ impl CodeGenerator<'_> {
                     builtin_type_marker(k.0),
                     Self::type_marker(&k.1)
                 ))
-                .unwrap();
+                    .unwrap();
             }
         })
-        .unwrap()
+            .unwrap()
     }
 
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
@@ -184,10 +207,11 @@ impl CodeGenerator<'_> {
             }
             DataType::Builtin(bt) => return Ok(self.builtin_rusttype(*bt)),
             DataType::Message(id) | DataType::Group(id) => {
-                let borrow = self.borrow();
+                // let borrow = self.borrow();
+                let gen = self.options.generics.struct_use_generics();
                 let ident = format_ident!("{}", self.resolve_name(*id)?);
 
-                quote! {#ident #borrow}
+                quote! {#ident #gen}
             }
             DataType::Enum(id) => TokenStream::from_str(&self.resolve_name(*id)?).unwrap(),
             DataType::Map(m) => {
@@ -201,20 +225,15 @@ impl CodeGenerator<'_> {
 
     pub fn field_type(&self, typ: &FieldDef) -> Result<TokenStream> {
         let base = self.base_type(&typ.typ)?;
-        let is_msg = matches!(typ.typ, DataType::Message(..));
-        let suffix = &self.options.indirect_arg_suffix;
+        let is_msg = matches!(typ.typ, DataType::Message(..) | DataType::Group(_));
 
         match (typ.frequency, is_msg) {
             (Frequency::Singular | Frequency::Required, false) => Ok(base),
-            (Frequency::Singular | Frequency::Required, true) => Ok(quote!(Option<Box<#base #suffix>>)),
+            (Frequency::Singular | Frequency::Required, true) => Ok(quote!(Option<Box<#base>>)),
             (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
-            (Frequency::Optional, true) => Ok(quote!(Option<Box<#base #suffix>>)),
-            (Frequency::Repeated, _) => Ok(quote!(Vec<#base #suffix>)),
+            (Frequency::Optional, true) => Ok(quote!(Option<Box<#base>>)),
+            (Frequency::Repeated, _) => Ok(quote!(Vec<#base>)),
         }
-    }
-
-    pub fn borrow(&self) -> Option<TokenStream> {
-        self.options.lifetime_arg.clone().map(|a| quote! { <#a> })
     }
 
     pub fn protoattrs(&self) -> TokenStream {
@@ -247,7 +266,8 @@ impl CodeGenerator<'_> {
             return Ok(());
         }
         let ident = format_ident!("{}", rustify_name(msg_name));
-        let borrow = self.borrow();
+        // let borrow = self.borrow();
+        let generics = self.options.generics.struct_def_generics();
         let attrs = self.protoattrs();
 
         let fields = msg
@@ -276,7 +296,7 @@ impl CodeGenerator<'_> {
         self.output.push(quote! {
             #[derive(Debug, Default, Clone, PartialEq, Proto)]
             #attrs
-            pub struct #ident #borrow {
+            pub struct #ident #generics {
                 #(#fields,)*
                 #(#oneofs,)*
                 #last
@@ -289,8 +309,11 @@ impl CodeGenerator<'_> {
     pub fn oneof(&mut self, msg_name: &str, def: &OneOfDef) -> Result<TokenStream> {
         let field_ident = format_ident!("{}", rustify_name(&def.name));
         let oneof_type = format_ident!("{msg_name}OneOf{}", def.name.as_str().to_case(Case::Pascal));
-        let borrow = self.borrow();
-        let borrow_or_static = self.options.lifetime_arg.clone().unwrap_or_else(|| quote! { 'static });
+        // let borrow = self.borrow();
+        let generics = self.options.generics.struct_def_generics();
+        let use_generics = self.options.generics.struct_use_generics();
+
+        let borrow_or_static = self.options.generics.liftetime_arg().unwrap_or_else(|| quote! { 'static });
         let attrs = self.protoattrs();
 
         let mut nums = vec![];
@@ -313,7 +336,7 @@ impl CodeGenerator<'_> {
 
             if default.is_none() {
                 default = Some(quote! {
-                    impl #borrow Default for #oneof_type #borrow {
+                    impl #generics Default for #oneof_type #use_generics {
                         fn default() -> Self {
                             Self::#var_name(Default::default())
                         }
@@ -328,7 +351,7 @@ impl CodeGenerator<'_> {
         self.output.push(quote! {
             #[derive(Debug, Clone, PartialEq, Proto)]
             #attrs
-            pub enum #oneof_type #borrow {
+            pub enum #oneof_type #generics {
                 #(#vars)*
                 __Unused(::core::marker::PhantomData<& #borrow_or_static ()>),
             }
@@ -337,7 +360,7 @@ impl CodeGenerator<'_> {
 
         Ok(quote! {
             #[oneof([#(#nums,)*], [#(#names,)*])]
-            pub #field_ident: Option<#oneof_type #borrow>
+            pub #field_ident: Option<#oneof_type #use_generics>
         })
     }
 
@@ -372,11 +395,7 @@ impl CodeGenerator<'_> {
     pub fn field(&self, file: &FileDef, def: &FieldDef) -> Result<TokenStream> {
         let typ = self.field_type(def)?;
         let fname = format_ident!("{}", rustify_name(def.name.as_str()));
-        let name = if let DataType::Group(id) = def.typ {
-            self.resolve_name(id).unwrap()
-        } else {
-            def.name.to_string()
-        };
+        let name = def.name.to_string();
 
         if let DataType::Enum(id) = def.typ {
             if let Some((en, efile)) = self.context.enum_by_id(id) {
@@ -398,7 +417,7 @@ impl CodeGenerator<'_> {
             Frequency::Repeated => "repeated",
             Frequency::Required => "required",
         })
-        .unwrap();
+            .unwrap();
 
         Ok(quote! {
             #[field(#num, #name, #kind, #freq)]
@@ -479,21 +498,21 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
         // }
 
         let their_name = if other.name.contains('/') {
-            &other.name.as_str()[other.name.rfind('/').unwrap() + 1 ..]
+            &other.name.as_str()[other.name.rfind('/').unwrap() + 1..]
         } else {
             other.name.as_str()
         };
         let their_name = if their_name.contains('.') {
-            &their_name[.. their_name.rfind('.').unwrap()]
+            &their_name[..their_name.rfind('.').unwrap()]
         } else {
             their_name
         };
         let mut our_module = file.package.as_str();
         let mut that_module = other.package.as_str();
 
-        while !our_module.is_empty() && !that_module.is_empty() && our_module[.. 1] == that_module[.. 1] {
-            our_module = &our_module[1 ..];
-            that_module = &that_module[1 ..];
+        while !our_module.is_empty() && !that_module.is_empty() && our_module[..1] == that_module[..1] {
+            our_module = &our_module[1..];
+            that_module = &that_module[1..];
         }
         let mut path = String::new();
         path.push_str("super::");
@@ -560,7 +579,7 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
 //     f.flush().unwrap();
 // }
 
-pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item = &'s str>) -> Result<()> {
+pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item=&'s str>) -> Result<()> {
     let root = opts.import_root.clone();
     let files: Vec<_> = files
         .map(|v| {

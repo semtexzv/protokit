@@ -4,9 +4,11 @@ use anyhow::bail;
 use protokit::textformat::reflect::Registry;
 use protokit::{binformat, textformat};
 
-pub mod gen {
-    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
-}
+// pub mod gen {
+//     include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+// }
+
+pub mod gen;
 
 use gen::protobuf_test_messages::proto2::test_messages_proto2::TestAllTypesProto2;
 use gen::protobuf_test_messages::proto3::test_messages_proto3::TestAllTypesProto3;

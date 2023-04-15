@@ -1,3 +1,4 @@
+#![feature(allocator_api)]
 use std::io::{stdin, BufRead};
 
 pub mod gen {

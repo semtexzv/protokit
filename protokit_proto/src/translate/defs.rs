@@ -17,7 +17,6 @@ pub struct FillDefinitions<'tcx> {
 
 impl FillDefinitions<'_> {
     fn qualify(&mut self, name: &str) -> (ArcStr, String) {
-        // let name = self.ctx.syms.intern(n);
         let name = self.ctx.def.cache(name);
         let mut qualified = self.path.to_string();
         if !qualified.is_empty() {
