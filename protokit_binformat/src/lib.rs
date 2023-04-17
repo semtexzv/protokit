@@ -290,11 +290,13 @@ impl<'buf> BytesLike<'buf> for Cow<'buf, str> {
     }
 
     fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
-        todo!()
+        let b = std::str::from_utf8(b)?;
+        *self = Cow::Borrowed(b);
+        Ok(())
     }
 }
 
-// impl<'buf, 'arena> BytesLike<'buf> for bumpalo::collections::Vec<'arena, u8> {
+// impl<'buf, 'arena> BytesLike<'buf> for bumpalo::collections::String<'arena, u8> {
 //     fn blen(&self) -> usize {
 //         self.len()
 //     }
@@ -377,11 +379,30 @@ impl<'buf> BytesLike<'buf> for Cow<'buf, [u8]> {
 
     #[inline(always)]
     fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
-        unimplemented!()
-        // *self = b;
-        // Ok(())
+        *self = Cow::Borrowed(b);
+        Ok(())
     }
 }
+
+// #[cfg(feature = "bump")]
+// impl<'buf, 'arena> BytesLike<'buf> for bumpalo::collections::Vec<'arena, u8> {
+//     fn blen(&self) -> usize {
+//         self.len()
+//     }
+//
+//     fn bytes(&self) -> &[u8] {
+//         self.as_slice()
+//     }
+//
+//     fn clear(&mut self) {
+//         self.clear()
+//     }
+//
+//     fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+//         self.extend_from_slice(b);
+//         Ok(())
+//     }
+// }
 
 pub trait Map<K, V> {
     fn mlen(&self) -> usize;

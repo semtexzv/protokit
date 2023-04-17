@@ -57,11 +57,11 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOne
             ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap())
         }
         (Ok(Output::Proto2(v)), WireFormat::TEXT_FORMAT) => {
-            let out = textformat::encode(&v).unwrap();
+            let out = textformat::encode(&v, &Registry::default()).unwrap();
             ConformanceResponseOneOfResult::TextPayload(out)
         }
         (Ok(Output::Proto3(v)), WireFormat::TEXT_FORMAT) => {
-            let out = textformat::encode(&v).unwrap();
+            let out = textformat::encode(&v, &Registry::default()).unwrap();
             ConformanceResponseOneOfResult::TextPayload(out)
         }
         (_, WireFormat::JSON) => ConformanceResponseOneOfResult::Skipped("No json".to_string()),

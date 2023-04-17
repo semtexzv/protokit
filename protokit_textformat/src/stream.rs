@@ -37,7 +37,7 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn advance(&mut self) {
-        self.cur = self.lex.next().unwrap_or(EndOfFile);
+        self.cur = self.lex.next().unwrap_or(Ok(EndOfFile)).unwrap_or(Error);
     }
 
     pub fn buf(&self) -> &'buf str {
@@ -81,9 +81,8 @@ impl<'buf> InputStream<'buf> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf();
-            // TODO: Escape + Trim quotes
             f(&buf[1 .. buf.len() - 1])?;
-            let _ = self.next_token();
+            self.advance();
         }
         Ok(())
     }
@@ -92,9 +91,8 @@ impl<'buf> InputStream<'buf> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf().as_bytes();
-            // TODO: Escape + Trim quotes
             f(&buf[1 .. buf.len() - 1])?;
-            let _ = self.next_token();
+            self.advance();
         }
         Ok(())
     }
@@ -198,19 +196,29 @@ impl<'buf> InputStream<'buf> {
     }
 }
 
-#[derive(Debug, Default)]
-pub struct OutputStream {
+#[derive(Debug)]
+pub struct OutputStream<'r> {
+    pub reg: &'r Registry,
     pub(crate) buf: String,
     pad: usize,
 }
 
-impl OutputStream {
+impl<'r> OutputStream<'r> {
+    pub fn new(reg: &'r Registry) -> Self {
+        Self {
+            reg,
+            buf: "".to_string(),
+            pad: 0,
+        }
+    }
+
     pub fn ln(&mut self) {
         self.buf.push('\n');
         for _ in 0 .. self.pad {
             self.buf.push(' ');
         }
     }
+
     #[inline(always)]
     pub fn enter(&mut self) {
         self.pad += 4;
@@ -259,13 +267,12 @@ impl OutputStream {
 
     pub fn bytes(&mut self, b: &[u8]) {
         self.buf.push('"');
-        // TODO: escape
         escape_bytes_to(b, &mut self.buf);
         self.buf.push('"');
     }
+
     pub fn string(&mut self, s: &str) {
         self.buf.push('"');
-        // TODO: escape properly, this won't
         escape_bytes_to(s.as_bytes(), &mut self.buf);
         self.buf.push('"');
     }

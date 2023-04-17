@@ -2,6 +2,7 @@ use core::fmt::Display;
 use core::num::{ParseIntError, TryFromIntError};
 use core::ops::{Deref, DerefMut};
 use core::str::{FromStr, Utf8Error};
+use std::num::ParseFloatError;
 
 use binformat::Map;
 use thiserror::Error;
@@ -11,12 +12,11 @@ mod lex;
 pub mod reflect;
 pub mod stream;
 
+use escape::unescape;
 use lex::Token;
 use lex::Token::*;
+use reflect::Registry;
 pub use stream::{InputStream, OutputStream};
-
-use crate::escape::unescape;
-use crate::reflect::Registry;
 
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
@@ -26,10 +26,11 @@ pub enum Error {
     Unexpected { exp: Token, got: Token, rest: String },
 
     #[error("Unknown identifier: {0}")]
-    Unknown(String),
+    UnknownIdent(String),
 
     #[error("Borrowed string requires escaping")]
-    Escape,
+    BorrowedEscape,
+
     #[error("Invalid escape sequence")]
     InvalidEscape,
 
@@ -39,8 +40,11 @@ pub enum Error {
     #[error("Integer out of range: {0}")]
     IntRange(#[from] TryFromIntError),
 
-    #[error("String not valid UTF8")]
-    UTF8(#[from] Utf8Error),
+    #[error("Invalid float: {0}")]
+    InvalidFloat(#[from] ParseFloatError),
+
+    #[error("String is not valid UTF8")]
+    InvalidUtf8(#[from] Utf8Error),
 }
 
 #[cold]
@@ -54,7 +58,7 @@ pub fn unexpected<T>(exp: Token, got: Token, rest: &str) -> Result<T> {
 
 #[cold]
 pub fn unknown<T>(name: &str) -> Result<T> {
-    Err(Error::Unknown(name.to_string()))
+    Err(Error::UnknownIdent(name.to_string()))
 }
 
 pub trait TextProto<'buf> {
@@ -253,7 +257,7 @@ impl<'buf> TextField<'buf> for &'buf str {
         stream.string(|s| {
             *self = s;
             if s.contains('\\') {
-                return Err(crate::Error::Escape);
+                return Err(Error::BorrowedEscape);
             }
             Ok(())
         })
@@ -286,7 +290,7 @@ impl<'buf> TextField<'buf> for &'buf [u8] {
     fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         stream.bytes(|s| {
             if s.contains(&b'\\') {
-                return Err(crate::Error::Escape);
+                return Err(Error::BorrowedEscape);
             } else {
                 *self = s;
             }
@@ -543,8 +547,8 @@ pub fn decode<'buf, T: TextProto<'buf> + Default>(data: &'buf str, reg: &'buf Re
     Ok(out)
 }
 
-pub fn encode<'any, T: TextProto<'any>>(b: &T) -> Result<String> {
-    let mut out = OutputStream::default();
+pub fn encode<'any, T: TextProto<'any>>(b: &T, reg: &'any Registry) -> Result<String> {
+    let mut out = OutputStream::new(reg);
     b.encode(&mut out);
     Ok(out.buf)
 }

@@ -27,7 +27,7 @@ impl Generics {
             (Some(b), Some(a)) => quote! { < #b, #a : std::alloc::Allocator + Debug> },
             (Some(b), None) => quote! { <#b> },
             (None, Some(a)) => quote! { <#a: std::alloc::Allocator > },
-            _ => quote! { },
+            _ => quote! {},
         }
     }
 
@@ -36,7 +36,7 @@ impl Generics {
             (Some(b), Some(a)) => quote! { < #b, #a> },
             (Some(b), None) => quote! { <#b> },
             (None, Some(a)) => quote! { <#a> },
-            _ => quote! { },
+            _ => quote! {},
         }
     }
 }
@@ -176,7 +176,7 @@ impl CodeGenerator<'_> {
             BuiltinType::String_ => return self.options.string_type.clone(),
             BuiltinType::Bytes_ => return self.options.bytes_type.clone(),
         })
-            .unwrap()
+        .unwrap()
     }
 
     pub fn type_marker(typ: &DataType) -> TokenStream {
@@ -194,10 +194,10 @@ impl CodeGenerator<'_> {
                     builtin_type_marker(k.0),
                     Self::type_marker(&k.1)
                 ))
-                    .unwrap();
+                .unwrap();
             }
         })
-            .unwrap()
+        .unwrap()
     }
 
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
@@ -223,11 +223,11 @@ impl CodeGenerator<'_> {
         })
     }
 
-    pub fn field_type(&self, typ: &FieldDef) -> Result<TokenStream> {
-        let base = self.base_type(&typ.typ)?;
-        let is_msg = matches!(typ.typ, DataType::Message(..) | DataType::Group(_));
+    pub fn field_type(&self, field: &FieldDef) -> Result<TokenStream> {
+        let base = self.base_type(&field.typ)?;
+        let is_msg = matches!(field.typ, DataType::Message(..) | DataType::Group(_));
 
-        match (typ.frequency, is_msg) {
+        match (field.frequency, is_msg) {
             (Frequency::Singular | Frequency::Required, false) => Ok(base),
             (Frequency::Singular | Frequency::Required, true) => Ok(quote!(Option<Box<#base>>)),
             (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
@@ -313,7 +313,11 @@ impl CodeGenerator<'_> {
         let generics = self.options.generics.struct_def_generics();
         let use_generics = self.options.generics.struct_use_generics();
 
-        let borrow_or_static = self.options.generics.liftetime_arg().unwrap_or_else(|| quote! { 'static });
+        let borrow_or_static = self
+            .options
+            .generics
+            .liftetime_arg()
+            .unwrap_or_else(|| quote! { 'static });
         let attrs = self.protoattrs();
 
         let mut nums = vec![];
@@ -417,7 +421,7 @@ impl CodeGenerator<'_> {
             Frequency::Repeated => "repeated",
             Frequency::Required => "required",
         })
-            .unwrap();
+        .unwrap();
 
         Ok(quote! {
             #[field(#num, #name, #kind, #freq)]
@@ -498,21 +502,21 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
         // }
 
         let their_name = if other.name.contains('/') {
-            &other.name.as_str()[other.name.rfind('/').unwrap() + 1..]
+            &other.name.as_str()[other.name.rfind('/').unwrap() + 1 ..]
         } else {
             other.name.as_str()
         };
         let their_name = if their_name.contains('.') {
-            &their_name[..their_name.rfind('.').unwrap()]
+            &their_name[.. their_name.rfind('.').unwrap()]
         } else {
             their_name
         };
         let mut our_module = file.package.as_str();
         let mut that_module = other.package.as_str();
 
-        while !our_module.is_empty() && !that_module.is_empty() && our_module[..1] == that_module[..1] {
-            our_module = &our_module[1..];
-            that_module = &that_module[1..];
+        while !our_module.is_empty() && !that_module.is_empty() && our_module[.. 1] == that_module[.. 1] {
+            our_module = &our_module[1 ..];
+            that_module = &that_module[1 ..];
         }
         let mut path = String::new();
         path.push_str("super::");
@@ -579,7 +583,7 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
 //     f.flush().unwrap();
 // }
 
-pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item=&'s str>) -> Result<()> {
+pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item = &'s str>) -> Result<()> {
     let root = opts.import_root.clone();
     let files: Vec<_> = files
         .map(|v| {

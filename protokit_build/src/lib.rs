@@ -155,7 +155,7 @@ impl Build {
     }
 
     pub fn borrow_bufs(mut self) -> Self {
-        self.options.generics.buf_arg = Some(quote!{ 'buf });
+        self.options.generics.buf_arg = Some(quote! { 'buf });
         self.options.string_type = quote! {&'buf str };
         self.options.bytes_type = quote! {&'buf [u8] };
         self.options.unknown_type = quote! { binformat::UnknownFieldsBorrow<'buf> };
@@ -164,7 +164,7 @@ impl Build {
     }
 
     pub fn allocator_api(mut self) -> Self {
-        self.options.generics.alloc_arg = Some(quote!{ A });
+        self.options.generics.alloc_arg = Some(quote! { A });
         self
     }
 

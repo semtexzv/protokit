@@ -8,6 +8,7 @@ use logos::Logos;
 #[logos(subpattern dig = r"[0-9]+")]
 #[logos(subpattern hex = r"0x[0-9a-fA-F][0-9a-fA-F]?")]
 #[logos(subpattern exp = r"[eE][+-]?[0-9]+")]
+#[logos(skip r"[ \t\n\f]+")]
 pub enum Token {
     #[regex(r"#[^\n]+", logos::skip)]
     Comment,
@@ -56,8 +57,6 @@ pub enum Token {
     #[token("-")]
     Minus,
 
-    #[error]
-    #[regex(r"[ \t\n\f]+", logos::skip)]
     Error,
 
     StartOfFile,
