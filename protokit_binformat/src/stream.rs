@@ -40,7 +40,7 @@ impl<'buf> InputStream<'buf> {
     /// Limits the currently readable subslice, and returns previous limit
     pub fn limit(&mut self, limit: usize) -> Result<usize> {
         if self.limit < limit {
-            return Err(Error::InvalidLimit);
+            return Err(Error::InvalidBytesLimit);
         }
         Ok(replace(&mut self.limit, min(self.pos + limit, self.buf.len())))
     }

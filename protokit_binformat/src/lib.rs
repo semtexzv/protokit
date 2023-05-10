@@ -29,28 +29,30 @@ pub const FIX32: u8 = 5;
 pub enum Error {
     #[error("Unexpected end of input")]
     UnexpectedEOF,
+
     #[error("Length of submessage exceeds the length of message")]
-    InvalidLimit,
+    InvalidBytesLimit,
+    #[error("String is not UTF8: {0}")]
+    InvalidUtf8(#[from] Utf8Error),
+
     #[error("Unterminated group")]
     UnterminatedGroup,
     #[error("Unknown tag: {0}")]
-    Tag(u32),
+    UnknownTag(u32),
     #[error("Unknown wire type: {0}")]
-    Wire(u8),
-    #[error("String is not UTF8: {0}")]
-    Utf8(#[from] Utf8Error),
+    UnknownWire(u8),
 }
 
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[cold]
 pub fn unknown_tag<T>(tag: u32) -> Result<T> {
-    Err(Error::Tag(tag))
+    Err(Error::UnknownTag(tag))
 }
 
 #[cold]
 pub fn unknown_wire<T>(w: u8) -> Result<T> {
-    Err(Error::Wire(w))
+    Err(Error::UnknownWire(w))
 }
 
 pub trait BinProto<'buf>: Debug {
