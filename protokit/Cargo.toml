@@ -15,10 +15,12 @@ path = "../protokit_binformat"
 [dependencies.textformat]
 package = "protokit_textformat"
 path = "../protokit_textformat"
+optional = true
 
 [dependencies.desc]
 package = "protokit_desc"
 path = "../protokit_desc"
+optional = true
 
 [dependencies.grpc]
 package = "protokit_grpc"

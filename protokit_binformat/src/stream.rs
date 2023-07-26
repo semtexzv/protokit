@@ -6,7 +6,7 @@ use core::slice::from_raw_parts;
 
 use crate::{BinProto, BytesLike, Error, Fixed, Result, Sigint, SizeStack, Varint, EGRP, VINT_LENS};
 
-pub const MSB: u8 = 0b1000_0000;
+const MSB: u8 = 0b1000_0000;
 const DROP_MSB: u8 = 0b0111_1111;
 
 pub struct InputStream<'buf> {

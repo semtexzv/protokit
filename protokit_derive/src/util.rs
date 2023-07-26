@@ -66,17 +66,17 @@ pub struct FieldMeta {
     pub freq: Frequency,
 }
 
-fn err(s: Span, m: impl Display) -> syn::Error {
-    syn::Error::new(s, m)
+fn err(s: Span, m: impl Display, e: syn::Error) -> syn::Error {
+    syn::Error::new(s, format!("{} {:?}", m, e))
 }
 
 impl Parse for FieldMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let num: LitInt = input.parse()?;
+        let num: LitInt = input.parse().map_err(|e| err(e.span(), "Expected field number", e))?;
         let _: Token![,] = input.parse()?;
-        let name: LitStr = input.parse()?;
-        let _: Token![,] = input.parse().map_err(|e| err(e.span(), "Expected field kind"))?;
-        let kind: FieldKind = input.parse()?;
+        let name: LitStr = input.parse().map_err(|e| err(e.span(), "Expected field name", e))?;
+        let _: Token![,] = input.parse()?;
+        let kind: FieldKind = input.parse().map_err(|e| err(e.span(), "Expected field kind", e))?;
         let freq = if input.peek(Token![,]) {
             let _: Token![,] = input.parse()?;
             input.parse()?

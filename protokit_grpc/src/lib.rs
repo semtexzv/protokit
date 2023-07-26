@@ -68,7 +68,7 @@ impl<'buf, D: binformat::BinProto<'buf> + Default> Decoder for TonicDecoder<D> {
     type Error = Status;
 
     fn decode(&mut self, _buf: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
-        unimplemented!("Not yet implemented")
+        // unimplemented!("Not yet implemented")
         // let b = buf.chunk();
         // let mut item = D::default();
         // let left = binformat::decode_into(b, &mut item).map_err(from_decode_error)?;

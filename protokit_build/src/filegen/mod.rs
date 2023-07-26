@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::TokenStream;
 use protokit_desc::Syntax::{Proto2, Proto3};
 use quote::{format_ident, quote};
 

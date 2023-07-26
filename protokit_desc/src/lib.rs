@@ -865,7 +865,7 @@ impl FileDef {
         eprintln!("Rewriting map fields:{:?}", rewrites);
         for ((msg_id, field_id), change_to) in rewrites.into_iter() {
             let msg = self.messages.get_index_mut(msg_id).unwrap().1;
-            let mut field = msg.fields.by_number.get_index_mut(field_id).unwrap().1;
+            let field = msg.fields.by_number.get_index_mut(field_id).unwrap().1;
             eprintln!(
                 "Changing field {:?} {} {} in {:?} from : {:?}, to {:?}",
                 field.name, msg_id, field_id, msg.name, field.typ, change_to
