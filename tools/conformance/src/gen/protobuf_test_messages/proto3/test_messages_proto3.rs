@@ -32,18 +32,26 @@ impl TestAllTypesProto3NestedEnum {
     #[var(2u32, "BAZ")]
     pub const BAZ: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(2u32);
     #[var(4294967295u32, "NEG")]
-    pub const NEG: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(4294967295u32);
+    pub const NEG: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(
+        4294967295u32,
+    );
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TestAllTypesProto3AliasedEnum(pub u32);
 #[protoenum]
 impl TestAllTypesProto3AliasedEnum {
     #[var(0u32, "ALIAS_FOO")]
-    pub const ALIAS_FOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(0u32);
+    pub const ALIAS_FOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+        0u32,
+    );
     #[var(1u32, "ALIAS_BAR")]
-    pub const ALIAS_BAR: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(1u32);
+    pub const ALIAS_BAR: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+        1u32,
+    );
     #[var(2u32, "ALIAS_BAZ")]
-    pub const ALIAS_BAZ: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2u32);
+    pub const ALIAS_BAZ: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+        2u32,
+    );
     #[var(2u32, "MOO")]
     pub const MOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2u32);
     #[var(2u32, "moo")]
@@ -275,11 +283,17 @@ pub struct TestAllTypesProto3 {
     #[field(70u32, "map_string_bytes", map(string, bytes), singular)]
     pub map_string_bytes: ::protokit::IndexMap<String, Vec<u8>>,
     #[field(71u32, "map_string_nested_message", map(string, nested), singular)]
-    pub map_string_nested_message: ::protokit::IndexMap<String, TestAllTypesProto3NestedMessage>,
+    pub map_string_nested_message: ::protokit::IndexMap<
+        String,
+        TestAllTypesProto3NestedMessage,
+    >,
     #[field(72u32, "map_string_foreign_message", map(string, nested), singular)]
     pub map_string_foreign_message: ::protokit::IndexMap<String, ForeignMessage>,
     #[field(73u32, "map_string_nested_enum", map(string, protoenum), singular)]
-    pub map_string_nested_enum: ::protokit::IndexMap<String, TestAllTypesProto3NestedEnum>,
+    pub map_string_nested_enum: ::protokit::IndexMap<
+        String,
+        TestAllTypesProto3NestedEnum,
+    >,
     #[field(74u32, "map_string_foreign_enum", map(string, protoenum), singular)]
     pub map_string_foreign_enum: ::protokit::IndexMap<String, ForeignEnum>,
     #[field(201u32, "optional_bool_wrapper", nested, optional)]

@@ -852,9 +852,7 @@ impl FileDef {
                         if inner.is_virtual_map {
                             let k = inner.fields.by_number(1).unwrap();
                             let v = inner.fields.by_number(2).unwrap();
-                            let DataType::Builtin(k) = k.typ else {
-                                panic!()
-                            };
+                            let DataType::Builtin(k) = k.typ else { panic!() };
                             rewrites.insert((owner_idx, field_idx), DataType::Map(Box::new((k, v.typ.clone()))));
                         }
                     }
