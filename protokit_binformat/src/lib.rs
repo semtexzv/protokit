@@ -387,7 +387,8 @@ impl<'buf> BytesLike<'buf> for Cow<'buf, [u8]> {
 }
 
 impl<'a, const N: usize> BytesLike<'a> for [u8; N]
-    where [u8; N]: Default
+    where
+        [u8; N]: Default,
 {
     fn blen(&self) -> usize {
         N
@@ -397,9 +398,7 @@ impl<'a, const N: usize> BytesLike<'a> for [u8; N]
         self
     }
 
-    fn clear(&mut self) {
-        todo!()
-    }
+    fn clear(&mut self) {}
 
     fn merge(&mut self, b: &'a [u8]) -> Result<()> {
         *self = b.try_into().map_err(|_| Error::InvalidBytesLimit)?;

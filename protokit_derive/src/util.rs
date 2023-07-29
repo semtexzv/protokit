@@ -61,7 +61,7 @@ impl Parse for VarMeta {
 
 pub struct FieldMeta {
     pub num: LitInt,
-    pub name: LitStr,
+    pub name: Option<LitStr>,
     pub kind: FieldKind,
     pub freq: Frequency,
 }
@@ -74,8 +74,13 @@ impl Parse for FieldMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let num: LitInt = input.parse().map_err(|e| err(e.span(), "Expected field number", e))?;
         let _: Token![,] = input.parse()?;
-        let name: LitStr = input.parse().map_err(|e| err(e.span(), "Expected field name", e))?;
-        let _: Token![,] = input.parse()?;
+        let name = if input.peek(LitStr) {
+            let out = input.parse().map_err(|e| err(e.span(), "Expected field name", e))?;
+            let _: Token![,] = input.parse()?;
+            Some(out)
+        } else {
+            None
+        };
         let kind: FieldKind = input.parse().map_err(|e| err(e.span(), "Expected field kind", e))?;
         let freq = if input.peek(Token![,]) {
             let _: Token![,] = input.parse()?;

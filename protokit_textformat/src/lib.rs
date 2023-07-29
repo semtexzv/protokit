@@ -303,6 +303,23 @@ impl<'buf> TextField<'buf> for &'buf [u8] {
     }
 }
 
+impl<'buf, const N: usize> TextField<'buf> for [u8; N] {
+    fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
+        stream.bytes(|s| {
+            if s.contains(&b'\\') {
+                return Err(Error::BorrowedEscape);
+            } else {
+                *self = s.try_into().map_err(|_| Error::BorrowedEscape)?;
+            }
+            Ok(())
+        })
+    }
+
+    fn emit_value(&self, stream: &mut OutputStream) {
+        stream.bytes(self);
+    }
+}
+
 impl<'buf, F> TextField<'buf> for F
 where
     F: TextProto<'buf>,

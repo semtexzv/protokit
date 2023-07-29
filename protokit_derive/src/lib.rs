@@ -15,25 +15,6 @@ use syn::{
 
 use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta};
 
-// enum Openness {
-//     Open,
-//     Close,
-// }
-//
-// impl Parse for Openness {
-//     fn parse(input: ParseStream) -> syn::Result<Self> {
-//         Ok(input.parse::<Ident>().and_then(|i|
-//             if i == "open" {
-//                 Ok(Openness::Open)
-//             } else if i == "closed" {
-//                 Ok(Openness::Close)
-//             } else {
-//                 Err(syn::Error::new(i.span(), ""))
-//             }
-//         ).map_err(|e| syn::Error::new(e.span(), "Expected 'protoenum(open)' or 'protoenum(closed)'"))?)
-//     }
-// }
-
 #[proc_macro_attribute]
 pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut block = parse_macro_input!(input as syn::ItemImpl);
@@ -240,10 +221,13 @@ fn _impl_proto(
             for a in &field.attrs {
                 if a.path().is_ident(&format_ident!("field")) {
                     let fmeta: FieldMeta = a.parse_args()?;
+                    let ident = field.ident.clone().unwrap();
                     return Ok(Item::Field {
-                        ident: field.ident.clone().unwrap(),
+                        name: fmeta
+                            .name
+                            .unwrap_or_else(|| LitStr::new(&ident.to_string(), ident.span())),
+                        ident,
                         num: fmeta.num,
-                        name: fmeta.name,
                         kind: fmeta.kind,
                         freq: fmeta.freq,
                     });
@@ -370,8 +354,11 @@ fn _impl_proto(
     let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
     Ok(quote! {
+
         impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
+
             fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
+                #![deny(unreachable_patterns)]
                 match tag {
                     #(#merge_bin)*
                     other => stream.skip(other),
@@ -440,7 +427,9 @@ fn _impl_oneof(
                         },
                         setter: format_ident!("make_{}_mut", variant.ident.to_string().to_case(Case::Snake)),
                         tag: fmeta.num,
-                        name: fmeta.name,
+                        name: fmeta
+                            .name
+                            .unwrap_or_else(|| LitStr::new(&variant.ident.to_string(), variant.ident.span())),
                     });
                 }
             }
@@ -524,6 +513,7 @@ fn _impl_oneof(
         }
         impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
             fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
+                #![deny(unreachable_patterns)]
                 match tag {
                     #(#merge_bin)*
                     other => stream.skip(other),
