@@ -102,7 +102,7 @@ enum Item {
     },
 }
 
-fn merge_arm(
+fn bin_merge_arm(
     ident: &Ident,
     num: &LitInt,
     freq: &Frequency,
@@ -133,7 +133,7 @@ fn merge_arm(
     }
 }
 
-fn emit_arm(
+fn bin_emit_arm(
     ident: &Ident,
     num: &LitInt,
     freq: &Frequency,
@@ -167,7 +167,7 @@ fn emit_arm(
     }
 }
 
-fn size_arm(
+fn bin_size_arm(
     ident: &Ident,
     num: &LitInt,
     freq: &Frequency,
@@ -251,10 +251,11 @@ fn _impl_proto(
         })
         .collect::<Result<Vec<_>, _>>()?;
 
-    let mut text_names = vec![];
     let mut size_bin = vec![];
     let mut merge_bin = vec![];
     let mut emit_bin = vec![];
+
+    let mut text_names = vec![];
     let mut merge_txt = vec![];
     let mut emit_txt = vec![];
 
@@ -278,15 +279,15 @@ fn _impl_proto(
             } => {
                 let this = quote! { &mut self.#ident };
                 merge_bin.push(if kind.is_scalar() && freq.is_multi() {
-                    let a = merge_arm(ident, tag, &Frequency::Repeated, kind, &this);
-                    let b = merge_arm(ident, tag, &Frequency::Packed, kind, &this);
+                    let a = bin_merge_arm(ident, tag, &Frequency::Repeated, kind, &this);
+                    let b = bin_merge_arm(ident, tag, &Frequency::Packed, kind, &this);
                     quote_spanned!( ident.span() => #a #b )
                 } else {
-                    merge_arm(ident, tag, freq, kind, &this)
+                    bin_merge_arm(ident, tag, freq, kind, &this)
                 });
                 let this = quote! { &self.#ident};
-                emit_bin.push(emit_arm(ident, tag, freq, kind, &this));
-                size_bin.push(size_arm(ident, tag, freq, kind, &this));
+                emit_bin.push(bin_emit_arm(ident, tag, freq, kind, &this));
+                size_bin.push(bin_size_arm(ident, tag, freq, kind, &this));
 
                 let emit = if let FieldKind::Map(..) = kind {
                     format_ident!("emit_map", span = ident.span())
@@ -354,7 +355,6 @@ fn _impl_proto(
     let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
     Ok(quote! {
-
         impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
 
             fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
@@ -473,13 +473,13 @@ fn _impl_oneof(
 
         let this = quote! { self.#setter() };
 
-        let size = size_arm(ident, tag, &Frequency::Raw, kind, &quote! { v });
+        let size = bin_size_arm(ident, tag, &Frequency::Raw, kind, &quote! { v });
         size_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => #size,
         });
 
-        merge_bin.push(merge_arm(ident, tag, &Frequency::Singular, kind, &this));
-        let emit = emit_arm(ident, tag, &Frequency::Raw, kind, &quote! { v });
+        merge_bin.push(bin_merge_arm(ident, tag, &Frequency::Singular, kind, &this));
+        let emit = bin_emit_arm(ident, tag, &Frequency::Raw, kind, &quote! { v });
         emit_bin.push(quote_spanned! { ident.span() =>
             Self::#ident(v) => { #emit },
         });

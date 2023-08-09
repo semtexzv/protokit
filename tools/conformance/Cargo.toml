@@ -10,7 +10,7 @@ crate-type = ["staticlib", "cdylib"]
 [dependencies]
 anyhow = "1.0.66"
 byteorder = "1.4.3"
-protokit = { path = "../../protokit" }
+protokit = { path = "../../protokit", features = ["textformat"] }
 
 [build-dependencies]
 protokit_build = { path = "../../protokit_build" }

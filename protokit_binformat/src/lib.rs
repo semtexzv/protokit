@@ -298,25 +298,6 @@ impl<'buf> BytesLike<'buf> for Cow<'buf, str> {
     }
 }
 
-// impl<'buf, 'arena> BytesLike<'buf> for bumpalo::collections::String<'arena, u8> {
-//     fn blen(&self) -> usize {
-//         self.len()
-//     }
-//
-//     fn bytes(&self) -> &[u8] {
-//         self.as_slice()
-//     }
-//
-//     fn clear(&mut self) {
-//         self.clear()
-//     }
-//
-//     fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
-//         self.extend_from_slice(b);
-//         Ok(())
-//     }
-// }
-
 impl<'buf> BytesLike<'buf> for &'buf [u8] {
     #[inline(always)]
     fn blen(&self) -> usize {
@@ -405,26 +386,6 @@ impl<'a, const N: usize> BytesLike<'a> for [u8; N]
         Ok(())
     }
 }
-
-// #[cfg(feature = "bump")]
-// impl<'buf, 'arena> BytesLike<'buf> for bumpalo::collections::Vec<'arena, u8> {
-//     fn blen(&self) -> usize {
-//         self.len()
-//     }
-//
-//     fn bytes(&self) -> &[u8] {
-//         self.as_slice()
-//     }
-//
-//     fn clear(&mut self) {
-//         self.clear()
-//     }
-//
-//     fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
-//         self.extend_from_slice(b);
-//         Ok(())
-//     }
-// }
 
 pub trait Map<K, V> {
     fn mlen(&self) -> usize;
