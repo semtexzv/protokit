@@ -3,6 +3,7 @@ name = "protokit_binformat"
 version = "0.0.2"
 edition = "2021"
 license = "MIT"
+readme = "../README.MD"
 repository = "https://github.com/semtexzv/protokit"
 authors = ["<semtexzv@gmail.com>"]
 description = "Usable protocol buffers"

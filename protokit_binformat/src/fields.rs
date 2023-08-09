@@ -11,7 +11,7 @@ pub struct FieldPath {
 #[derive(Default, Debug, Clone, BinProto)]
 pub struct FieldMask {
     #[field(1, nested, repeated)]
-        pub paths: Vec<FieldPath>,
+    pub paths: Vec<FieldPath>,
 }
 
 /// A struct that can be used for filtering fields by number.
