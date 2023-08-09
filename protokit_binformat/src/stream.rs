@@ -4,7 +4,7 @@ use core::mem::{replace, size_of};
 use core::ptr::read_unaligned;
 use core::slice::from_raw_parts;
 
-use crate::{BinProto, BytesLike, Error, Fixed, Result, Sigint, SizeStack, Varint, EGRP, VINT_LENS};
+use crate::{BinProto, BytesLike, Error, Fixed, Result, Sigint, SizeStack, Varint, _size_varint, EGRP};
 
 const MSB: u8 = 0b1000_0000;
 const DROP_MSB: u8 = 0b0111_1111;
@@ -248,11 +248,15 @@ impl OutputStream {
         self.len() == 0
     }
 
+    pub fn finish(self) -> Vec<u8> {
+        self.buf
+    }
+
     /// Emits a raw vint onto the wire
     pub(crate) fn _varint<V: Varint + Debug>(&mut self, v: V) {
         let mut n = v.into_u64();
 
-        let len = VINT_LENS[n.leading_zeros() as usize] as usize;
+        let len = _size_varint(n);
         self.buf.reserve(len);
 
         for _ in 0 .. len - 1 {

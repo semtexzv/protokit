@@ -72,7 +72,10 @@ impl ProtocContext {
         }
 
         cmd.arg(format!("-o{}/descriptor.bin", std::env::var("OUT_DIR").unwrap()));
-        let _ = cmd.output().unwrap();
+        let out = cmd.output().unwrap();
+        if !out.status.success() {
+            bail!("Protoc error: {}", String::from_utf8_lossy(&out.stderr))
+        }
 
         let data = std::fs::read(Path::new(&std::env::var("OUT_DIR").unwrap()).join("descriptor.bin")).unwrap();
         let desc = protokit_binformat::decode::<protokit_desc::FileDescriptorSet>(data.as_slice())?;
@@ -107,7 +110,7 @@ fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: P
             file.package.replace('.', "/") + "/" + path.with_extension("rs").file_name().unwrap().to_str().unwrap();
         let out_name = out_dir.join(&file_name);
         generated_names.push(file_name.clone());
-        filegen::generate_file(set, opts, out_name, file)?;
+        filegen::generate_file(set, opts, out_name, file).unwrap();
     }
 
     let dirs: Vec<Vec<&str>> = generated_names.iter().map(|v| v.split('/').collect()).collect();

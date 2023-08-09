@@ -1,6 +1,8 @@
 use core::marker::PhantomData;
 
 pub use async_trait::async_trait;
+use binformat::{Error, OutputStream};
+use bytes::Buf;
 pub use futures::future::LocalBoxFuture;
 pub use futures::stream::Stream;
 use tonic::codec::{Codec, DecodeBuf, Decoder, EncodeBuf, Encoder};
@@ -23,7 +25,7 @@ impl<E, D> Default for TonicCodec<E, D> {
 impl<E, D> Codec for TonicCodec<E, D>
 where
     E: binformat::BinProto<'static> + Send + 'static,
-    D: binformat::BinProto<'static> + Default + Send + 'static,
+    D: for<'a> binformat::BinProto<'a> + Default + Send + 'static,
 {
     type Encode = E;
     type Decode = D;
@@ -48,12 +50,12 @@ impl<'buf, T: binformat::BinProto<'buf>> Encoder for TonicEncoder<T> {
     type Item = T;
     type Error = Status;
 
-    fn encode(&mut self, _item: Self::Item, _buf: &mut EncodeBuf<'_>) -> Result<(), Self::Error> {
-        // use bytes::BufMut;
-        //
-        // let mut tmp = WriteBuffer::new();
-        // item.encode(&mut tmp).expect("Message only errors if not enough space");
-        // buf.put_slice(&tmp);
+    fn encode(&mut self, item: Self::Item, buf: &mut EncodeBuf<'_>) -> Result<(), Self::Error> {
+        use bytes::BufMut;
+
+        let mut tmp = OutputStream::default();
+        item.encode(&mut tmp); //.expect("Message only errors if not enough space");
+        buf.put_slice(&tmp.finish());
 
         Ok(())
     }
@@ -63,23 +65,25 @@ impl<'buf, T: binformat::BinProto<'buf>> Encoder for TonicEncoder<T> {
 #[derive(Debug, Clone, Default)]
 pub struct TonicDecoder<D>(PhantomData<D>);
 
-impl<'buf, D: binformat::BinProto<'buf> + Default> Decoder for TonicDecoder<D> {
+impl<D: for<'any> binformat::BinProto<'any> + Default> Decoder for TonicDecoder<D> {
     type Item = D;
     type Error = Status;
 
-    fn decode(&mut self, _buf: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
-        // unimplemented!("Not yet implemented")
-        // let b = buf.chunk();
-        // let mut item = D::default();
-        // let left = binformat::decode_into(b, &mut item).map_err(from_decode_error)?;
-        //
-        // buf.advance(b.len() - left.len());
-        // Ok(Some(item))
+    fn decode(&mut self, buf: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
+        let b = buf.chunk();
+        let item = match binformat::decode::<D>(b) {
+            Ok(v) => v,
+            Err(Error::UnexpectedEOF | Error::InvalidBytesLimit | Error::UnterminatedGroup) => return Ok(None),
+            Err(e) => return Err(from_decode_error(e)),
+        };
+        let len = b.len();
+        buf.advance(len);
+        Ok(Some(item))
     }
 }
 
-// fn from_decode_error(error: anyhow::Error) -> tonic::Status {
-//     // Map Protobuf parse errors to an INTERNAL status code, as per
-//     // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
-//     Status::new(Code::Internal, error.to_string())
-// }
+fn from_decode_error(error: binformat::Error) -> tonic::Status {
+    // Map Protobuf parse errors to an INTERNAL status code, as per
+    // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+    Status::new(Code::Internal, error.to_string())
+}

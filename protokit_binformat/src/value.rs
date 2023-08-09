@@ -26,7 +26,6 @@ pub struct Field<B> {
 pub struct UnknownFields<B> {
     // Double indirection to keep this struct one pointer wide.
     pub fields: Option<Box<Vec<Field<B>>>>,
-    pub _m: PhantomData<B>,
 }
 
 pub type UnknownFieldsOwned = UnknownFields<Vec<u8>>;
