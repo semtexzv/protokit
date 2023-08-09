@@ -7,6 +7,11 @@ repository = "https://github.com/semtexzv/protokit"
 authors = ["<semtexzv@gmail.com>"]
 description = "Usable protocol buffers"
 
+[dependencies.derive]
+package = "protokit_derive"
+path = "../protokit_derive"
+version = "0.0.1"
+
 [dependencies]
 indexmap = "1"
 thiserror = "1"

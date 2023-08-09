@@ -14,6 +14,7 @@ pub use value::{Field, UnknownFieldsBorrow, UnknownFieldsOwned, Value};
 
 pub mod stream;
 pub mod value;
+pub mod fields;
 
 pub const MASK_WIRE: u8 = 0b111;
 
