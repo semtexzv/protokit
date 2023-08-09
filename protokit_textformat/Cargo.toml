@@ -1,7 +1,11 @@
 [package]
 name = "protokit_textformat"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/semtexzv/protokit"
+authors = ["<semtexzv@gmail.com>"]
+description = "Usable protocol buffers"
 
 [features]
 default = []
@@ -9,6 +13,7 @@ default = []
 [dependencies.binformat]
 package = "protokit_binformat"
 path = "../protokit_binformat"
+version = "0.0.1"
 
 [dependencies]
 logos = { version = "0.13", default-features = false, features = ["export_derive"] }

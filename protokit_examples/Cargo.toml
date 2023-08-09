@@ -1,12 +1,18 @@
 [package]
 name = "protokit_examples"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/semtexzv/protokit"
+authors = ["<semtexzv@gmail.com>"]
+description = "Usable protocol buffers"
+
 build = "build.rs"
 publish = false
 
+
 [dependencies]
-protokit = { path = "../protokit", features = ["textformat"] }
+protokit = { path = "../protokit", version = "0.0.1", features = ["textformat"] }
 
 [build-dependencies]
 protokit_build = { path = "../protokit_build" }

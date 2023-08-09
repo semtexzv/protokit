@@ -2,7 +2,12 @@
 name = "conformance"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/semtexzv/protokit"
+authors = ["<semtexzv@gmail.com>"]
+
 build = "build.rs"
+publish = false
 
 [lib]
 crate-type = ["staticlib", "cdylib"]
