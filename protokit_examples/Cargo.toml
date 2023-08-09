@@ -1,6 +1,6 @@
 [package]
 name = "protokit_examples"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/semtexzv/protokit"
@@ -12,7 +12,7 @@ publish = false
 
 
 [dependencies]
-protokit = { path = "../protokit", version = "0.0.1", features = ["textformat"] }
+protokit = { path = "../protokit", version = "0.0.2", features = ["textformat"] }
 
 [build-dependencies]
 protokit_build = { path = "../protokit_build" }

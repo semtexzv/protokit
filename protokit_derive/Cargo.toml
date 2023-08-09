@@ -1,6 +1,6 @@
 [package]
 name = "protokit_derive"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/semtexzv/protokit"

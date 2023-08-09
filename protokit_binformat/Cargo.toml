@@ -1,6 +1,6 @@
 [package]
 name = "protokit_binformat"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/semtexzv/protokit"
@@ -10,7 +10,7 @@ description = "Usable protocol buffers"
 [dependencies.derive]
 package = "protokit_derive"
 path = "../protokit_derive"
-version = "0.0.1"
+version = "0.0.2"
 
 [dependencies]
 indexmap = "1"

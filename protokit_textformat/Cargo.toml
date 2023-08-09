@@ -1,6 +1,6 @@
 [package]
 name = "protokit_textformat"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/semtexzv/protokit"
@@ -13,7 +13,7 @@ default = []
 [dependencies.binformat]
 package = "protokit_binformat"
 path = "../protokit_binformat"
-version = "0.0.1"
+version = "0.0.2"
 
 [dependencies]
 logos = { version = "0.13", default-features = false, features = ["export_derive"] }
