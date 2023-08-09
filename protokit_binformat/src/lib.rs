@@ -12,9 +12,9 @@ pub use stream::{InputStream, OutputStream};
 use thiserror::Error;
 pub use value::{Field, UnknownFieldsBorrow, UnknownFieldsOwned, Value};
 
+pub mod fields;
 pub mod stream;
 pub mod value;
-pub mod fields;
 
 pub const MASK_WIRE: u8 = 0b111;
 
@@ -80,10 +80,6 @@ where
     fn encode(&self, stream: &mut OutputStream) {
         self.deref().encode(stream)
     }
-}
-
-pub trait DefaultIn<C> {
-    fn default_in(ctx: &C) -> Self;
 }
 
 pub trait Varint: Default + Debug + Clone + Copy + PartialEq + PartialOrd + Eq + Ord {
@@ -525,7 +521,7 @@ pub fn merge_oneof<'buf, T: Default + BinProto<'buf>>(
 
 #[inline(never)]
 pub fn emit_raw<T>(this: &T, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
-    stream._varint(tag);
+    stream._tag(tag);
     mapper(stream, tag, this);
 }
 
@@ -544,7 +540,7 @@ pub fn emit_single<T: Default + PartialEq>(
 #[inline(never)]
 pub fn emit_optional<T>(this: &Option<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     if let Some(v) = this {
-        stream._varint(tag);
+        stream._tag(tag);
         mapper(stream, tag, v);
     }
 }
@@ -552,7 +548,7 @@ pub fn emit_optional<T>(this: &Option<T>, tag: u32, stream: &mut OutputStream, m
 #[inline(never)]
 pub fn emit_repeated<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     for v in this {
-        stream._varint(tag);
+        stream._tag(tag);
         mapper(stream, tag, v)
     }
 }
@@ -560,7 +556,7 @@ pub fn emit_repeated<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapp
 #[inline(never)]
 pub fn emit_packed<T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream, mapper: fn(&mut OutputStream, u32, &T)) {
     if !this.is_empty() {
-        stream._varint(tag);
+        stream._tag(tag);
         let mut o = OutputStream::default();
         for v in this {
             mapper(&mut o, tag, v);
@@ -581,7 +577,7 @@ pub fn emit_map<K, V, M: Map<K, V>>(
     vmapper: fn(&mut OutputStream, u32, &V),
 ) {
     this.for_each(|(k, v)| {
-        stream._varint(tag);
+        stream._tag(tag);
         assert_eq!(k as *const K as *const u8, stream.stack.top().0);
         let len = stream.stack.pop().1;
         stream._varint(len);
@@ -595,6 +591,22 @@ pub fn emit_oneof<'buf, T: BinProto<'buf>>(o: &Option<T>, stream: &mut OutputStr
     if let Some(o) = o {
         o.encode(stream)
     }
+}
+
+pub fn _size_varint<T: Varint>(value: T) -> usize {
+    const VINT_LENS: [u8; 65] = [
+        10, 9, 9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 4,
+        4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1,
+    ];
+    VINT_LENS[value.into_u64().leading_zeros() as usize] as _
+}
+
+pub fn size_varint<T: Varint>(value: &T, _: u32, _: &mut SizeStack) -> usize {
+    _size_varint(*value)
+}
+
+pub fn size_sigint<T: Sigint>(v: &T, _: u32, _: &mut SizeStack) -> usize {
+    _size_varint(v.encode().into_u64())
 }
 
 pub fn size_bytes<'x, T: BytesLike<'x>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
@@ -623,23 +635,6 @@ pub fn size_fixed32<T>(_: &T, _: u32, _: &mut SizeStack) -> usize {
 #[inline(always)]
 pub fn size_fixed64<T>(_: &T, _: u32, _: &mut SizeStack) -> usize {
     8
-}
-
-const VINT_LENS: [u8; 65] = [
-    10, 9, 9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 4, 4,
-    4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1,
-];
-
-pub fn _size_varint<T: Varint>(value: T) -> usize {
-    VINT_LENS[value.into_u64().leading_zeros() as usize] as _
-}
-
-pub fn size_varint<T: Varint>(value: &T, _: u32, _: &mut SizeStack) -> usize {
-    _size_varint(*value)
-}
-
-pub fn size_sigint<T: Sigint>(v: &T, _: u32, _: &mut SizeStack) -> usize {
-    _size_varint(v.encode().into_u64())
 }
 
 pub fn size_nested<'a, T: BinProto<'a>>(v: &T, _: u32, stack: &mut SizeStack) -> usize {

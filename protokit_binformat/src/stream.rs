@@ -234,6 +234,24 @@ impl<'buf> InputStream<'buf> {
     }
 }
 
+pub trait Output {
+    // Emit a tag
+    fn tag(&mut self, t: u32);
+
+    /// Tag in these methods is only informative, it has already been emitted previously
+    fn varint<V: Varint>(&mut self, num: u32, v: &V);
+    fn sigint<V: Sigint>(&mut self, num: u32, v: &V);
+    fn fixed<E: Fixed>(&mut self, num: u32, v: &E);
+
+    fn bytes<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B);
+    fn string<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B) {
+        self.bytes(num, b)
+    }
+
+    fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P);
+    fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P);
+}
+
 #[derive(Default)]
 pub struct OutputStream {
     pub(crate) stack: SizeStack,
@@ -250,6 +268,10 @@ impl OutputStream {
 
     pub fn finish(self) -> Vec<u8> {
         self.buf
+    }
+
+    pub(crate) fn _tag(&mut self, t: u32) {
+        self._varint(t)
     }
 
     /// Emits a raw vint onto the wire

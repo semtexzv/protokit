@@ -69,14 +69,12 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
 
 #[proc_macro_derive(BinProto, attributes(proto, field, oneof, unknown))]
 pub fn binproto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-      let input = parse_macro_input!(input as DeriveInput);
+    let input = parse_macro_input!(input as DeriveInput);
     match input.data {
-        Data::Struct(s) => {
-            _impl_proto(s, input.ident, input.attrs, input.generics, true, false).unwrap_or_else(Error::into_compile_error)
-        }
-        Data::Enum(s) => {
-            _impl_oneof(s, input.ident, input.attrs, input.generics, true, false).unwrap_or_else(Error::into_compile_error)
-        }
+        Data::Struct(s) => _impl_proto(s, input.ident, input.attrs, input.generics, true, false)
+            .unwrap_or_else(Error::into_compile_error),
+        Data::Enum(s) => _impl_oneof(s, input.ident, input.attrs, input.generics, true, false)
+            .unwrap_or_else(Error::into_compile_error),
         Data::Union(_) => {
             panic!("Unions are not supported")
         }
@@ -88,12 +86,10 @@ pub fn binproto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match input.data {
-        Data::Struct(s) => {
-            _impl_proto(s, input.ident, input.attrs, input.generics, true, true).unwrap_or_else(Error::into_compile_error)
-        }
-        Data::Enum(s) => {
-            _impl_oneof(s, input.ident, input.attrs, input.generics, true, true).unwrap_or_else(Error::into_compile_error)
-        }
+        Data::Struct(s) => _impl_proto(s, input.ident, input.attrs, input.generics, true, true)
+            .unwrap_or_else(Error::into_compile_error),
+        Data::Enum(s) => _impl_oneof(s, input.ident, input.attrs, input.generics, true, true)
+            .unwrap_or_else(Error::into_compile_error),
         Data::Union(_) => {
             panic!("Unions are not supported")
         }
@@ -312,10 +308,8 @@ fn _impl_proto(
 
                     emit_bin.push(bin_emit_arm(ident, tag, freq, kind, &this_ref));
                     size_bin.push(bin_size_arm(ident, tag, freq, kind, &this_ref));
-
                 }
                 if text {
-
                     let emit = if let FieldKind::Map(..) = kind {
                         format_ident!("emit_map", span = ident.span())
                     } else {
@@ -329,7 +323,7 @@ fn _impl_proto(
                     };
 
                     text_names.push(quote! { (#name, #tag) });
-                        merge_txt.push(quote_spanned! { ident.span() =>
+                    merge_txt.push(quote_spanned! { ident.span() =>
                         #tag => textformat::#merge(&mut self.#ident, stream),
                     });
                     emit_txt.push(quote_spanned! { ident.span() =>
@@ -346,7 +340,6 @@ fn _impl_proto(
                         [v, v + 1, v + 2, v + 3, v + 4, v + 5, v + 6, v + 7]
                     })
                     .collect::<Vec<_>>();
-
 
                 if bin {
                     merge_bin.push(quote_spanned! { ident.span() =>
@@ -388,7 +381,7 @@ fn _impl_proto(
     let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
     let bin_impl = if bin {
-        Some(quote!{
+        Some(quote! {
              impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
                 fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
                     #![deny(unreachable_patterns)]
@@ -410,7 +403,7 @@ fn _impl_proto(
     };
 
     let text_impl = if text {
-        Some(quote!{
+        Some(quote! {
             impl<#text_impl_params> textformat::TextProto< #buf_param > for #ident #type_gen #where_gen {
                 fn merge_field(&mut self, stream: &mut textformat::InputStream< #buf_param >) -> textformat::Result<()> {
                     const FIELDS: &[(&str, u32)] = &[#(#text_names,)*];
@@ -424,7 +417,9 @@ fn _impl_proto(
                 }
             }
         })
-    } else { None };
+    } else {
+        None
+    };
 
     Ok(quote! {
         #bin_impl
@@ -554,7 +549,7 @@ fn _impl_oneof(
     let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
     let bin_impl = if bin {
-        Some(quote!{
+        Some(quote! {
             impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
                 fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
                     #![deny(unreachable_patterns)]
@@ -577,10 +572,12 @@ fn _impl_oneof(
                 }
             }
         })
-    } else { None };
+    } else {
+        None
+    };
 
     let text_impl = if text {
-        Some(quote!{
+        Some(quote! {
             impl<#text_impl_params> textformat::TextProto<#buf_param> for #ident #type_gen #where_gen {
                 fn merge_field(&mut self, stream: &mut textformat::InputStream<#buf_param>) -> textformat::Result<()> {
                     match stream.field() {
@@ -596,7 +593,9 @@ fn _impl_oneof(
                 }
             }
         })
-    } else { None };
+    } else {
+        None
+    };
 
     Ok(quote! {
         impl #orig_impl_gen #ident #type_gen #where_gen {
