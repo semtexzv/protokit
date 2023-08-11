@@ -1,26 +1,27 @@
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
 use crate::{
     emit_raw, unknown_tag, unknown_wire, BinProto, BytesLike, Error, InputStream, OutputStream, SizeStack, MASK_WIRE,
 };
 
+/// Single protobuf value
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value<B> {
     Varint(u64),
     Fixed32(u32),
     Fixed64(u64),
-    Bytes(Vec<u8>),
+    Bytes(B),
     Group(Vec<Field<B>>),
 }
 
+/// Single field tag + value
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Field<B> {
     pub num: u32,
     pub val: Value<B>,
-    pub _m: PhantomData<B>,
 }
 
+/// Used to store fields that were not recognized.
 #[repr(transparent)]
 #[derive(Default, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UnknownFields<B> {
@@ -72,40 +73,39 @@ impl<'buf, B: BytesLike<'buf>> UnknownFields<B> {
             crate::VARINT => fields.push(Field {
                 num: tag >> 3,
                 val: Value::Varint(stream._varint()?),
-                _m: Default::default(),
             }),
             crate::FIX32 => fields.push(Field {
                 num: tag >> 3,
                 val: Value::Fixed32(stream._fixed()?),
-                _m: Default::default(),
             }),
             crate::FIX64 => fields.push(Field {
                 num: tag >> 3,
                 val: Value::Fixed64(stream._fixed()?),
-                _m: Default::default(),
             }),
-            crate::BYTES => fields.push(Field {
-                num: tag >> 3,
-                val: Value::Bytes(stream._bytes()?.to_vec()),
-                _m: Default::default(),
-            }),
+            crate::BYTES => {
+                let mut b = B::default();
+                stream.bytes(&mut b)?;
+                fields.push(Field {
+                    num: tag >> 3,
+                    val: Value::Bytes(b),
+                })
+            }
             crate::SGRP => {
                 let mut inner = vec![];
                 Self::merge_until_egrp(&mut inner, ((tag >> 3) << 3) | crate::EGRP as u32, stream)?;
                 fields.push(Field {
                     num: tag >> 3,
                     val: Value::Group(inner),
-                    _m: Default::default(),
                 });
             }
             wire => return unknown_wire(wire),
         }
         Ok(())
     }
-    fn merge_until_egrp(fields: &mut Vec<Field<B>>, gtag: u32, stream: &mut InputStream<'buf>) -> crate::Result<()> {
+    fn merge_until_egrp(fields: &mut Vec<Field<B>>, egrptag: u32, stream: &mut InputStream<'buf>) -> crate::Result<()> {
         while !stream.is_empty() {
             let tag = stream._varint()?;
-            if tag == gtag {
+            if tag == egrptag {
                 return Ok(());
             }
             Self::merge_one(fields, tag, stream)?

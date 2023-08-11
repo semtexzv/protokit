@@ -9,6 +9,24 @@ use crate::{BinProto, BytesLike, Error, Fixed, Result, Sigint, SizeStack, Varint
 const MSB: u8 = 0b1000_0000;
 const DROP_MSB: u8 = 0b0111_1111;
 
+pub trait Output {
+    // Emit a tag
+    fn tag(&mut self, t: u32);
+
+    /// Tag in these methods is only informative, it has already been emitted previously
+    fn varint<V: Varint>(&mut self, num: u32, v: &V);
+    fn sigint<V: Sigint>(&mut self, num: u32, v: &V);
+    fn fixed<E: Fixed>(&mut self, num: u32, v: &E);
+
+    fn bytes<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B);
+    fn string<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B) {
+        self.bytes(num, b)
+    }
+
+    fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P);
+    fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P);
+}
+
 pub struct InputStream<'buf> {
     pub(crate) buf: &'buf [u8],
     pub(crate) pos: usize,
@@ -234,24 +252,6 @@ impl<'buf> InputStream<'buf> {
     }
 }
 
-pub trait Output {
-    // Emit a tag
-    fn tag(&mut self, t: u32);
-
-    /// Tag in these methods is only informative, it has already been emitted previously
-    fn varint<V: Varint>(&mut self, num: u32, v: &V);
-    fn sigint<V: Sigint>(&mut self, num: u32, v: &V);
-    fn fixed<E: Fixed>(&mut self, num: u32, v: &E);
-
-    fn bytes<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B);
-    fn string<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B) {
-        self.bytes(num, b)
-    }
-
-    fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P);
-    fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P);
-}
-
 #[derive(Default)]
 pub struct OutputStream {
     pub(crate) stack: SizeStack,
@@ -262,6 +262,7 @@ impl OutputStream {
     pub fn len(&self) -> usize {
         self.buf.len()
     }
+
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
