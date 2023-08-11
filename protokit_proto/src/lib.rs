@@ -1,5 +1,3 @@
-#![feature(entry_insert)]
-
 use miette::Diagnostic;
 use nom::combinator::all_consuming;
 use nom::Finish;
