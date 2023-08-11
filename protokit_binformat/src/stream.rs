@@ -203,14 +203,12 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn bytes<'x, T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
-        field.clear();
-        field.merge(self._bytes()?)?;
+        field.set(self._bytes()?)?;
         Ok(())
     }
 
     pub fn string<T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
-        field.clear();
-        field.merge(self._bytes()?)?;
+        field.set(self._bytes()?)?;
         Ok(())
     }
 
@@ -324,13 +322,13 @@ impl OutputStream {
     }
 
     pub fn bytes<'x, B: BytesLike<'x>>(&mut self, _: u32, b: &B) {
-        self._varint(b.bytes().len());
-        self._bytes(b.bytes());
+        self._varint(b.buf().len());
+        self._bytes(b.buf());
     }
 
     pub fn string<'out, B: BytesLike<'out>>(&mut self, _: u32, b: &B) {
-        self._varint(b.bytes().len());
-        self._bytes(b.bytes());
+        self._varint(b.buf().len());
+        self._bytes(b.buf());
     }
 
     #[inline(never)]

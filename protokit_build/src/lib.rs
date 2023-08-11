@@ -1,5 +1,5 @@
 use core::str::FromStr;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 
 pub use anyhow::Result;
 use quote::__private::TokenStream;
@@ -114,14 +114,14 @@ fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: P
 
     let dirs: Vec<Vec<&str>> = generated_names.iter().map(|v| v.split('/').collect()).collect();
 
-    let mut subdirs = HashMap::new();
+    let mut subdirs = BTreeMap::new();
 
     // Generate a valid module file in every subdirectory
     for path in &dirs {
         for i in 0 .. path.len() {
             subdirs
                 .entry(path[0 .. i].join("/"))
-                .or_insert_with(HashSet::new)
+                .or_insert_with(BTreeSet::new)
                 .insert(path[i]);
         }
     }

@@ -1,6 +1,6 @@
 use core::ops::Deref;
 use core::str::FromStr;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
@@ -43,7 +43,7 @@ impl Generics {
 
 #[derive(Debug)]
 pub struct Options {
-    pub replacement: HashMap<String, String>,
+    pub replacement: BTreeMap<String, String>,
     pub import_root: TokenStream,
 
     pub string_type: TokenStream,

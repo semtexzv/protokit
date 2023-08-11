@@ -1,4 +1,5 @@
 #![allow(clippy::ptr_arg)]
+#![deny(unconditional_recursion)]
 
 use core::fmt::Debug;
 use core::hash::Hash;
@@ -33,13 +34,16 @@ pub enum Error {
 
     #[error("Length of submessage exceeds the length of message")]
     InvalidBytesLimit,
+
     #[error("String is not UTF8: {0}")]
     InvalidUtf8(#[from] Utf8Error),
 
     #[error("Unterminated group")]
     UnterminatedGroup,
+
     #[error("Unknown tag: {0}")]
     UnknownTag(u32),
+
     #[error("Unknown wire type: {0}")]
     UnknownWire(u8),
 }
@@ -56,7 +60,7 @@ pub fn unknown_wire<T>(w: u8) -> Result<T> {
     Err(Error::UnknownWire(w))
 }
 
-pub trait BinProto<'buf>: Debug {
+pub trait BinProto<'buf> {
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()>;
     fn size(&self, stack: &mut SizeStack) -> usize;
     fn encode(&self, stream: &mut OutputStream);
@@ -82,7 +86,7 @@ where
     }
 }
 
-pub trait Varint: Default + Debug + Clone + Copy + PartialEq + PartialOrd + Eq + Ord {
+pub trait Varint: Default + Debug + Clone + Copy {
     fn from_u64(v: u64) -> Self;
     fn into_u64(self) -> u64;
 }
@@ -223,30 +227,27 @@ impl Fixed for f64 {
 }
 
 pub trait BytesLike<'a>: Debug + Default {
-    fn blen(&self) -> usize;
-    fn bytes(&self) -> &[u8];
-    fn clear(&mut self);
-    fn merge(&mut self, b: &'a [u8]) -> Result<()>;
+    /// Length of this field
+    fn len(&self) -> usize;
+    /// Reference to underlying byte byffer
+    fn buf(&self) -> &[u8];
+    /// Set this byte buffer to new value
+    fn set(&mut self, b: &'a [u8]) -> Result<()>;
 }
 
 impl<'buf> BytesLike<'buf> for &'buf str {
     #[inline(always)]
-    fn blen(&self) -> usize {
-        self.len()
+    fn len(&self) -> usize {
+        str::len(self)
     }
 
     #[inline(always)]
-    fn bytes(&self) -> &[u8] {
+    fn buf(&self) -> &[u8] {
         self.as_bytes()
     }
 
     #[inline(always)]
-    fn clear(&mut self) {
-        *self = "";
-    }
-
-    #[inline(always)]
-    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+    fn set(&mut self, b: &'buf [u8]) -> Result<()> {
         *self = core::str::from_utf8(b)?;
         Ok(())
     }
@@ -254,41 +255,33 @@ impl<'buf> BytesLike<'buf> for &'buf str {
 
 impl<'buf> BytesLike<'buf> for String {
     #[inline(always)]
-    fn blen(&self) -> usize {
+    fn len(&self) -> usize {
         self.len()
     }
 
     #[inline(always)]
-    fn bytes(&self) -> &[u8] {
+    fn buf(&self) -> &[u8] {
         self.as_bytes()
     }
 
     #[inline(always)]
-    fn clear(&mut self) {
+    fn set(&mut self, b: &[u8]) -> Result<()> {
         self.clear();
-    }
-
-    #[inline(always)]
-    fn merge(&mut self, b: &[u8]) -> Result<()> {
         self.push_str(core::str::from_utf8(b)?);
         Ok(())
     }
 }
 
 impl<'buf> BytesLike<'buf> for Cow<'buf, str> {
-    fn blen(&self) -> usize {
-        self.len()
+    fn len(&self) -> usize {
+        str::len(self)
     }
 
-    fn bytes(&self) -> &[u8] {
+    fn buf(&self) -> &[u8] {
         self.as_bytes()
     }
 
-    fn clear(&mut self) {
-        *self = Cow::Borrowed("");
-    }
-
-    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+    fn set(&mut self, b: &'buf [u8]) -> Result<()> {
         let b = std::str::from_utf8(b)?;
         *self = Cow::Borrowed(b);
         Ok(())
@@ -297,22 +290,17 @@ impl<'buf> BytesLike<'buf> for Cow<'buf, str> {
 
 impl<'buf> BytesLike<'buf> for &'buf [u8] {
     #[inline(always)]
-    fn blen(&self) -> usize {
-        self.len()
+    fn len(&self) -> usize {
+        <[u8]>::len(self)
     }
 
     #[inline(always)]
-    fn bytes(&self) -> &[u8] {
+    fn buf(&self) -> &[u8] {
         self
     }
 
     #[inline(always)]
-    fn clear(&mut self) {
-        *self = &[];
-    }
-
-    #[inline(always)]
-    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+    fn set(&mut self, b: &'buf [u8]) -> Result<()> {
         *self = b;
         Ok(())
     }
@@ -320,22 +308,18 @@ impl<'buf> BytesLike<'buf> for &'buf [u8] {
 
 impl<'buf> BytesLike<'buf> for Vec<u8> {
     #[inline(always)]
-    fn blen(&self) -> usize {
+    fn len(&self) -> usize {
         self.len()
     }
 
     #[inline(always)]
-    fn bytes(&self) -> &[u8] {
+    fn buf(&self) -> &[u8] {
         self.as_slice()
     }
 
     #[inline(always)]
-    fn clear(&mut self) {
+    fn set(&mut self, b: &[u8]) -> Result<()> {
         self.clear();
-    }
-
-    #[inline(always)]
-    fn merge(&mut self, b: &[u8]) -> Result<()> {
         self.extend_from_slice(b);
         Ok(())
     }
@@ -343,22 +327,17 @@ impl<'buf> BytesLike<'buf> for Vec<u8> {
 
 impl<'buf> BytesLike<'buf> for Cow<'buf, [u8]> {
     #[inline(always)]
-    fn blen(&self) -> usize {
-        self.len()
+    fn len(&self) -> usize {
+        <[u8]>::len(self)
     }
 
     #[inline(always)]
-    fn bytes(&self) -> &[u8] {
+    fn buf(&self) -> &[u8] {
         self
     }
 
     #[inline(always)]
-    fn clear(&mut self) {
-        *self = Cow::Borrowed(&[]);
-    }
-
-    #[inline(always)]
-    fn merge(&mut self, b: &'buf [u8]) -> Result<()> {
+    fn set(&mut self, b: &'buf [u8]) -> Result<()> {
         *self = Cow::Borrowed(b);
         Ok(())
     }
@@ -368,17 +347,15 @@ impl<'a, const N: usize> BytesLike<'a> for [u8; N]
 where
     [u8; N]: Default,
 {
-    fn blen(&self) -> usize {
+    fn len(&self) -> usize {
         N
     }
 
-    fn bytes(&self) -> &[u8] {
+    fn buf(&self) -> &[u8] {
         self
     }
 
-    fn clear(&mut self) {}
-
-    fn merge(&mut self, b: &'a [u8]) -> Result<()> {
+    fn set(&mut self, b: &'a [u8]) -> Result<()> {
         *self = b.try_into().map_err(|_| Error::InvalidBytesLimit)?;
         Ok(())
     }
@@ -610,11 +587,11 @@ pub fn size_sigint<T: Sigint>(v: &T, _: u32, _: &mut SizeStack) -> usize {
 }
 
 pub fn size_bytes<'x, T: BytesLike<'x>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
-    _size_varint(v.blen()) + v.blen()
+    _size_varint(v.len()) + v.len()
 }
 
 pub fn size_string<'x, T: BytesLike<'x>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
-    _size_varint(v.blen()) + v.blen()
+    _size_varint(v.len()) + v.len()
 }
 
 #[inline(always)]
