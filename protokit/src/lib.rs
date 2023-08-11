@@ -1,5 +1,3 @@
-#![feature(allocator_api)]
-
 pub use anyhow::Result;
 pub use binformat::{self, BinProto, BytesLike, Fixed, Sigint, Varint};
 pub use derive::{protoenum, Proto};

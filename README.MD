@@ -1,5 +1,9 @@
 # Protokit
 
+![crates.io](https://img.shields.io/crates/v/protokit.svg)
+![img](https://img.shields.io/docsrs/protokit)
+![example workflow](https://github.com/semtexzv/protokit/actions/workflows/rust.yml/badge.svg)
+
 Implementation of protocol buffers for rust.
 
 ## Why not prost/pb-j/rust-protobuf?

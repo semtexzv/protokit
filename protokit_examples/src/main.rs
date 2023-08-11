@@ -1,4 +1,3 @@
-#![feature(allocator_api)]
 use std::io::{stdin, BufRead};
 
 use protokit::textformat::reflect::Registry;
