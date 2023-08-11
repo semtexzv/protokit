@@ -139,30 +139,30 @@ pub trait Fixed: Default + Sized + Clone + Copy {
 }
 
 impl Fixed for i32 {
-    type Wire = Self;
+    type Wire = u32;
 
     #[inline(always)]
     fn from_wire(v: Self::Wire) -> Self {
-        Self::from_le(v)
+        Self::from_le(v as _)
     }
 
     #[inline(always)]
     fn to_wire(self) -> Self::Wire {
-        self.to_le()
+        self.to_le() as _
     }
 }
 
 impl Fixed for i64 {
-    type Wire = Self;
+    type Wire = u64;
 
     #[inline(always)]
     fn from_wire(v: Self::Wire) -> Self {
-        Self::from_le(v)
+        Self::from_le(v as _)
     }
 
     #[inline(always)]
     fn to_wire(self) -> Self::Wire {
-        self.to_le()
+        self.to_le() as _
     }
 }
 
