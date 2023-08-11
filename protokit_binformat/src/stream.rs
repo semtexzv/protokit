@@ -257,6 +257,12 @@ pub struct OutputStream {
 }
 
 impl OutputStream {
+    pub fn new(vec: Vec<u8>) -> Self {
+        Self {
+            stack: SizeStack::default(),
+            buf: vec,
+        }
+    }
     pub fn len(&self) -> usize {
         self.buf.len()
     }

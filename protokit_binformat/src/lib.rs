@@ -744,3 +744,11 @@ pub fn encode<'buf, T: BinProto<'buf>>(b: &T) -> Result<Vec<u8>> {
     b.encode(&mut out);
     Ok(out.buf)
 }
+
+
+pub fn encode_to<'buf, T: BinProto<'buf>>(b: &T, out: Vec<u8>) -> Result<Vec<u8>> {
+    let mut out = OutputStream::new(out);
+    b.size(&mut out.stack);
+    b.encode(&mut out);
+    Ok(out.buf)
+}
