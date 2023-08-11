@@ -1,8 +1,8 @@
 # Protokit
 
-![crates.io](https://img.shields.io/crates/v/protokit.svg)
-![img](https://img.shields.io/docsrs/protokit)
-![example workflow](https://github.com/semtexzv/protokit/actions/workflows/rust.yml/badge.svg)
+[![crates.io](https://img.shields.io/crates/v/protokit.svg)](https://crates.io/crates/protokit)
+[![img](https://img.shields.io/docsrs/protokit)](https://docs.rs/protokit/latest)
+[![example workflow](https://github.com/semtexzv/protokit/actions/workflows/rust.yml/badge.svg)](https://github.com/semtexzv/protokit/actions/workflows/rust.yml)
 
 Implementation of protocol buffers for rust.
 
