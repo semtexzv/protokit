@@ -229,7 +229,8 @@ impl CodeGenerator<'_> {
 
         match (field.frequency, is_msg) {
             (Frequency::Singular | Frequency::Required, false) => Ok(base),
-            (Frequency::Singular | Frequency::Required, true) => Ok(quote!(Option<Box<#base>>)),
+            (Frequency::Required, true) => Ok(quote!(Box<#base>)),
+            (Frequency::Singular, true) => Ok(quote!(Option<Box<#base>>)),
             (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
             (Frequency::Optional, true) => Ok(quote!(Option<Box<#base>>)),
             (Frequency::Repeated, _) => Ok(quote!(Vec<#base>)),

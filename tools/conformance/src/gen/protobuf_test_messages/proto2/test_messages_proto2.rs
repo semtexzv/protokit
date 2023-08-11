@@ -39,6 +39,27 @@ impl EnumOnlyProto2Bool {
     #[var(1u32, "kTrue")]
     pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1u32);
 }
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct TestAllRequiredTypesProto2NestedEnum(pub u32);
+#[protoenum]
+impl TestAllRequiredTypesProto2NestedEnum {
+    #[var(0u32, "FOO")]
+    pub const FOO: TestAllRequiredTypesProto2NestedEnum = TestAllRequiredTypesProto2NestedEnum(
+        0u32,
+    );
+    #[var(1u32, "BAR")]
+    pub const BAR: TestAllRequiredTypesProto2NestedEnum = TestAllRequiredTypesProto2NestedEnum(
+        1u32,
+    );
+    #[var(2u32, "BAZ")]
+    pub const BAZ: TestAllRequiredTypesProto2NestedEnum = TestAllRequiredTypesProto2NestedEnum(
+        2u32,
+    );
+    #[var(4294967295u32, "NEG")]
+    pub const NEG: TestAllRequiredTypesProto2NestedEnum = TestAllRequiredTypesProto2NestedEnum(
+        4294967295u32,
+    );
+}
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct TestAllTypesProto2NestedMessage {
     #[field(1u32, "a", varint, optional)]
@@ -441,6 +462,128 @@ pub struct ProtoWithKeywords {
     pub concept: Option<String>,
     #[field(3u32, "requires", string, repeated)]
     pub requires: Vec<String>,
+    #[unknown]
+    pub unknown: binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+pub struct TestAllRequiredTypesProto2NestedMessage {
+    #[field(1u32, "a", varint, required)]
+    pub a: i32,
+    #[field(2u32, "corecursive", nested, required)]
+    pub corecursive: Box<TestAllRequiredTypesProto2>,
+    #[field(3u32, "optional_corecursive", nested, optional)]
+    pub optional_corecursive: Option<Box<TestAllRequiredTypesProto2>>,
+    #[unknown]
+    pub unknown: binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+pub struct TestAllRequiredTypesProto2Data {
+    #[field(202u32, "group_int32", varint, required)]
+    pub group_int32: i32,
+    #[field(203u32, "group_uint32", varint, required)]
+    pub group_uint32: u32,
+    #[unknown]
+    pub unknown: binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+pub struct TestAllRequiredTypesProto2MessageSetCorrect {
+    #[unknown]
+    pub unknown: binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+pub struct TestAllRequiredTypesProto2MessageSetCorrectExtension1 {
+    #[field(25u32, "str", string, required)]
+    pub str: String,
+    #[unknown]
+    pub unknown: binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+pub struct TestAllRequiredTypesProto2MessageSetCorrectExtension2 {
+    #[field(9u32, "i", varint, required)]
+    pub i: i32,
+    #[unknown]
+    pub unknown: binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+pub struct TestAllRequiredTypesProto2 {
+    #[field(1u32, "required_int32", varint, required)]
+    pub required_int32: i32,
+    #[field(2u32, "required_int64", varint, required)]
+    pub required_int64: i64,
+    #[field(3u32, "required_uint32", varint, required)]
+    pub required_uint32: u32,
+    #[field(4u32, "required_uint64", varint, required)]
+    pub required_uint64: u64,
+    #[field(5u32, "required_sint32", sigint, required)]
+    pub required_sint32: i32,
+    #[field(6u32, "required_sint64", sigint, required)]
+    pub required_sint64: i64,
+    #[field(7u32, "required_fixed32", fixed32, required)]
+    pub required_fixed32: u32,
+    #[field(8u32, "required_fixed64", fixed64, required)]
+    pub required_fixed64: u64,
+    #[field(9u32, "required_sfixed32", fixed32, required)]
+    pub required_sfixed32: i32,
+    #[field(10u32, "required_sfixed64", fixed64, required)]
+    pub required_sfixed64: i64,
+    #[field(11u32, "required_float", fixed32, required)]
+    pub required_float: f32,
+    #[field(12u32, "required_double", fixed64, required)]
+    pub required_double: f64,
+    #[field(13u32, "required_bool", bool, required)]
+    pub required_bool: bool,
+    #[field(14u32, "required_string", string, required)]
+    pub required_string: String,
+    #[field(15u32, "required_bytes", bytes, required)]
+    pub required_bytes: Vec<u8>,
+    #[field(18u32, "required_nested_message", nested, required)]
+    pub required_nested_message: Box<TestAllRequiredTypesProto2NestedMessage>,
+    #[field(19u32, "required_foreign_message", nested, required)]
+    pub required_foreign_message: Box<ForeignMessageProto2>,
+    #[field(21u32, "required_nested_enum", protoenum, required)]
+    pub required_nested_enum: TestAllRequiredTypesProto2NestedEnum,
+    #[field(22u32, "required_foreign_enum", protoenum, required)]
+    pub required_foreign_enum: ForeignEnumProto2,
+    #[field(24u32, "required_string_piece", string, required)]
+    pub required_string_piece: String,
+    #[field(25u32, "required_cord", string, required)]
+    pub required_cord: String,
+    #[field(27u32, "recursive_message", nested, required)]
+    pub recursive_message: Box<TestAllRequiredTypesProto2>,
+    #[field(28u32, "optional_recursive_message", nested, optional)]
+    pub optional_recursive_message: Option<Box<TestAllRequiredTypesProto2>>,
+    #[field(201u32, "Data", group, required)]
+    pub Data: Box<TestAllRequiredTypesProto2Data>,
+    #[field(241u32, "default_int32", varint, required)]
+    pub default_int32: i32,
+    #[field(242u32, "default_int64", varint, required)]
+    pub default_int64: i64,
+    #[field(243u32, "default_uint32", varint, required)]
+    pub default_uint32: u32,
+    #[field(244u32, "default_uint64", varint, required)]
+    pub default_uint64: u64,
+    #[field(245u32, "default_sint32", sigint, required)]
+    pub default_sint32: i32,
+    #[field(246u32, "default_sint64", sigint, required)]
+    pub default_sint64: i64,
+    #[field(247u32, "default_fixed32", fixed32, required)]
+    pub default_fixed32: u32,
+    #[field(248u32, "default_fixed64", fixed64, required)]
+    pub default_fixed64: u64,
+    #[field(249u32, "default_sfixed32", fixed32, required)]
+    pub default_sfixed32: i32,
+    #[field(250u32, "default_sfixed64", fixed64, required)]
+    pub default_sfixed64: i64,
+    #[field(251u32, "default_float", fixed32, required)]
+    pub default_float: f32,
+    #[field(252u32, "default_double", fixed64, required)]
+    pub default_double: f64,
+    #[field(253u32, "default_bool", bool, required)]
+    pub default_bool: bool,
+    #[field(254u32, "default_string", string, required)]
+    pub default_string: String,
+    #[field(255u32, "default_bytes", bytes, required)]
+    pub default_bytes: Vec<u8>,
     #[unknown]
     pub unknown: binformat::UnknownFieldsOwned,
 }

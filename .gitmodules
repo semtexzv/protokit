@@ -1,0 +1,9 @@
+[submodule "vendor/protobuf"]
+	path = vendor/protobuf
+	url = https://https://github.com/protocolbuffers/protobuf
+[submodule "vendor/protoc-gen-validate"]
+	path = vendor/protoc-gen-validate
+	url = https://github.com/envoyproxy/protoc-gen-validate
+[submodule "vendor/googleapis"]
+	path = vendor/googleapis
+	url = https://github.com/googleapis/googleapis

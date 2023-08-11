@@ -30,9 +30,9 @@ class rust_runner : public google::protobuf::ConformanceTestRunner {
   virtual void RunTest(const std::string& test_name,
                        const std::string& input,
                        std::string* output) {
-    if (test_name == "Required.Proto2.ProtobufInput.ValidDataOneof.UINT32.MultipleValuesForDifferentField.ProtobufOutput") {
-       printf("TEST");
-    }
+//    if (test_name == "Required.Proto2.ProtobufInput.ValidDataOneof.UINT32.MultipleValuesForDifferentField.ProtobufOutput") {
+//       printf("TEST");
+//    }
     uint8_t data[8192];
     uint32_t out_len =
         run_rust((const uint8_t*) input.data(), input.length(), data, 8192);
@@ -45,6 +45,7 @@ class rust_runner : public google::protobuf::ConformanceTestRunner {
       fprintf(stderr, "No test suites found.\n");
       return EXIT_FAILURE;
     }
+
     bool all_ok = true;
     for (ConformanceTestSuite* suite: suites) {
       std::vector<string> program_args;
@@ -53,43 +54,6 @@ class rust_runner : public google::protobuf::ConformanceTestRunner {
       bool performance = false;
       suite->SetOutputDir(".");
 //      suite->SetVerbose(true);
-
-//    for (int arg = 1; arg < argc; ++arg) {
-//      if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
-//        if (++arg == argc) UsageError();
-//        failure_list_filename = argv[arg];
-//        ParseFailureList(argv[arg], &failure_list);
-//      } else if (strcmp(argv[arg], "--performance") == 0) {
-//        performance = true;
-//        suite->SetPerformance(true);
-//      } else if (strcmp(argv[arg], "--verbose") == 0) {
-//        suite->SetVerbose(true);
-//      } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
-//        suite->SetEnforceRecommended(true);
-//      } else if (strcmp(argv[arg], "--output_dir") == 0) {
-//        if (++arg == argc) UsageError();
-//        suite->SetOutputDir(argv[arg]);
-//      } else if (argv[arg][0] == '-') {
-//        bool recognized_flag = false;
-//        for (ConformanceTestSuite* suite: suites) {
-//          if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
-//            if (++arg == argc) UsageError();
-//            recognized_flag = true;
-//          }
-//        }
-//        if (!recognized_flag) {
-//          fprintf(stderr, "Unknown option: %s\n", argv[arg]);
-//          UsageError();
-//        }
-//      } else {
-//        program += argv[arg++];
-//        while (arg < argc) {
-//          program_args.push_back(argv[arg]);
-//          arg++;
-//        }
-//      }
-//    }
-
       rust_runner runner{};
 
       std::string output;

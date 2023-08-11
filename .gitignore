@@ -1,8 +1,6 @@
 /target
 /tools/gendesc/target
 /Cargo.lock
-vendor
-
 /.idea
 !/.idea/cmake.xml
 !/.idea/runConfigurations
