@@ -470,7 +470,7 @@ pub struct TestAllRequiredTypesProto2NestedMessage {
     #[field(1u32, "a", varint, required)]
     pub a: i32,
     #[field(2u32, "corecursive", nested, required)]
-    pub corecursive: TestAllRequiredTypesProto2,
+    pub corecursive: Box<TestAllRequiredTypesProto2>,
     #[field(3u32, "optional_corecursive", nested, optional)]
     pub optional_corecursive: Option<Box<TestAllRequiredTypesProto2>>,
     #[unknown]
@@ -537,9 +537,9 @@ pub struct TestAllRequiredTypesProto2 {
     #[field(15u32, "required_bytes", bytes, required)]
     pub required_bytes: Vec<u8>,
     #[field(18u32, "required_nested_message", nested, required)]
-    pub required_nested_message: TestAllRequiredTypesProto2NestedMessage,
+    pub required_nested_message: Box<TestAllRequiredTypesProto2NestedMessage>,
     #[field(19u32, "required_foreign_message", nested, required)]
-    pub required_foreign_message: ForeignMessageProto2,
+    pub required_foreign_message: Box<ForeignMessageProto2>,
     #[field(21u32, "required_nested_enum", protoenum, required)]
     pub required_nested_enum: TestAllRequiredTypesProto2NestedEnum,
     #[field(22u32, "required_foreign_enum", protoenum, required)]
@@ -549,11 +549,11 @@ pub struct TestAllRequiredTypesProto2 {
     #[field(25u32, "required_cord", string, required)]
     pub required_cord: String,
     #[field(27u32, "recursive_message", nested, required)]
-    pub recursive_message: TestAllRequiredTypesProto2,
+    pub recursive_message: Box<TestAllRequiredTypesProto2>,
     #[field(28u32, "optional_recursive_message", nested, optional)]
     pub optional_recursive_message: Option<Box<TestAllRequiredTypesProto2>>,
     #[field(201u32, "Data", group, required)]
-    pub Data: TestAllRequiredTypesProto2Data,
+    pub Data: Box<TestAllRequiredTypesProto2Data>,
     #[field(241u32, "default_int32", varint, required)]
     pub default_int32: i32,
     #[field(242u32, "default_int64", varint, required)]
