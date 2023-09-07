@@ -86,6 +86,23 @@ where
     }
 }
 
+#[cfg(feature = "arena")]
+impl<'buf, 'arena, T> BinProto<'buf> for bumpalo::boxed::Box<'arena, T>
+    where T: BinProto<'buf>
+{
+    fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
+        self.deref_mut().merge_field(tag_wire, stream)
+    }
+
+    fn size(&self, stack: &mut SizeStack) -> usize {
+        self.deref().size(stack)
+    }
+
+    fn encode(&self, stream: &mut OutputStream) {
+        self.deref().encode(stream)
+    }
+}
+
 pub trait Varint: Default + Debug + Clone + Copy {
     fn from_u64(v: u64) -> Self;
     fn into_u64(self) -> u64;
