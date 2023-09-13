@@ -7,12 +7,16 @@ pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
 use super::super::descriptor::*;
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CodeGeneratorResponseFeature(pub u32);
-#[protoenum(closed)]
+#[protoenum]
 impl CodeGeneratorResponseFeature {
     #[var(0u32, "FEATURE_NONE")]
-    pub const FEATURE_NONE: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(0u32);
+    pub const FEATURE_NONE: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(
+        0u32,
+    );
     #[var(1u32, "FEATURE_PROTO3_OPTIONAL")]
-    pub const FEATURE_PROTO3_OPTIONAL: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(1u32);
+    pub const FEATURE_PROTO3_OPTIONAL: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(
+        1u32,
+    );
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct Version {

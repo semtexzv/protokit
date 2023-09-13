@@ -15,6 +15,6 @@ fn main() -> protokit_build::Result<()> {
         .compile("google/protobuf/timestamp.proto")?
         .compile("google/protobuf/compiler/plugin.proto")?
         .compile("google/protobuf/any.proto")?
-        .compile("validate/validate.proto")?
+        // .compile("validate/validate.proto")?
         .generate()
 }

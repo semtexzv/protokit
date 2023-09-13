@@ -3,7 +3,13 @@
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
 use ::protokit::*;
-pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
+pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {
+    registry.register(&TestAllTypesProto3NestedMessage::default());
+    registry.register(&TestAllTypesProto3::default());
+    registry.register(&ForeignMessage::default());
+    registry.register(&NullHypothesisProto3::default());
+    registry.register(&EnumOnlyProto3::default());
+}
 use super::super::super::google::protobuf::any::*;
 use super::super::super::google::protobuf::duration::*;
 use super::super::super::google::protobuf::field_mask::*;

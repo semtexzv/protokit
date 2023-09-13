@@ -138,6 +138,7 @@ pub fn builtin_type_marker(typ: BuiltinType) -> &'static str {
 pub struct CodeGenerator<'a> {
     context: &'a FileSetDef,
     options: &'a Options,
+    types: Vec<TokenStream>,
     output: Vec<TokenStream>,
 }
 
@@ -294,6 +295,7 @@ impl CodeGenerator<'_> {
             None
         };
 
+        self.types.push(quote!{#ident});
         self.output.push(quote! {
             #[derive(Debug, Default, Clone, PartialEq, Proto)]
             #attrs
@@ -435,62 +437,11 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
     let mut generator = CodeGenerator {
         context: ctx,
         options: opts,
+        types: vec![],
         output: vec![],
     };
 
     generator.file(file)?;
-    //
-    // let root = opts.import_root.clone();
-    //
-    // let mut push_imports = HashSet::new();
-    // let mut msg_types = vec![];
-    // let mut messages = vec![];
-    // let mut enums = vec![];
-    // let mut services: Vec<TokenStream> = vec![];
-    //
-    // let generator = CodeGenerator {
-    //     context: ctx,
-    //     options: opts,
-    // };
-    //
-    // for (idx, (_sym, msg)) in unit.messages.iter().enumerate() {
-    //     let defid = (unit_id as u64) << 32 | LOCAL_DEFID_MSG as u64 | idx as u64;
-    //     let (msg_contents, types, imports) = generator.generate_msg(&ctx.def, unit, defid, msg);
-    //     push_imports.extend(imports);
-    //     msg_types.extend(types.into_iter());
-    //     messages.push(msg_contents);
-    // }
-    //
-    // for (idx, (_name, en)) in unit.enums.iter().enumerate() {
-    //     let _defid = (unit_id as u64) << 32 | LOCAL_DEFID_ENUM as u64 | idx as u64;
-    //     enums.push(generator.generate_enum(en));
-    // }
-    //
-    // for (_name, svc) in unit.services.iter() {
-    //     services.push(generator.generate_server(unit, svc));
-    //     services.push(generator.generate_client(unit, svc));
-    // }
-    //
-
-    //
-    // let output = quote! {
-    //     #![allow(nonstandard_style)]
-    //     #![allow(unused)]
-    //     #![deny(unused_must_use)]
-    //     #![allow(clippy::derive_partial_eq_without_eq)]
-    //
-    //     use core::fmt::Write;
-    //
-    //     use #root::*;
-    //     use #root as root;
-    //
-    //     #(#imports)*
-    //
-    //
-    //     #(#messages)*
-    //     #(#enums)*
-    //     #(#services)*
-    // };
 
     let root = opts.import_root.clone();
     let imports = file.imports.iter().map(|imp| imp.file_idx).map(|file_idx| {
@@ -540,7 +491,10 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
             use #import::*;
         }
     });
+
     let output = generator.output;
+    let types = generator.types;
+
     let output = quote! {
         #![allow(unused_imports)]
         #![allow(nonstandard_style)]
@@ -548,8 +502,8 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
         #![allow(clippy::module_inception)]
         use #root::*;
 
-        pub fn register_types(_registry: &mut #root::textformat::reflect::Registry) {
-            // #(#files::register_types(registry);)*
+        pub fn register_types(registry: &mut #root::textformat::reflect::Registry) {
+            #(registry.register(&#types::default());)*
         }
 
         #(#imports)*

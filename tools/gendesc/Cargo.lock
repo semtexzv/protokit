@@ -68,6 +68,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "bumpalo"
+version = "3.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3e2c3daef883ecc1b5d58c15adae93470a91d425f3532ba1695849656af3fc1"
+
+[[package]]
 name = "bytecount"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -283,25 +289,34 @@ checksum = "d59d8c75012853d2e872fb56bc8a2e53718e2cafe1a4c823143141c6d90c322f"
 
 [[package]]
 name = "logos"
-version = "0.12.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf8b031682c67a8e3d5446840f9573eb7fe26efe7ec8d195c9ac4c0647c502f1"
+checksum = "c000ca4d908ff18ac99b93a062cb8958d331c3220719c52e77cb19cc6ac5d2c1"
 dependencies = [
  "logos-derive",
 ]
 
 [[package]]
-name = "logos-derive"
-version = "0.12.1"
+name = "logos-codegen"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1d849148dbaf9661a6151d1ca82b13bb4c4c128146a88d05253b38d4e2f496c"
+checksum = "dc487311295e0002e452025d6b580b77bb17286de87b57138f3b5db711cded68"
 dependencies = [
  "beef",
  "fnv",
  "proc-macro2",
  "quote",
  "regex-syntax",
- "syn 1.0.98",
+ "syn 2.0.16",
+]
+
+[[package]]
+name = "logos-derive"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbfc0d229f1f42d790440136d941afd806bc9e949e2bcb8faa813b0f00d1267e"
+dependencies = [
+ "logos-codegen",
 ]
 
 [[package]]
@@ -399,53 +414,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c623b5ad020c6dac110f85af16a213a9ac4efe41b50c4374cee8d838d36f378"
 dependencies = [
  "proc-macro2",
- "syn 2.0.10",
-]
-
-[[package]]
-name = "proc-macro-error"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-dependencies = [
- "proc-macro-error-attr",
- "proc-macro2",
- "quote",
- "syn 1.0.98",
- "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-dependencies = [
- "proc-macro2",
- "quote",
- "version_check",
+ "syn 2.0.16",
 ]
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.52"
+version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d0e1ae9e836cc3beddd63db0df682593d7e2d3d891ae8c9083d2113e1744224"
+checksum = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
 dependencies = [
  "unicode-ident",
 ]
 
 [[package]]
 name = "protokit_binformat"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
+ "bumpalo",
  "indexmap",
+ "protokit_derive",
  "thiserror",
 ]
 
 [[package]]
 name = "protokit_build"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "anyhow",
  "convert_case",
@@ -455,23 +448,22 @@ dependencies = [
  "protokit_desc",
  "protokit_proto",
  "quote",
- "syn 2.0.10",
+ "syn 2.0.16",
 ]
 
 [[package]]
 name = "protokit_derive"
-version = "0.0.0"
+version = "0.0.2"
 dependencies = [
  "convert_case",
- "proc-macro-error",
  "proc-macro2",
  "quote",
- "syn 2.0.10",
+ "syn 2.0.16",
 ]
 
 [[package]]
 name = "protokit_desc"
-version = "0.1.0"
+version = "0.0.2"
 dependencies = [
  "arcstr",
  "indexmap",
@@ -482,7 +474,7 @@ dependencies = [
 
 [[package]]
 name = "protokit_proto"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "indexmap",
  "lexical-core",
@@ -498,7 +490,7 @@ dependencies = [
 
 [[package]]
 name = "protokit_textformat"
-version = "0.1.0"
+version = "0.0.2"
 dependencies = [
  "logos",
  "protokit_binformat",
@@ -598,9 +590,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.10"
+version = "2.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aad1363ed6d37b84299588d62d3a7d95b5a5c2d9aad5c85609fda12afaa1f40"
+checksum = "a6f671d4b5ffdb8eadec19c0ae67fe2639df8684bd7bc4b83d986b8db549cf01"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -645,7 +637,7 @@ checksum = "f9456a42c5b0d803c8cd86e73dd7cc9edd429499f37a3550d286d5e86720569f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.10",
+ "syn 2.0.16",
 ]
 
 [[package]]

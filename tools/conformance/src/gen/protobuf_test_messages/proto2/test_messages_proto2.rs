@@ -3,7 +3,27 @@
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
 use ::protokit::*;
-pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
+pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {
+    registry.register(&TestAllTypesProto2NestedMessage::default());
+    registry.register(&TestAllTypesProto2Data::default());
+    registry.register(&TestAllTypesProto2MessageSetCorrect::default());
+    registry.register(&TestAllTypesProto2MessageSetCorrectExtension1::default());
+    registry.register(&TestAllTypesProto2MessageSetCorrectExtension2::default());
+    registry.register(&TestAllTypesProto2::default());
+    registry.register(&ForeignMessageProto2::default());
+    registry.register(&UnknownToTestAllTypesOptionalGroup::default());
+    registry.register(&UnknownToTestAllTypes::default());
+    registry.register(&NullHypothesisProto2::default());
+    registry.register(&EnumOnlyProto2::default());
+    registry.register(&OneStringProto2::default());
+    registry.register(&ProtoWithKeywords::default());
+    registry.register(&TestAllRequiredTypesProto2NestedMessage::default());
+    registry.register(&TestAllRequiredTypesProto2Data::default());
+    registry.register(&TestAllRequiredTypesProto2MessageSetCorrect::default());
+    registry.register(&TestAllRequiredTypesProto2MessageSetCorrectExtension1::default());
+    registry.register(&TestAllRequiredTypesProto2MessageSetCorrectExtension2::default());
+    registry.register(&TestAllRequiredTypesProto2::default());
+}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ForeignEnumProto2(pub u32);
 #[protoenum]

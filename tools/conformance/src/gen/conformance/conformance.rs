@@ -3,7 +3,12 @@
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
 use ::protokit::*;
-pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
+pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {
+    registry.register(&FailureSet::default());
+    registry.register(&ConformanceRequest::default());
+    registry.register(&ConformanceResponse::default());
+    registry.register(&JspbEncodingConfig::default());
+}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WireFormat(pub u32);
 #[protoenum]

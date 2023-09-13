@@ -1,7 +1,7 @@
 fn main() -> protokit_build::Result<()> {
     protokit_build::Build::new()
         .track_unknowns(true)
-        .borrow_bufs()
+        // .borrow_bufs()
         .include("../proto")
         .compile("google/protobuf/descriptor.proto")?
         .compile("google/protobuf/api.proto")?

@@ -3,7 +3,17 @@
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
 use ::protokit::*;
-pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
+pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {
+    registry.register(&DoubleValue::default());
+    registry.register(&FloatValue::default());
+    registry.register(&Int64Value::default());
+    registry.register(&UInt64Value::default());
+    registry.register(&Int32Value::default());
+    registry.register(&UInt32Value::default());
+    registry.register(&BoolValue::default());
+    registry.register(&StringValue::default());
+    registry.register(&BytesValue::default());
+}
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct DoubleValue {
     #[field(1u32, "value", fixed64, singular)]

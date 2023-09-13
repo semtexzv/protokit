@@ -3,7 +3,11 @@
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
 use ::protokit::*;
-pub fn register_types(_registry: &mut ::protokit::textformat::reflect::Registry) {}
+pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {
+    registry.register(&Struct::default());
+    registry.register(&Value::default());
+    registry.register(&ListValue::default());
+}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NullValue(pub u32);
 #[protoenum]
