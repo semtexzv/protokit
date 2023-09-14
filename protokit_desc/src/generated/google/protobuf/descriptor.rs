@@ -141,11 +141,13 @@ impl MethodOptionsIdempotencyLevel {
     );
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "FileDescriptorSet", package = "google.protobuf")]
 pub struct FileDescriptorSet {
     #[field(1u32, "file", nested, repeated)]
     pub file: Vec<FileDescriptorProto>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "FileDescriptorProto", package = "google.protobuf")]
 pub struct FileDescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -173,6 +175,7 @@ pub struct FileDescriptorProto {
     pub syntax: Option<String>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "DescriptorProto", package = "google.protobuf")]
 pub struct DescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -196,6 +199,7 @@ pub struct DescriptorProto {
     pub reserved_name: Vec<String>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "DescriptorProto.ExtensionRange", package = "google.protobuf")]
 pub struct DescriptorProtoExtensionRange {
     #[field(1u32, "start", varint, optional)]
     pub start: Option<i32>,
@@ -205,6 +209,7 @@ pub struct DescriptorProtoExtensionRange {
     pub options: Option<Box<ExtensionRangeOptions>>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "DescriptorProto.ReservedRange", package = "google.protobuf")]
 pub struct DescriptorProtoReservedRange {
     #[field(1u32, "start", varint, optional)]
     pub start: Option<i32>,
@@ -212,11 +217,13 @@ pub struct DescriptorProtoReservedRange {
     pub end: Option<i32>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ExtensionRangeOptions", package = "google.protobuf")]
 pub struct ExtensionRangeOptions {
     #[field(999u32, "uninterpreted_option", nested, repeated)]
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "FieldDescriptorProto", package = "google.protobuf")]
 pub struct FieldDescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -242,6 +249,7 @@ pub struct FieldDescriptorProto {
     pub proto3_optional: Option<bool>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "OneofDescriptorProto", package = "google.protobuf")]
 pub struct OneofDescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -249,6 +257,7 @@ pub struct OneofDescriptorProto {
     pub options: Option<Box<OneofOptions>>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "EnumDescriptorProto", package = "google.protobuf")]
 pub struct EnumDescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -262,6 +271,7 @@ pub struct EnumDescriptorProto {
     pub reserved_name: Vec<String>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "EnumDescriptorProto.EnumReservedRange", package = "google.protobuf")]
 pub struct EnumDescriptorProtoEnumReservedRange {
     #[field(1u32, "start", varint, optional)]
     pub start: Option<i32>,
@@ -269,6 +279,7 @@ pub struct EnumDescriptorProtoEnumReservedRange {
     pub end: Option<i32>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "EnumValueDescriptorProto", package = "google.protobuf")]
 pub struct EnumValueDescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -278,6 +289,7 @@ pub struct EnumValueDescriptorProto {
     pub options: Option<Box<EnumValueOptions>>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ServiceDescriptorProto", package = "google.protobuf")]
 pub struct ServiceDescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -287,6 +299,7 @@ pub struct ServiceDescriptorProto {
     pub options: Option<Box<ServiceOptions>>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "MethodDescriptorProto", package = "google.protobuf")]
 pub struct MethodDescriptorProto {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,
@@ -302,6 +315,7 @@ pub struct MethodDescriptorProto {
     pub server_streaming: Option<bool>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "FileOptions", package = "google.protobuf")]
 pub struct FileOptions {
     #[field(1u32, "java_package", string, optional)]
     pub java_package: Option<String>,
@@ -347,6 +361,7 @@ pub struct FileOptions {
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "MessageOptions", package = "google.protobuf")]
 pub struct MessageOptions {
     #[field(1u32, "message_set_wire_format", bool, optional)]
     pub message_set_wire_format: Option<bool>,
@@ -360,6 +375,7 @@ pub struct MessageOptions {
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "FieldOptions", package = "google.protobuf")]
 pub struct FieldOptions {
     #[field(1u32, "ctype", protoenum, optional)]
     pub ctype: Option<FieldOptionsCType>,
@@ -377,11 +393,13 @@ pub struct FieldOptions {
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "OneofOptions", package = "google.protobuf")]
 pub struct OneofOptions {
     #[field(999u32, "uninterpreted_option", nested, repeated)]
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "EnumOptions", package = "google.protobuf")]
 pub struct EnumOptions {
     #[field(2u32, "allow_alias", bool, optional)]
     pub allow_alias: Option<bool>,
@@ -391,6 +409,7 @@ pub struct EnumOptions {
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "EnumValueOptions", package = "google.protobuf")]
 pub struct EnumValueOptions {
     #[field(1u32, "deprecated", bool, optional)]
     pub deprecated: Option<bool>,
@@ -398,6 +417,7 @@ pub struct EnumValueOptions {
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ServiceOptions", package = "google.protobuf")]
 pub struct ServiceOptions {
     #[field(33u32, "deprecated", bool, optional)]
     pub deprecated: Option<bool>,
@@ -405,6 +425,7 @@ pub struct ServiceOptions {
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "MethodOptions", package = "google.protobuf")]
 pub struct MethodOptions {
     #[field(33u32, "deprecated", bool, optional)]
     pub deprecated: Option<bool>,
@@ -414,6 +435,7 @@ pub struct MethodOptions {
     pub uninterpreted_option: Vec<UninterpretedOption>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "UninterpretedOption", package = "google.protobuf")]
 pub struct UninterpretedOption {
     #[field(2u32, "name", nested, repeated)]
     pub name: Vec<UninterpretedOptionNamePart>,
@@ -431,6 +453,7 @@ pub struct UninterpretedOption {
     pub aggregate_value: Option<String>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "UninterpretedOption.NamePart", package = "google.protobuf")]
 pub struct UninterpretedOptionNamePart {
     #[field(1u32, "name_part", string, required)]
     pub name_part: String,
@@ -438,11 +461,13 @@ pub struct UninterpretedOptionNamePart {
     pub is_extension: bool,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "SourceCodeInfo", package = "google.protobuf")]
 pub struct SourceCodeInfo {
     #[field(1u32, "location", nested, repeated)]
     pub location: Vec<SourceCodeInfoLocation>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "SourceCodeInfo.Location", package = "google.protobuf")]
 pub struct SourceCodeInfoLocation {
     #[field(1u32, "path", varint, repeated)]
     pub path: Vec<i32>,
@@ -456,11 +481,13 @@ pub struct SourceCodeInfoLocation {
     pub leading_detached_comments: Vec<String>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "GeneratedCodeInfo", package = "google.protobuf")]
 pub struct GeneratedCodeInfo {
     #[field(1u32, "annotation", nested, repeated)]
     pub annotation: Vec<GeneratedCodeInfoAnnotation>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "GeneratedCodeInfo.Annotation", package = "google.protobuf")]
 pub struct GeneratedCodeInfoAnnotation {
     #[field(1u32, "path", varint, repeated)]
     pub path: Vec<i32>,

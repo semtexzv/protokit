@@ -64,7 +64,7 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         }
 
     })
-    .into()
+        .into()
 }
 
 #[proc_macro_derive(BinProto, attributes(proto, field, oneof, unknown))]
@@ -79,7 +79,7 @@ pub fn binproto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             panic!("Unions are not supported")
         }
     }
-    .into()
+        .into()
 }
 
 #[proc_macro_derive(Proto, attributes(proto, field, oneof, unknown))]
@@ -94,7 +94,7 @@ pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             panic!("Unions are not supported")
         }
     }
-    .into()
+        .into()
 }
 
 enum Item {
@@ -380,9 +380,23 @@ fn _impl_proto(
     };
     let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
+    let qname = match (meta.package, meta.name) {
+        (Some(pkg), Some(nam)) => {
+            let name = format!("{}.{}", pkg.value(), nam.value());
+            quote! { #name }
+        }
+        _ => {
+            let msg = format!("Qualified name not supported for {}", ident.to_string());
+            quote! { panic!(#msg) }
+        }
+    };
+
     let bin_impl = if bin {
         Some(quote! {
              impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
+                fn qualified_name(&self) -> &'static str {
+                    #qname
+                }
                 fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
                     #![deny(unreachable_patterns)]
                     match tag {
@@ -551,6 +565,9 @@ fn _impl_oneof(
     let bin_impl = if bin {
         Some(quote! {
             impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
+                fn qualified_name(&self) -> &'static str {
+                    todo!()
+                }
                 fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
                     #![deny(unreachable_patterns)]
                     match tag {

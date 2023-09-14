@@ -34,6 +34,8 @@ impl Parse for ProtoMeta {
                 out.buf = Some(input.parse()?);
             } else if name == "name" {
                 out.name = Some(input.parse()?);
+            } else if name == "package" {
+                out.package = Some(input.parse()?);
             }
 
             let _: Option<Token![,]> = input.parse()?;

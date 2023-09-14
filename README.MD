@@ -20,14 +20,17 @@ any_value {
 }
 ```
 
-After I investigated other crates, I found out that they had other issues (required
+After I investigated other crates, I found out that they had other issues (
+required
 boxing in rust-protobuf, messy codegen in prost).
 
 ## Features
+
 - Binary(100% conformance) + Text(90% conformance) format support
 - No message boxing required
 - GRPC (usable with tonic)
 - Nice derive macro for creating message implementations without proto compiler:
+
 ```rust
 #[derive(Default, Debug, Clone, BinProto)]
 pub struct FieldPath {

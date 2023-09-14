@@ -60,11 +60,10 @@ where
 {
     fn new(&self) -> Box<dyn AnyMessage + 'static> {
         Box::<T>::default()
-        // Box::new(T::default())
     }
 
     fn qualified_name(&self) -> &'static str {
-        todo!()
+        <T as BinProto>::qualified_name(self)
     }
 
     fn as_bin<'buf>(&self) -> &dyn BinProto<'buf> {
@@ -85,6 +84,10 @@ where
 }
 
 impl<'buf> BinProto<'buf> for dyn AnyMessage {
+    fn qualified_name(&self) -> &'static str {
+        self.as_bin().qualified_name()
+    }
+
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> binformat::Result<()> {
         self.as_bin_mut().merge_field(tag_wire, stream)
     }

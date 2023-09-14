@@ -7,6 +7,7 @@ pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) 
     registry.register(&Any::default());
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Any", package = "google.protobuf")]
 pub struct Any {
     #[field(1u32, "type_url", string, singular)]
     pub type_url: String,

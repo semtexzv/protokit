@@ -15,6 +15,7 @@ pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) 
     registry.register(&BytesValue::default());
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "DoubleValue", package = "google.protobuf")]
 pub struct DoubleValue {
     #[field(1u32, "value", fixed64, singular)]
     pub value: f64,
@@ -22,6 +23,7 @@ pub struct DoubleValue {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "FloatValue", package = "google.protobuf")]
 pub struct FloatValue {
     #[field(1u32, "value", fixed32, singular)]
     pub value: f32,
@@ -29,6 +31,7 @@ pub struct FloatValue {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Int64Value", package = "google.protobuf")]
 pub struct Int64Value {
     #[field(1u32, "value", varint, singular)]
     pub value: i64,
@@ -36,6 +39,7 @@ pub struct Int64Value {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "UInt64Value", package = "google.protobuf")]
 pub struct UInt64Value {
     #[field(1u32, "value", varint, singular)]
     pub value: u64,
@@ -43,6 +47,7 @@ pub struct UInt64Value {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Int32Value", package = "google.protobuf")]
 pub struct Int32Value {
     #[field(1u32, "value", varint, singular)]
     pub value: i32,
@@ -50,6 +55,7 @@ pub struct Int32Value {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "UInt32Value", package = "google.protobuf")]
 pub struct UInt32Value {
     #[field(1u32, "value", varint, singular)]
     pub value: u32,
@@ -57,6 +63,7 @@ pub struct UInt32Value {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "BoolValue", package = "google.protobuf")]
 pub struct BoolValue {
     #[field(1u32, "value", bool, singular)]
     pub value: bool,
@@ -64,6 +71,7 @@ pub struct BoolValue {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "StringValue", package = "google.protobuf")]
 pub struct StringValue {
     #[field(1u32, "value", string, singular)]
     pub value: String,
@@ -71,6 +79,7 @@ pub struct StringValue {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "BytesValue", package = "google.protobuf")]
 pub struct BytesValue {
     #[field(1u32, "value", bytes, singular)]
     pub value: Vec<u8>,

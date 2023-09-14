@@ -7,6 +7,7 @@ pub fn register_types(registry: &mut crate::textformat::reflect::Registry) {
     registry.register(&Timestamp::default());
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Timestamp", package = "google.protobuf")]
 pub struct Timestamp {
     #[field(1u32, "seconds", varint, singular)]
     pub seconds: i64,

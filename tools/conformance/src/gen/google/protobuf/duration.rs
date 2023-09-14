@@ -7,6 +7,7 @@ pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) 
     registry.register(&Duration::default());
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Duration", package = "google.protobuf")]
 pub struct Duration {
     #[field(1u32, "seconds", varint, singular)]
     pub seconds: i64,

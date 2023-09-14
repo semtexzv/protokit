@@ -60,6 +60,7 @@ pub fn unknown_wire<T>(w: u8) -> Result<T> {
 }
 
 pub trait BinProto<'buf> {
+    fn qualified_name(&self) -> &'static str;
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()>;
     fn size(&self, stack: &mut SizeStack) -> usize;
     fn encode(&self, stream: &mut OutputStream);
@@ -69,6 +70,11 @@ impl<'buf, T> BinProto<'buf> for Box<T>
 where
     T: BinProto<'buf>,
 {
+    #[inline(always)]
+    fn qualified_name(&self) -> &'static str{
+        self.deref().qualified_name()
+    }
+
     #[inline(always)]
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
@@ -89,6 +95,10 @@ where
 impl<'buf, 'arena, T> BinProto<'buf> for bumpalo::boxed::Box<'arena, T>
     where T: BinProto<'buf>
 {
+    fn qualified_name(&self)  -> &'static str {
+        self.deref().qualified_name()
+    }
+
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
     }

@@ -42,6 +42,7 @@ impl TestCategory {
     pub const TEXT_FORMAT_TEST: TestCategory = TestCategory(5u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "FailureSet", package = "conformance")]
 pub struct FailureSet {
     #[field(1u32, "failure", string, repeated)]
     pub failure: Vec<String>,
@@ -66,6 +67,7 @@ impl Default for ConformanceRequestOneOfPayload {
     }
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ConformanceRequest", package = "conformance")]
 pub struct ConformanceRequest {
     #[field(3u32, "requested_output_format", protoenum, singular)]
     pub requested_output_format: WireFormat,
@@ -121,6 +123,7 @@ impl Default for ConformanceResponseOneOfResult {
     }
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ConformanceResponse", package = "conformance")]
 pub struct ConformanceResponse {
     #[oneof(
         [1u32,
@@ -149,6 +152,7 @@ pub struct ConformanceResponse {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "JspbEncodingConfig", package = "conformance")]
 pub struct JspbEncodingConfig {
     #[field(1u32, "use_jspb_array_any_format", bool, singular)]
     pub use_jspb_array_any_format: bool,

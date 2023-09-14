@@ -54,6 +54,10 @@ impl EnumOnlyProto2Bool {
     pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllTypesProto2.NestedMessage",
+    package = "protobuf_test_messages.proto2"
+)]
 pub struct TestAllTypesProto2NestedMessage {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
@@ -63,6 +67,7 @@ pub struct TestAllTypesProto2NestedMessage {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestAllTypesProto2.Data", package = "protobuf_test_messages.proto2")]
 pub struct TestAllTypesProto2Data {
     #[field(202u32, "group_int32", varint, optional)]
     pub group_int32: Option<i32>,
@@ -72,11 +77,19 @@ pub struct TestAllTypesProto2Data {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllTypesProto2.MessageSetCorrect",
+    package = "protobuf_test_messages.proto2"
+)]
 pub struct TestAllTypesProto2MessageSetCorrect {
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllTypesProto2.MessageSetCorrectExtension1",
+    package = "protobuf_test_messages.proto2"
+)]
 pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
     #[field(25u32, "str", string, optional)]
     pub str: Option<String>,
@@ -84,6 +97,10 @@ pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllTypesProto2.MessageSetCorrectExtension2",
+    package = "protobuf_test_messages.proto2"
+)]
 pub struct TestAllTypesProto2MessageSetCorrectExtension2 {
     #[field(9u32, "i", varint, optional)]
     pub i: Option<i32>,
@@ -118,6 +135,7 @@ impl Default for TestAllTypesProto2OneOfOneofField {
     }
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestAllTypesProto2", package = "protobuf_test_messages.proto2")]
 pub struct TestAllTypesProto2 {
     #[field(1u32, "optional_int32", varint, optional)]
     pub optional_int32: Option<i32>,
@@ -400,6 +418,7 @@ pub struct TestAllTypesProto2 {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ForeignMessageProto2", package = "protobuf_test_messages.proto2")]
 pub struct ForeignMessageProto2 {
     #[field(1u32, "c", varint, optional)]
     pub c: Option<i32>,
@@ -407,6 +426,10 @@ pub struct ForeignMessageProto2 {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "UnknownToTestAllTypes.OptionalGroup",
+    package = "protobuf_test_messages.proto2"
+)]
 pub struct UnknownToTestAllTypesOptionalGroup {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
@@ -414,6 +437,7 @@ pub struct UnknownToTestAllTypesOptionalGroup {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "UnknownToTestAllTypes", package = "protobuf_test_messages.proto2")]
 pub struct UnknownToTestAllTypes {
     #[field(1001u32, "optional_int32", varint, optional)]
     pub optional_int32: Option<i32>,
@@ -431,16 +455,19 @@ pub struct UnknownToTestAllTypes {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "NullHypothesisProto2", package = "protobuf_test_messages.proto2")]
 pub struct NullHypothesisProto2 {
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "EnumOnlyProto2", package = "protobuf_test_messages.proto2")]
 pub struct EnumOnlyProto2 {
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "OneStringProto2", package = "protobuf_test_messages.proto2")]
 pub struct OneStringProto2 {
     #[field(1u32, "data", string, optional)]
     pub data: Option<String>,
@@ -448,6 +475,7 @@ pub struct OneStringProto2 {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ProtoWithKeywords", package = "protobuf_test_messages.proto2")]
 pub struct ProtoWithKeywords {
     #[field(1u32, "inline", varint, optional)]
     pub inline: Option<i32>,

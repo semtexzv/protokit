@@ -24,6 +24,7 @@ impl CodeGeneratorResponseFeature {
     );
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Version", package = "google.protobuf.compiler")]
 pub struct Version {
     #[field(1u32, "major", varint, optional)]
     pub major: Option<i32>,
@@ -35,6 +36,7 @@ pub struct Version {
     pub suffix: Option<String>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "CodeGeneratorRequest", package = "google.protobuf.compiler")]
 pub struct CodeGeneratorRequest {
     #[field(1u32, "file_to_generate", string, repeated)]
     pub file_to_generate: Vec<String>,
@@ -46,6 +48,7 @@ pub struct CodeGeneratorRequest {
     pub compiler_version: Option<Box<Version>>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "CodeGeneratorResponse", package = "google.protobuf.compiler")]
 pub struct CodeGeneratorResponse {
     #[field(1u32, "error", string, optional)]
     pub error: Option<String>,
@@ -55,6 +58,7 @@ pub struct CodeGeneratorResponse {
     pub file: Vec<CodeGeneratorResponseFile>,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "CodeGeneratorResponse.File", package = "google.protobuf.compiler")]
 pub struct CodeGeneratorResponseFile {
     #[field(1u32, "name", string, optional)]
     pub name: Option<String>,

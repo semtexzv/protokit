@@ -238,14 +238,14 @@ impl CodeGenerator<'_> {
         }
     }
 
-    pub fn protoattrs(&self) -> TokenStream {
-        if !self.options.protoattrs.is_empty() {
-            let attrs = &self.options.protoattrs;
-            quote! { #[proto(#(#attrs,)*)] }
-        } else {
-            quote! {}
-        }
-    }
+    // pub fn protoattrs(&self, msg: &MessageDef) -> TokenStream {
+    //     if !self.options.protoattrs.is_empty() {
+    //         let attrs = &self.options.protoattrs;
+    //         quote! { #[proto(#(#attrs,)*)] }
+    //     } else {
+    //         quote! {}
+    //     }
+    // }
 
     pub fn file(&mut self, f: &FileDef) -> Result<()> {
         for (_, en) in f.enums.iter() {
@@ -282,7 +282,11 @@ impl CodeGenerator<'_> {
         let ident = format_ident!("{}", rustify_name(msg_name));
         // let borrow = self.borrow();
         let generics = self.options.generics.struct_def_generics();
-        let attrs = self.protoattrs();
+        let name = msg.name.as_str();
+        let pkg = file.package.as_str();
+        let attrs = quote!{
+            #[proto(name = #name, package = #pkg)]
+        };
 
         let extfields = extfields.into_iter()
             .map(|(f, pkg)| self.field(file, f, Some(pkg)));
@@ -339,7 +343,6 @@ impl CodeGenerator<'_> {
             .generics
             .liftetime_arg()
             .unwrap_or_else(|| quote! { 'static });
-        let attrs = self.protoattrs();
 
         let mut nums = vec![];
         let mut names = vec![];
@@ -375,7 +378,7 @@ impl CodeGenerator<'_> {
 
         self.output.push(quote! {
             #[derive(Debug, Clone, PartialEq, Proto)]
-            #attrs
+            // #attrs
             pub enum #oneof_type #generics {
                 #(#vars)*
                 __Unused(::core::marker::PhantomData<& #borrow_or_static ()>),

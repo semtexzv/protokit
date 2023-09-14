@@ -75,6 +75,10 @@ impl EnumOnlyProto3Bool {
     pub const kTrue: EnumOnlyProto3Bool = EnumOnlyProto3Bool(1u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllTypesProto3.NestedMessage",
+    package = "protobuf_test_messages.proto3"
+)]
 pub struct TestAllTypesProto3NestedMessage {
     #[field(1u32, "a", varint, singular)]
     pub a: i32,
@@ -113,6 +117,7 @@ impl Default for TestAllTypesProto3OneOfOneofField {
     }
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestAllTypesProto3", package = "protobuf_test_messages.proto3")]
 pub struct TestAllTypesProto3 {
     #[field(1u32, "optional_int32", varint, singular)]
     pub optional_int32: i32,
@@ -431,6 +436,7 @@ pub struct TestAllTypesProto3 {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ForeignMessage", package = "protobuf_test_messages.proto3")]
 pub struct ForeignMessage {
     #[field(1u32, "c", varint, singular)]
     pub c: i32,
@@ -438,11 +444,13 @@ pub struct ForeignMessage {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "NullHypothesisProto3", package = "protobuf_test_messages.proto3")]
 pub struct NullHypothesisProto3 {
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "EnumOnlyProto3", package = "protobuf_test_messages.proto3")]
 pub struct EnumOnlyProto3 {
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,

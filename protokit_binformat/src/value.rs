@@ -43,6 +43,10 @@ pub type UnknownFieldsOwned = UnknownFields<Vec<u8>>;
 pub type UnknownFieldsBorrow<'buf> = UnknownFields<&'buf [u8]>;
 
 impl<'buf, B: BytesLike<'buf>> BinProto<'buf> for UnknownFields<B> {
+    fn qualified_name(&self) -> &'static str {
+        unimplemented!()
+    }
+
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> crate::Result<()> {
         let f = self.fields.get_or_insert_with(Default::default);
         Self::merge_one(f, tag_wire, stream)

@@ -16,6 +16,7 @@ impl NullValue {
     pub const NULL_VALUE: NullValue = NullValue(0u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Struct", package = "google.protobuf")]
 pub struct Struct {
     #[field(1u32, "fields", map(string, nested), singular)]
     pub fields: ::protokit::IndexMap<String, Value>,
@@ -44,6 +45,7 @@ impl Default for ValueOneOfKind {
     }
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "Value", package = "google.protobuf")]
 pub struct Value {
     #[oneof(
         [1u32,
@@ -66,6 +68,7 @@ pub struct Value {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "ListValue", package = "google.protobuf")]
 pub struct ListValue {
     #[field(1u32, "values", nested, repeated)]
     pub values: Vec<Value>,
