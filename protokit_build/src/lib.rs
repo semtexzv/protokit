@@ -72,7 +72,7 @@ impl ProtocContext {
         }
 
         cmd.arg(format!("-o{}/descriptor.bin", std::env::var("OUT_DIR").unwrap()));
-        let out = cmd.output().unwrap();
+        let out = cmd.output().expect("PROTOC invocation failed");
         if !out.status.success() {
             bail!("Protoc error: {}", String::from_utf8_lossy(&out.stderr))
         }
