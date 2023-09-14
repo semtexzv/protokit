@@ -1,8 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{
-    emit_raw, unknown_tag, unknown_wire, BinProto, BytesLike, Error, InputStream, OutputStream, SizeStack, MASK_WIRE,
-};
+use crate::{emit_raw, unknown_tag, unknown_wire, BinProto, BytesLike, Error, InputStream, OutputStream, SizeStack, MASK_WIRE, _size_varint};
 
 /// Single protobuf value
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -19,6 +17,18 @@ pub enum Value<B> {
 pub struct Field<B> {
     pub num: u32,
     pub val: Value<B>,
+}
+
+impl<'a, B: BytesLike<'a>> Field<B> {
+    fn size(&self, stack: &mut SizeStack) -> usize {
+        _size_varint(self.num) + match &self.val {
+            Value::Varint(v) => _size_varint(*v),
+            Value::Fixed32(_) => 4,
+            Value::Fixed64(_) => 8,
+            Value::Bytes(b) => _size_varint(b.len()) + b.len(),
+            Value::Group(g) => _size_varint(self.num) + g.iter().rev().map(|f| f.size(stack)).sum::<usize>()
+        }
+    }
 }
 
 /// Used to store fields that were not recognized.
@@ -39,7 +49,7 @@ impl<'buf, B: BytesLike<'buf>> BinProto<'buf> for UnknownFields<B> {
     }
 
     fn size(&self, _stack: &mut SizeStack) -> usize {
-        todo!()
+        self.fields.iter().flat_map(|v| v.iter().rev()).map(|v| v.size(_stack)).sum()
     }
 
     fn encode(&self, stream: &mut OutputStream) {
