@@ -40,9 +40,7 @@ impl TestAllTypesProto2NestedEnum {
     #[var(2u32, "BAZ")]
     pub const BAZ: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(2u32);
     #[var(4294967295u32, "NEG")]
-    pub const NEG: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(
-        4294967295u32,
-    );
+    pub const NEG: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(4294967295u32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EnumOnlyProto2Bool(pub u32);
@@ -54,10 +52,7 @@ impl EnumOnlyProto2Bool {
     pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
-#[proto(
-    name = "TestAllTypesProto2.NestedMessage",
-    package = "protobuf_test_messages.proto2"
-)]
+#[proto(name = "TestAllTypesProto2.NestedMessage", package = "protobuf_test_messages.proto2")]
 pub struct TestAllTypesProto2NestedMessage {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
@@ -310,17 +305,11 @@ pub struct TestAllTypesProto2 {
     #[field(70u32, "map_string_bytes", map(string, bytes), singular)]
     pub map_string_bytes: ::protokit::IndexMap<String, Vec<u8>>,
     #[field(71u32, "map_string_nested_message", map(string, nested), singular)]
-    pub map_string_nested_message: ::protokit::IndexMap<
-        String,
-        TestAllTypesProto2NestedMessage,
-    >,
+    pub map_string_nested_message: ::protokit::IndexMap<String, TestAllTypesProto2NestedMessage>,
     #[field(72u32, "map_string_foreign_message", map(string, nested), singular)]
     pub map_string_foreign_message: ::protokit::IndexMap<String, ForeignMessageProto2>,
     #[field(73u32, "map_string_nested_enum", map(string, protoenum), singular)]
-    pub map_string_nested_enum: ::protokit::IndexMap<
-        String,
-        TestAllTypesProto2NestedEnum,
-    >,
+    pub map_string_nested_enum: ::protokit::IndexMap<String, TestAllTypesProto2NestedEnum>,
     #[field(74u32, "map_string_foreign_enum", map(string, protoenum), singular)]
     pub map_string_foreign_enum: ::protokit::IndexMap<String, ForeignEnumProto2>,
     #[field(201u32, "Data", group, optional)]

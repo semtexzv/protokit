@@ -2,8 +2,9 @@
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
-use crate as protokit;
 use protokit::*;
+
+use crate as protokit;
 pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&Timestamp::default());
 }

@@ -79,7 +79,7 @@ pub fn binproto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             panic!("Unions are not supported")
         }
     }
-        .into()
+    .into()
 }
 
 #[proc_macro_derive(Proto, attributes(proto, field, oneof, unknown))]
@@ -94,7 +94,7 @@ pub fn proto(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             panic!("Unions are not supported")
         }
     }
-        .into()
+    .into()
 }
 
 enum Item {

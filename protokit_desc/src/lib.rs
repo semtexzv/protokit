@@ -4,14 +4,14 @@ use core::fmt::Debug;
 use core::str::FromStr;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
+pub use arcstr;
 use arcstr::ArcStr;
 pub(crate) use binformat::{BinProto, BytesLike, Fixed, Sigint, Varint};
 pub(crate) use derive::{protoenum, Proto};
 #[cfg(feature = "descriptors")]
 pub use generated::google::protobuf::descriptor::*;
-use indexmap::IndexMap;
+use indexmap::{indexmap, IndexMap};
 pub(crate) use textformat::{TextField as _, TextProto};
-pub use {arcstr, indexmap};
 pub(crate) use {binformat, textformat};
 
 #[cfg(feature = "descriptors")]
@@ -1155,7 +1155,11 @@ fn resolve_name(
     None
 }
 
-fn try_resolve_within_scopes(names: &IndexMap<ArcStr, LocalDefId>, mut scope: &str, symbol: &str) -> Option<LocalDefId> {
+fn try_resolve_within_scopes(
+    names: &IndexMap<ArcStr, LocalDefId>,
+    mut scope: &str,
+    symbol: &str,
+) -> Option<LocalDefId> {
     // We don't accept global symbols. This is the inner resolution method
     assert!(!symbol.starts_with('.'));
     // Given a scope of First.Second.Third and name of Item
@@ -1320,7 +1324,7 @@ impl FileSetDef {
 
 #[test]
 fn test_resolution_scoping() {
-    let names = maplit::hashmap! {
+    let names = indexmap! {
         ArcStr::from("Book.Chapter.Section.Line") => 1,
         ArcStr::from("Book.Chapter.Section") => 2,
         ArcStr::from("Book.Chapter") => 3,

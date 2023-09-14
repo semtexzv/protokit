@@ -2,8 +2,9 @@
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
-use crate as protokit;
 use protokit::*;
+
+use crate as protokit;
 pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&FileDescriptorSet::default());
     registry.register(&FileDescriptorProto::default());
@@ -79,17 +80,11 @@ pub struct FieldDescriptorProtoLabel(pub u32);
 #[protoenum]
 impl FieldDescriptorProtoLabel {
     #[var(1u32, "LABEL_OPTIONAL")]
-    pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
-        1u32,
-    );
+    pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(1u32);
     #[var(2u32, "LABEL_REQUIRED")]
-    pub const LABEL_REQUIRED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
-        2u32,
-    );
+    pub const LABEL_REQUIRED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(2u32);
     #[var(3u32, "LABEL_REPEATED")]
-    pub const LABEL_REPEATED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
-        3u32,
-    );
+    pub const LABEL_REPEATED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(3u32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileOptionsOptimizeMode(pub u32);
@@ -129,17 +124,11 @@ pub struct MethodOptionsIdempotencyLevel(pub u32);
 #[protoenum]
 impl MethodOptionsIdempotencyLevel {
     #[var(0u32, "IDEMPOTENCY_UNKNOWN")]
-    pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
-        0u32,
-    );
+    pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(0u32);
     #[var(1u32, "NO_SIDE_EFFECTS")]
-    pub const NO_SIDE_EFFECTS: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
-        1u32,
-    );
+    pub const NO_SIDE_EFFECTS: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(1u32);
     #[var(2u32, "IDEMPOTENT")]
-    pub const IDEMPOTENT: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
-        2u32,
-    );
+    pub const IDEMPOTENT: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(2u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(name = "FileDescriptorSet", package = "google.protobuf")]

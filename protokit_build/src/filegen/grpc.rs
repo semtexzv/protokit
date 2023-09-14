@@ -7,8 +7,6 @@ use crate::filegen::{rustify_name, CodeGenerator};
 
 impl CodeGenerator<'_> {
     pub fn generate_server(&self, file: &FileDef, svc: &ServiceDef) -> TokenStream {
-        let root = self.options.import_root.clone();
-
         let svc_qualified_raw_name = format!("{}.{}", file.package, svc.name);
 
         let svc_name = format_ident!("{}", rustify_name(svc.name.as_str()));
@@ -187,8 +185,6 @@ impl CodeGenerator<'_> {
     }
 
     pub fn generate_client(&self, file: &FileDef, svc: &ServiceDef) -> TokenStream {
-        let root = self.options.import_root.clone();
-
         let _svc_qualified_raw_name = format!("{}.{}", file.package, svc.name);
 
         let _svc_name = format_ident!("{}", rustify_name(svc.name.as_str()));

@@ -71,7 +71,7 @@ where
     T: BinProto<'buf>,
 {
     #[inline(always)]
-    fn qualified_name(&self) -> &'static str{
+    fn qualified_name(&self) -> &'static str {
         self.deref().qualified_name()
     }
 
@@ -93,9 +93,10 @@ where
 
 #[cfg(feature = "arena")]
 impl<'buf, 'arena, T> BinProto<'buf> for bumpalo::boxed::Box<'arena, T>
-    where T: BinProto<'buf>
+where
+    T: BinProto<'buf>,
 {
-    fn qualified_name(&self)  -> &'static str {
+    fn qualified_name(&self) -> &'static str {
         self.deref().qualified_name()
     }
 
@@ -770,7 +771,6 @@ pub fn encode<'buf, T: BinProto<'buf>>(b: &T) -> Result<Vec<u8>> {
     b.encode(&mut out);
     Ok(out.buf)
 }
-
 
 pub fn encode_to<'buf, T: BinProto<'buf>>(b: &T, out: Vec<u8>) -> Result<Vec<u8>> {
     let mut out = OutputStream::new(out);

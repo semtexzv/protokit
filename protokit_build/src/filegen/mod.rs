@@ -177,7 +177,7 @@ impl CodeGenerator<'_> {
             BuiltinType::String_ => return self.options.string_type.clone(),
             BuiltinType::Bytes_ => return self.options.bytes_type.clone(),
         })
-            .unwrap()
+        .unwrap()
     }
 
     pub fn type_marker(typ: &DataType) -> TokenStream {
@@ -195,10 +195,10 @@ impl CodeGenerator<'_> {
                     builtin_type_marker(k.0),
                     Self::type_marker(&k.1)
                 ))
-                    .unwrap();
+                .unwrap();
             }
         })
-            .unwrap()
+        .unwrap()
     }
 
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
@@ -284,22 +284,15 @@ impl CodeGenerator<'_> {
         let generics = self.options.generics.struct_def_generics();
         let name = msg.name.as_str();
         let pkg = file.package.as_str();
-        let attrs = quote!{
+        let attrs = quote! {
             #[proto(name = #name, package = #pkg)]
         };
 
-        let extfields = extfields.into_iter()
-            .map(|(f, pkg)| self.field(file, f, Some(pkg)));
+        let extfields = extfields.into_iter().map(|(f, pkg)| self.field(file, f, Some(pkg)));
 
-        let fields = msg
-            .fields
-            .by_number
-            .values()
-            .map(|f| self.field(file, f, None));
+        let fields = msg.fields.by_number.values().map(|f| self.field(file, f, None));
 
-        let fields = fields
-            .chain(extfields)
-            .collect::<Result<Vec<_>>>()?;
+        let fields = fields.chain(extfields).collect::<Result<Vec<_>>>()?;
 
         let oneofs = msg
             .oneofs
@@ -448,7 +441,7 @@ impl CodeGenerator<'_> {
             Frequency::Repeated => "repeated",
             Frequency::Required => "required",
         })
-            .unwrap();
+        .unwrap();
 
         Ok(quote! {
             #[field(#num, #name, #kind, #freq)]
@@ -478,21 +471,21 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
         // }
 
         let their_name = if other.name.contains('/') {
-            &other.name.as_str()[other.name.rfind('/').unwrap() + 1..]
+            &other.name.as_str()[other.name.rfind('/').unwrap() + 1 ..]
         } else {
             other.name.as_str()
         };
         let their_name = if their_name.contains('.') {
-            &their_name[..their_name.rfind('.').unwrap()]
+            &their_name[.. their_name.rfind('.').unwrap()]
         } else {
             their_name
         };
         let mut our_module = file.package.as_str();
         let mut that_module = other.package.as_str();
 
-        while !our_module.is_empty() && !that_module.is_empty() && our_module[..1] == that_module[..1] {
-            our_module = &our_module[1..];
-            that_module = &that_module[1..];
+        while !our_module.is_empty() && !that_module.is_empty() && our_module[.. 1] == that_module[.. 1] {
+            our_module = &our_module[1 ..];
+            that_module = &that_module[1 ..];
         }
         let mut path = String::new();
         path.push_str("super::");
@@ -519,9 +512,9 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
     let output = generator.output;
     let types = generator.types;
     let maproot = if let Some(ref root) = root {
-        quote!{ use #root as protokit; }
+        quote! { use #root as protokit; }
     } else {
-        quote!{}
+        quote! {}
     };
 
     let output = quote! {
@@ -569,7 +562,7 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
 //     f.flush().unwrap();
 // }
 
-pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item=&'s str>) -> Result<()> {
+pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item = &'s str>) -> Result<()> {
     let root = opts.import_root.clone();
     let files: Vec<_> = files
         .map(|v| {
@@ -578,13 +571,11 @@ pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iter
         })
         .collect();
 
-
     let maproot = if let Some(ref root) = root {
-        quote!{ use #root as protokit; }
+        quote! { use #root as protokit; }
     } else {
-        quote!{}
+        quote! {}
     };
-
 
     let output = quote! {
         #maproot

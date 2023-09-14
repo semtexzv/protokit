@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 
-use crate::{emit_raw, unknown_tag, unknown_wire, BinProto, BytesLike, Error, InputStream, OutputStream, SizeStack, MASK_WIRE, _size_varint};
+use crate::{
+    emit_raw, unknown_tag, unknown_wire, BinProto, BytesLike, Error, InputStream, OutputStream, SizeStack,
+    _size_varint, MASK_WIRE,
+};
 
 /// Single protobuf value
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -21,13 +24,14 @@ pub struct Field<B> {
 
 impl<'a, B: BytesLike<'a>> Field<B> {
     fn size(&self, stack: &mut SizeStack) -> usize {
-        _size_varint(self.num) + match &self.val {
-            Value::Varint(v) => _size_varint(*v),
-            Value::Fixed32(_) => 4,
-            Value::Fixed64(_) => 8,
-            Value::Bytes(b) => _size_varint(b.len()) + b.len(),
-            Value::Group(g) => _size_varint(self.num) + g.iter().rev().map(|f| f.size(stack)).sum::<usize>()
-        }
+        _size_varint(self.num)
+            + match &self.val {
+                Value::Varint(v) => _size_varint(*v),
+                Value::Fixed32(_) => 4,
+                Value::Fixed64(_) => 8,
+                Value::Bytes(b) => _size_varint(b.len()) + b.len(),
+                Value::Group(g) => _size_varint(self.num) + g.iter().rev().map(|f| f.size(stack)).sum::<usize>(),
+            }
     }
 }
 
@@ -53,7 +57,11 @@ impl<'buf, B: BytesLike<'buf>> BinProto<'buf> for UnknownFields<B> {
     }
 
     fn size(&self, _stack: &mut SizeStack) -> usize {
-        self.fields.iter().flat_map(|v| v.iter().rev()).map(|v| v.size(_stack)).sum()
+        self.fields
+            .iter()
+            .flat_map(|v| v.iter().rev())
+            .map(|v| v.size(_stack))
+            .sum()
     }
 
     fn encode(&self, stream: &mut OutputStream) {
