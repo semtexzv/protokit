@@ -2,8 +2,8 @@
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
-use ::protokit::*;
-pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {
+use protokit::*;
+pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&TestAllTypesProto2NestedMessage::default());
     registry.register(&TestAllTypesProto2Data::default());
     registry.register(&TestAllTypesProto2MessageSetCorrect::default());

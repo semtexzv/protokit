@@ -2,8 +2,9 @@
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
-use crate::*;
-pub fn register_types(registry: &mut crate::textformat::reflect::Registry) {
+use crate as protokit;
+use protokit::*;
+pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&FileDescriptorSet::default());
     registry.register(&FileDescriptorProto::default());
     registry.register(&DescriptorProto::default());

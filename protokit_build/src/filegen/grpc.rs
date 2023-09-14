@@ -110,7 +110,7 @@ impl CodeGenerator<'_> {
                     let inner = self.0.clone();
                     let fut = async move {
                         let method = #rpc_struct(inner);
-                        let codec = #root::grpc::TonicCodec::default();
+                        let codec = protokit::grpc::TonicCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec);
                         let res = grpc.#rpc_kind_method(method, req).await;
                         Ok(res)
@@ -259,7 +259,8 @@ impl CodeGenerator<'_> {
                         .map_err(|e| {
                             Status::new(Code::Unknown, format!("Service was not ready: {}", e.into()))
                         })?;
-                    let codec = #root::grpc::TonicCodec::default();
+                    let codec = protokit
+                    ::grpc::TonicCodec::default();
                     let path = http::uri::PathAndQuery::from_static(#path);
                     self.inner.#rpc_kind_method(request.#req_convert(), path, codec).await
                 }

@@ -175,7 +175,7 @@ impl Build {
         self
     }
     pub fn root(mut self, s: &str) -> Self {
-        self.options.import_root = TokenStream::from_str(s).unwrap();
+        self.options.import_root = Some(TokenStream::from_str(s).unwrap());
         self
     }
     pub fn string_type(mut self, typ: &str) -> Self {

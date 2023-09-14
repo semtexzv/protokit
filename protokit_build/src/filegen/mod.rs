@@ -44,7 +44,7 @@ impl Generics {
 #[derive(Debug)]
 pub struct Options {
     pub replacement: BTreeMap<String, String>,
-    pub import_root: TokenStream,
+    pub import_root: Option<TokenStream>,
 
     pub string_type: TokenStream,
     pub bytes_type: TokenStream,
@@ -68,7 +68,7 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             replacement: Default::default(),
-            import_root: quote! { ::protokit },
+            import_root: None,
             string_type: quote! { String },
             bytes_type: quote! { Vec<u8> },
             map_type: quote! { ::protokit::IndexMap },
@@ -518,15 +518,22 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
 
     let output = generator.output;
     let types = generator.types;
+    let maproot = if let Some(ref root) = root {
+        quote!{ use #root as protokit; }
+    } else {
+        quote!{}
+    };
 
     let output = quote! {
         #![allow(unused_imports)]
         #![allow(nonstandard_style)]
         #![allow(unreachable_patterns)]
         #![allow(clippy::module_inception)]
-        use #root::*;
 
-        pub fn register_types(registry: &mut #root::textformat::reflect::Registry) {
+        #maproot
+        use protokit::*;
+
+        pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
             #(registry.register(&#types::default());)*
         }
 
@@ -571,11 +578,21 @@ pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iter
         })
         .collect();
 
+
+    let maproot = if let Some(ref root) = root {
+        quote!{ use #root as protokit; }
+    } else {
+        quote!{}
+    };
+
+
     let output = quote! {
+        #maproot
+
         #(
             pub mod #files;
         )*
-        pub fn register_types(registry: &mut #root::textformat::reflect::Registry) {
+        pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
             #(#files::register_types(registry);)*
         }
     };

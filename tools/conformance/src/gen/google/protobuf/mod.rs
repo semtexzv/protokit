@@ -4,7 +4,7 @@ pub mod field_mask;
 pub mod r#struct;
 pub mod timestamp;
 pub mod wrappers;
-pub fn register_types(registry: &mut ::protokit::textformat::reflect::Registry) {
+pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     any::register_types(registry);
     duration::register_types(registry);
     field_mask::register_types(registry);

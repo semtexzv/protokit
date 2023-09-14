@@ -1,10 +1,11 @@
+use crate as protokit;
 pub mod any;
 pub mod compiler;
 pub mod descriptor;
 pub mod empty;
 pub mod field_mask;
 pub mod timestamp;
-pub fn register_types(registry: &mut crate::textformat::reflect::Registry) {
+pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     any::register_types(registry);
     compiler::register_types(registry);
     descriptor::register_types(registry);

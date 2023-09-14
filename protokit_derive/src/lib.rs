@@ -46,16 +46,16 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         impl From<#ident> for u32 {
             fn from(v: #ident) -> Self { v.0 }
         }
-        impl<'buf> textformat::TextField<'buf> for #ident {
-             fn merge_value(&mut self, stream: &mut textformat::InputStream<'buf>) -> textformat::Result<()> {
+        impl<'buf> protokit::textformat::TextField<'buf> for #ident {
+             fn merge_value(&mut self, stream: &mut protokit::textformat::InputStream<'buf>) -> protokit::textformat::Result<()> {
                 match stream.field() {
                     #(#merge_txt)*
-                    name => return textformat::unknown(name),
+                    name => return protokit::textformat::unknown(name),
                 }
 
                 Ok(())
             }
-            fn emit_value(&self, stream: &mut textformat::OutputStream) {
+            fn emit_value(&self, stream: &mut protokit::textformat::OutputStream) {
                 match self.0 {
                     #(#emit_txt)*
                     other => stream.disp(&other),
@@ -134,13 +134,13 @@ fn bin_merge_arm(
             let key_fn = format_ident!("{}", t.deref().0.to_string());
             let val_fn = format_ident!("{}", t.deref().1.to_string());
             quote_spanned! { ident.span() =>
-                #tag => binformat::merge_map(#this, stream, binformat::InputStream::#key_fn, binformat::InputStream::#val_fn),
+                #tag => protokit::binformat::merge_map(#this, stream, protokit::binformat::InputStream::#key_fn, protokit::binformat::InputStream::#val_fn),
             }
         }
         other => {
             let parse_fn = format_ident!("{}", other.to_string());
             quote_spanned! { ident.span() =>
-                #tag => binformat::#merge_fn(#this, stream, binformat::InputStream::#parse_fn),
+                #tag => protokit::binformat::#merge_fn(#this, stream, protokit::binformat::InputStream::#parse_fn),
             }
         }
     }
@@ -168,13 +168,13 @@ fn bin_emit_arm(
             let ktag = 1u32 << 3 | t.deref().0.wire_type() as u32;
             let vtag = 2u32 << 3 | t.deref().1.wire_type() as u32;
             quote_spanned! { ident.span() =>
-                binformat::emit_map(#this, #tag, #ktag, #vtag, stream, binformat::OutputStream::#key_fn, binformat::OutputStream::#val_fn);
+                protokit::binformat::emit_map(#this, #tag, #ktag, #vtag, stream, protokit::binformat::OutputStream::#key_fn, protokit::binformat::OutputStream::#val_fn);
             }
         }
         other => {
             let parse_fn = format_ident!("{}", other.to_string());
             quote_spanned! { ident.span() =>
-                binformat::#emit(#this, #tag, stream, binformat::OutputStream::#parse_fn);
+                protokit::binformat::#emit(#this, #tag, stream, protokit::binformat::OutputStream::#parse_fn);
             }
         }
     }
@@ -197,7 +197,7 @@ fn bin_size_arm(
         let ktag = 1u32 << 3 | kind.deref().0.wire_type() as u32;
         let vtag = 2u32 << 3 | kind.deref().1.wire_type() as u32;
 
-        quote_spanned! { ident.span() => binformat::size_map(#this, #tag, #ktag, #vtag, stack, binformat::#kv, binformat::#vv) }
+        quote_spanned! { ident.span() => protokit::binformat::size_map(#this, #tag, #ktag, #vtag, stack, protokit::binformat::#kv, protokit::binformat::#vv) }
     } else {
         let wrapper = format_ident!("size_{}", freq.to_string());
         let sizer = format_ident!("size_{}", kind.to_string());
@@ -209,7 +209,7 @@ fn bin_size_arm(
         }
         let tag = num << 3 | wt as u32;
 
-        quote_spanned! { ident.span() => binformat::#wrapper(#this, #tag, stack, binformat::#sizer) }
+        quote_spanned! { ident.span() => protokit::binformat::#wrapper(#this, #tag, stack, protokit::binformat::#sizer) }
     }
 }
 
@@ -324,10 +324,10 @@ fn _impl_proto(
 
                     text_names.push(quote! { (#name, #tag) });
                     merge_txt.push(quote_spanned! { ident.span() =>
-                        #tag => textformat::#merge(&mut self.#ident, stream),
+                        #tag => protokit::textformat::#merge(&mut self.#ident, stream),
                     });
                     emit_txt.push(quote_spanned! { ident.span() =>
-                        textformat::#emit(&self.#ident, #name, stream);
+                        protokit::textformat::#emit(&self.#ident, #name, stream);
                     });
                 }
             }
@@ -343,13 +343,13 @@ fn _impl_proto(
 
                 if bin {
                     merge_bin.push(quote_spanned! { ident.span() =>
-                        #(#tags)|* => binformat::merge_oneof(&mut self.#ident, tag, stream),
+                        #(#tags)|* => protokit::binformat::merge_oneof(&mut self.#ident, tag, stream),
                     });
                     emit_bin.push(quote_spanned! { ident.span() =>
-                        binformat::emit_oneof(&self.#ident, stream);
+                        protokit::binformat::emit_oneof(&self.#ident, stream);
                     });
                     size_bin.push(quote_spanned! { ident.span() =>
-                        binformat::size_oneof(&self.#ident, stack)
+                        protokit::binformat::size_oneof(&self.#ident, stack)
                     });
                 }
 
@@ -358,10 +358,10 @@ fn _impl_proto(
                         text_names.push(quote! { (#n, #t) });
                     }
                     merge_txt.push(quote_spanned! { ident.span() =>
-                        #(#nums)|* => textformat::merge_oneof(&mut self.#ident, stream),
+                        #(#nums)|* => protokit::textformat::merge_oneof(&mut self.#ident, stream),
                     });
                     emit_txt.push(quote_spanned! { ident.span() =>
-                        textformat::emit_oneof(&self.#ident, stream);
+                        protokit::textformat::emit_oneof(&self.#ident, stream);
                     });
                 }
             }
@@ -385,6 +385,9 @@ fn _impl_proto(
             let name = format!("{}.{}", pkg.value(), nam.value());
             quote! { #name }
         }
+        (None, Some(name)) => {
+            quote! { #name }
+        }
         _ => {
             let msg = format!("Qualified name not supported for {}", ident.to_string());
             quote! { panic!(#msg) }
@@ -393,21 +396,21 @@ fn _impl_proto(
 
     let bin_impl = if bin {
         Some(quote! {
-             impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
+             impl <#text_impl_params> protokit::binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
                 fn qualified_name(&self) -> &'static str {
                     #qname
                 }
-                fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
+                fn merge_field(&mut self, tag: u32, stream: &mut protokit::binformat::InputStream<#buf_param>) -> protokit::binformat::Result<()> {
                     #![deny(unreachable_patterns)]
                     match tag {
                         #(#merge_bin)*
                         other => stream.skip(other),
                     }
                 }
-                fn size(&self, stack: &mut binformat::SizeStack) -> usize {
+                fn size(&self, stack: &mut protokit::binformat::SizeStack) -> usize {
                     0 #(+ #size_bin)*
                 }
-                fn encode(&self, stream: &mut binformat::OutputStream) {
+                fn encode(&self, stream: &mut protokit::binformat::OutputStream) {
                     #(#emit_bin)*
                 }
             }
@@ -418,15 +421,15 @@ fn _impl_proto(
 
     let text_impl = if text {
         Some(quote! {
-            impl<#text_impl_params> textformat::TextProto< #buf_param > for #ident #type_gen #where_gen {
-                fn merge_field(&mut self, stream: &mut textformat::InputStream< #buf_param >) -> textformat::Result<()> {
+            impl<#text_impl_params> protokit::textformat::TextProto< #buf_param > for #ident #type_gen #where_gen {
+                fn merge_field(&mut self, stream: &mut protokit::textformat::InputStream< #buf_param >) -> protokit::textformat::Result<()> {
                     const FIELDS: &[(&str, u32)] = &[#(#text_names,)*];
-                    match textformat::_find(stream, FIELDS) {
+                    match protokit::textformat::_find(stream, FIELDS) {
                         #(#merge_txt)*
-                        name => textformat::unknown(stream.field()),
+                        name => protokit::textformat::unknown(stream.field()),
                     }
                 }
-                fn encode(&self, stream: &mut textformat::OutputStream) {
+                fn encode(&self, stream: &mut protokit::textformat::OutputStream) {
                     #(#emit_txt)*
                 }
             }
@@ -544,7 +547,7 @@ fn _impl_oneof(
             #name =>  self.#setter().merge_text(stream),
         });
         emit_txt.push(quote_spanned! { ident.span() =>
-            Self::#ident(v) => textformat::#emit(v, #name, stream),
+            Self::#ident(v) => protokit::textformat::#emit(v, #name, stream),
         });
     }
     size_bin.reverse();
@@ -564,24 +567,24 @@ fn _impl_oneof(
 
     let bin_impl = if bin {
         Some(quote! {
-            impl <#text_impl_params> binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
+            impl <#text_impl_params> protokit::binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
                 fn qualified_name(&self) -> &'static str {
                     todo!()
                 }
-                fn merge_field(&mut self, tag: u32, stream: &mut binformat::InputStream<#buf_param>) -> binformat::Result<()> {
+                fn merge_field(&mut self, tag: u32, stream: &mut protokit::binformat::InputStream<#buf_param>) -> protokit::binformat::Result<()> {
                     #![deny(unreachable_patterns)]
                     match tag {
                         #(#merge_bin)*
                         other => stream.skip(other),
                     }
                 }
-                fn size(&self, stack: &mut binformat::SizeStack) -> usize {
+                fn size(&self, stack: &mut protokit::binformat::SizeStack) -> usize {
                     match self {
                         #(#size_bin)*
                         _ => 0,
                     }
                 }
-                fn encode(&self, stream: &mut binformat::OutputStream) {
+                fn encode(&self, stream: &mut protokit::binformat::OutputStream) {
                     match self {
                         #(#emit_bin)*
                         _ => {},
@@ -595,14 +598,14 @@ fn _impl_oneof(
 
     let text_impl = if text {
         Some(quote! {
-            impl<#text_impl_params> textformat::TextProto<#buf_param> for #ident #type_gen #where_gen {
-                fn merge_field(&mut self, stream: &mut textformat::InputStream<#buf_param>) -> textformat::Result<()> {
+            impl<#text_impl_params> protokit::textformat::TextProto<#buf_param> for #ident #type_gen #where_gen {
+                fn merge_field(&mut self, stream: &mut protokit::textformat::InputStream<#buf_param>) -> protokit::textformat::Result<()> {
                     match stream.field() {
                         #(#merge_txt)*
-                        name => textformat::unknown(name),
+                        name => protokit::textformat::unknown(name),
                     }
                 }
-                fn encode(&self, stream: &mut textformat::OutputStream) {
+                fn encode(&self, stream: &mut protokit::textformat::OutputStream) {
                     match self {
                         #(#emit_txt)*
                         _ => {},
