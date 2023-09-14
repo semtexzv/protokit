@@ -20,7 +20,7 @@ pub struct Struct {
     #[field(1u32, "fields", map(string, nested), singular)]
     pub fields: ::protokit::IndexMap<String, Value>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Clone, PartialEq, Proto)]
 pub enum ValueOneOfKind {
@@ -63,12 +63,12 @@ pub struct Value {
     )]
     pub kind: Option<ValueOneOfKind>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct ListValue {
     #[field(1u32, "values", nested, repeated)]
     pub values: Vec<Value>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }

@@ -13,5 +13,5 @@ pub struct Timestamp {
     #[field(2u32, "nanos", varint, singular)]
     pub nanos: i32,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }

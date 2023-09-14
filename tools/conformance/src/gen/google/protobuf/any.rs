@@ -13,5 +13,5 @@ pub struct Any {
     #[field(2u32, "value", bytes, singular)]
     pub value: Vec<u8>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }

@@ -3,7 +3,7 @@ name = "protokit_textformat"
 version = "0.0.2"
 edition = "2021"
 license = "MIT"
-readme = "../README.MD"
+readme = "README.MD"
 repository = "https://github.com/semtexzv/protokit"
 authors = ["<semtexzv@gmail.com>"]
 description = "Usable protocol buffers"
@@ -17,5 +17,5 @@ path = "../protokit_binformat"
 version = "0.0.2"
 
 [dependencies]
-logos = { version = "0.13", default-features = false, features = ["export_derive"] }
+logos = { version = "0.13.0", default-features = false, features = ["export_derive"] }
 thiserror = "1"

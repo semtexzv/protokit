@@ -13,7 +13,6 @@ pub use stream::{InputStream, OutputStream};
 use thiserror::Error;
 pub use value::{Field, UnknownFieldsBorrow, UnknownFieldsOwned, Value};
 
-pub mod fields;
 pub mod stream;
 pub mod value;
 

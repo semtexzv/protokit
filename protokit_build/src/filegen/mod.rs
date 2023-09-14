@@ -72,7 +72,7 @@ impl Default for Options {
             string_type: quote! { String },
             bytes_type: quote! { Vec<u8> },
             map_type: quote! { ::protokit::IndexMap },
-            unknown_type: quote! { binformat::UnknownFieldsOwned },
+            unknown_type: quote! { ::protokit::binformat::UnknownFieldsOwned },
             generics: Generics::default(),
             protoattrs: vec![],
             track_unknowns: false,
@@ -143,7 +143,7 @@ pub struct CodeGenerator<'a> {
 }
 
 impl CodeGenerator<'_> {
-    pub fn resolve_name(&self, id: DefId) -> Result<String> {
+    pub fn resolve_name(&self, id: GlobalDefId) -> Result<String> {
         if let Some((msg, _)) = self.context.message_by_id(id) {
             return Ok(rustify_name(msg.name.as_str()));
         } else if let Some((en, _)) = self.context.enum_by_id(id) {
@@ -177,7 +177,7 @@ impl CodeGenerator<'_> {
             BuiltinType::String_ => return self.options.string_type.clone(),
             BuiltinType::Bytes_ => return self.options.bytes_type.clone(),
         })
-        .unwrap()
+            .unwrap()
     }
 
     pub fn type_marker(typ: &DataType) -> TokenStream {
@@ -195,10 +195,10 @@ impl CodeGenerator<'_> {
                     builtin_type_marker(k.0),
                     Self::type_marker(&k.1)
                 ))
-                .unwrap();
+                    .unwrap();
             }
         })
-        .unwrap()
+            .unwrap()
     }
 
     pub fn base_type(&self, typ: &DataType) -> Result<TokenStream> {
@@ -251,8 +251,9 @@ impl CodeGenerator<'_> {
         for (_, en) in f.enums.iter() {
             self.r#enum(f, en)?;
         }
-        for (name, msg) in f.messages.iter() {
-            self.message(f, name, msg)?
+
+        for (i, (name, msg)) in f.messages.iter().enumerate() {
+            self.message(f, i as u32, name, msg)?
         }
 
         for (_name, svc) in f.services.iter() {
@@ -263,20 +264,37 @@ impl CodeGenerator<'_> {
         Ok(())
     }
 
-    pub fn message(&mut self, file: &FileDef, msg_name: &ArcStr, msg: &MessageDef) -> Result<()> {
+    pub fn message(&mut self, file: &FileDef, msg_idx: u32, msg_name: &ArcStr, msg: &MessageDef) -> Result<()> {
         if msg.is_virtual_map {
             return Ok(());
         }
+
+        let mut extfields = vec![];
+        for (def, ext) in &file.extenders {
+            if (def & LOCAL_ONLY_ID) == msg_idx {
+                for ext in ext {
+                    let (ext, extfile) = self.context.ext_by_id(*ext).unwrap();
+                    extfields.extend(ext.fields.by_number.values().map(|f| (f, extfile.package.as_str())))
+                }
+            }
+        }
+
         let ident = format_ident!("{}", rustify_name(msg_name));
         // let borrow = self.borrow();
         let generics = self.options.generics.struct_def_generics();
         let attrs = self.protoattrs();
 
+        let extfields = extfields.into_iter()
+            .map(|(f, pkg)| self.field(file, f, Some(pkg)));
+
         let fields = msg
             .fields
             .by_number
-            .iter()
-            .map(|(_, f)| self.field(file, f))
+            .values()
+            .map(|f| self.field(file, f, None));
+
+        let fields = fields
+            .chain(extfields)
             .collect::<Result<Vec<_>>>()?;
 
         let oneofs = msg
@@ -295,7 +313,7 @@ impl CodeGenerator<'_> {
             None
         };
 
-        self.types.push(quote!{#ident});
+        self.types.push(quote! {#ident});
         self.output.push(quote! {
             #[derive(Debug, Default, Clone, PartialEq, Proto)]
             #attrs
@@ -399,10 +417,13 @@ impl CodeGenerator<'_> {
         Ok(())
     }
 
-    pub fn field(&self, file: &FileDef, def: &FieldDef) -> Result<TokenStream> {
+    pub fn field(&self, file: &FileDef, def: &FieldDef, extpkg: Option<&str>) -> Result<TokenStream> {
         let typ = self.field_type(def)?;
         let fname = format_ident!("{}", rustify_name(def.name.as_str()));
-        let name = def.name.to_string();
+        let name = match extpkg {
+            Some(pkg) => format!("[{}.{}]", pkg, def.name),
+            None => def.name.to_string(),
+        };
 
         if let DataType::Enum(id) = def.typ {
             if let Some((en, efile)) = self.context.enum_by_id(id) {
@@ -424,7 +445,7 @@ impl CodeGenerator<'_> {
             Frequency::Repeated => "repeated",
             Frequency::Required => "required",
         })
-        .unwrap();
+            .unwrap();
 
         Ok(quote! {
             #[field(#num, #name, #kind, #freq)]
@@ -454,21 +475,21 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
         // }
 
         let their_name = if other.name.contains('/') {
-            &other.name.as_str()[other.name.rfind('/').unwrap() + 1 ..]
+            &other.name.as_str()[other.name.rfind('/').unwrap() + 1..]
         } else {
             other.name.as_str()
         };
         let their_name = if their_name.contains('.') {
-            &their_name[.. their_name.rfind('.').unwrap()]
+            &their_name[..their_name.rfind('.').unwrap()]
         } else {
             their_name
         };
         let mut our_module = file.package.as_str();
         let mut that_module = other.package.as_str();
 
-        while !our_module.is_empty() && !that_module.is_empty() && our_module[.. 1] == that_module[.. 1] {
-            our_module = &our_module[1 ..];
-            that_module = &that_module[1 ..];
+        while !our_module.is_empty() && !that_module.is_empty() && our_module[..1] == that_module[..1] {
+            our_module = &our_module[1..];
+            that_module = &that_module[1..];
         }
         let mut path = String::new();
         path.push_str("super::");
@@ -538,7 +559,7 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
 //     f.flush().unwrap();
 // }
 
-pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item = &'s str>) -> Result<()> {
+pub fn generate_mod<'s>(path: impl AsRef<Path>, opts: &Options, files: impl Iterator<Item=&'s str>) -> Result<()> {
     let root = opts.import_root.clone();
     let files: Vec<_> = files
         .map(|v| {

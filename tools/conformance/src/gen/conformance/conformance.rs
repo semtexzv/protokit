@@ -46,7 +46,7 @@ pub struct FailureSet {
     #[field(1u32, "failure", string, repeated)]
     pub failure: Vec<String>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Clone, PartialEq, Proto)]
 pub enum ConformanceRequestOneOfPayload {
@@ -91,7 +91,7 @@ pub struct ConformanceRequest {
     )]
     pub payload: Option<ConformanceRequestOneOfPayload>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Clone, PartialEq, Proto)]
 pub enum ConformanceResponseOneOfResult {
@@ -146,12 +146,12 @@ pub struct ConformanceResponse {
     )]
     pub result: Option<ConformanceResponseOneOfResult>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct JspbEncodingConfig {
     #[field(1u32, "use_jspb_array_any_format", bool, singular)]
     pub use_jspb_array_any_format: bool,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }

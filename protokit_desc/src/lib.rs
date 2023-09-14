@@ -18,7 +18,7 @@ pub(crate) use {binformat, textformat};
 pub mod generated;
 
 pub type FieldNum = i32;
-pub type DefId = u64;
+pub type GlobalDefId = u64;
 pub type LocalDefId = u32;
 
 pub const LOCAL_DEFID_MSG: LocalDefId = 0x80000000;
@@ -143,11 +143,11 @@ pub enum DataType {
     /// One of the builtin types
     Builtin(BuiltinType),
     /// Message definition - LenPrefixed wire type
-    Message(DefId),
+    Message(GlobalDefId),
     /// A message encoded with group wire format
-    Group(DefId),
+    Group(GlobalDefId),
     /// Enum definition - Varint wire type
-    Enum(DefId),
+    Enum(GlobalDefId),
     /// Map from builtin to any other data type, Serialized as a simple message
     /// where k has a tag of 0, and v tag 1
     Map(Box<(BuiltinType, DataType)>),
@@ -744,10 +744,10 @@ pub struct FileDef {
     pub enums: IndexMap<ArcStr, EnumDef>,
     pub services: IndexMap<ArcStr, ServiceDef>,
 
-    pub names: HashMap<ArcStr, LocalDefId>,
+    pub names: IndexMap<ArcStr, LocalDefId>,
     pub extensions: IndexMap<ArcStr, ExtendDef>,
     // How a given local definiton is extended by foreign global definitions
-    pub extenders: IndexMap<LocalDefId, Vec<DefId>>,
+    pub extenders: IndexMap<LocalDefId, Vec<GlobalDefId>>,
 }
 
 impl FileDef {
@@ -1064,11 +1064,11 @@ impl FileDef {
     }
 }
 
-fn local_to_global(file_id: usize, local_id: LocalDefId) -> DefId {
+fn local_to_global(file_id: usize, local_id: LocalDefId) -> GlobalDefId {
     (file_id as u64) << 32 | (local_id as u64)
 }
 
-fn global_to_type(def_id: DefId, hint: &UnresolvedHint) -> DataType {
+fn global_to_type(def_id: GlobalDefId, hint: &UnresolvedHint) -> DataType {
     if def_id & LOCAL_DEFID_MSG as u64 != 0 {
         return if let UnresolvedHint::Group = hint {
             DataType::Group(def_id)
@@ -1084,7 +1084,7 @@ fn global_to_type(def_id: DefId, hint: &UnresolvedHint) -> DataType {
 
 fn resolve_type(
     to_resolve: &mut DataType,
-    local_names: &HashMap<ArcStr, LocalDefId>,
+    local_names: &IndexMap<ArcStr, LocalDefId>,
     local_imports: &[ImportDef],
     file_id: usize,
     local_package: &str,
@@ -1130,13 +1130,13 @@ fn resolve_type(
 
 fn resolve_name(
     files: &IndexMap<ArcStr, FileDef>,
-    names: &HashMap<ArcStr, LocalDefId>,
+    names: &IndexMap<ArcStr, LocalDefId>,
     imports: &[ImportDef],
     file_idx: usize,
     package: &str,
     scope: &str,
     sym: &str,
-) -> Option<DefId> {
+) -> Option<GlobalDefId> {
     let resolved = try_resolve_symbol(names, package, scope, sym);
     if let Some(local_id) = resolved {
         return Some(local_to_global(file_idx, local_id));
@@ -1155,7 +1155,7 @@ fn resolve_name(
     None
 }
 
-fn try_resolve_within_scopes(names: &HashMap<ArcStr, LocalDefId>, mut scope: &str, symbol: &str) -> Option<LocalDefId> {
+fn try_resolve_within_scopes(names: &IndexMap<ArcStr, LocalDefId>, mut scope: &str, symbol: &str) -> Option<LocalDefId> {
     // We don't accept global symbols. This is the inner resolution method
     assert!(!symbol.starts_with('.'));
     // Given a scope of First.Second.Third and name of Item
@@ -1173,7 +1173,7 @@ fn try_resolve_within_scopes(names: &HashMap<ArcStr, LocalDefId>, mut scope: &st
 }
 
 fn try_resolve_symbol(
-    names: &HashMap<ArcStr, LocalDefId>,
+    names: &IndexMap<ArcStr, LocalDefId>,
     mut file_package: &str,
     scope: &str,
     symbol: &str,
@@ -1242,7 +1242,23 @@ impl FileSetDef {
 }
 
 impl FileSetDef {
-    pub fn message_by_id(&self, def: DefId) -> Option<(&MessageDef, &FileDef)> {
+    pub fn ext_by_id(&self, def: GlobalDefId) -> Option<(&ExtendDef, &FileDef)> {
+        if def & LOCAL_DEFID_EXT as u64 == 0 {
+            return None;
+        }
+
+        let file = self.files.values().nth((def as usize) >> 32);
+
+        // eprintln!("MSG BY ID {} {} {:?},", (def as usize) >> 32, (def as u32 & util) as usize, file);
+        file.and_then(|d| {
+            d.extensions
+                .values()
+                .nth((def as u32 & LOCAL_ONLY_ID) as usize)
+                .map(|v| (v, d))
+        })
+    }
+
+    pub fn message_by_id(&self, def: GlobalDefId) -> Option<(&MessageDef, &FileDef)> {
         if def & LOCAL_DEFID_MSG as u64 == 0 {
             return None;
         }
@@ -1258,7 +1274,7 @@ impl FileSetDef {
         })
     }
 
-    pub fn enum_by_id(&self, def: DefId) -> Option<(&EnumDef, &FileDef)> {
+    pub fn enum_by_id(&self, def: GlobalDefId) -> Option<(&EnumDef, &FileDef)> {
         if def & LOCAL_DEFID_ENUM as u64 == 0 {
             return None;
         }

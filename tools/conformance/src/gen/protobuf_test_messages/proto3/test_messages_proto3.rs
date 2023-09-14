@@ -81,7 +81,7 @@ pub struct TestAllTypesProto3NestedMessage {
     #[field(2u32, "corecursive", nested, optional)]
     pub corecursive: Option<Box<TestAllTypesProto3>>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Clone, PartialEq, Proto)]
 pub enum TestAllTypesProto3OneOfOneofField {
@@ -428,22 +428,22 @@ pub struct TestAllTypesProto3 {
     )]
     pub oneof_field: Option<TestAllTypesProto3OneOfOneofField>,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct ForeignMessage {
     #[field(1u32, "c", varint, singular)]
     pub c: i32,
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct NullHypothesisProto3 {
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 pub struct EnumOnlyProto3 {
     #[unknown]
-    pub unknown: binformat::UnknownFieldsOwned,
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
