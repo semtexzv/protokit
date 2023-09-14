@@ -1,4 +1,5 @@
 use std::io::{stdin, BufRead};
+use protokit::Proto;
 
 use protokit::textformat::reflect::Registry;
 

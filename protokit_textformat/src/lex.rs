@@ -3,6 +3,7 @@ use logos::Logos;
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Logos)]
 #[logos(subpattern idt = r"[_a-zA-Z][_0-9a-zA-Z]*")]
+#[logos(subpattern extidt = r"(?&idt)(\.(?&idt))*")]
 #[logos(subpattern dec = r"[1-9][0-9]*")]
 #[logos(subpattern oct = r"0[0-9]*")]
 #[logos(subpattern dig = r"[0-9]+")]
@@ -16,7 +17,7 @@ pub enum Token {
     #[regex("(?&idt)")]
     Ident,
 
-    #[regex(r"\[(?&idt)(\.(?&idt))*\]")]
+    #[regex(r"\[(?&extidt)(/(?&extidt))?\]")]
     ExtIdent,
 
     #[regex("(?&dec)", priority = 3)]
@@ -61,4 +62,18 @@ pub enum Token {
 
     StartOfFile,
     EndOfFile,
+}
+
+#[cfg(test)]
+mod test {
+    use logos::Lexer;
+    use crate::lex::Token;
+
+    #[test]
+    fn test_lex_any() {
+        let txt = "[a/a.a] { }";
+        let mut lex = Lexer::<Token>::new(txt);
+        assert_eq!(lex.next(), Some(Ok(Token::ExtIdent)));
+        assert_eq!(lex.slice(), "[a/a.a]");
+    }
 }

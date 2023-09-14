@@ -8,7 +8,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(protobuf_VERBOSE ON CACHE BOOL "enable verbose mode" FORCE)
 set(protobuf_BUILD_CONFORMANCE ON CACHE BOOL "enable conformance" FORCE)
 set(protobuf_BUILD_LIBPROTOC ON CACHE BOOL "enable libprotoc" FORCE)
-SET(protobuf_SOURCE_DIR "vendor/protobuf" CACHE BOOL "vendor/protobuf" FORCE)
+set(protobuf_BUILD_PROTOC_BINARIES ON CACHE BOOL "Enable protoc" FORCE)
+set(protobuf_SOURCE_DIR "vendor/protobuf" CACHE BOOL "vendor/protobuf" FORCE)
+
 
 add_subdirectory(vendor/protobuf)
 
