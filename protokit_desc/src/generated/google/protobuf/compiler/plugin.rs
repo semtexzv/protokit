@@ -3,7 +3,12 @@
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
 use crate::*;
-pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
+pub fn register_types(registry: &mut crate::textformat::reflect::Registry) {
+    registry.register(&Version::default());
+    registry.register(&CodeGeneratorRequest::default());
+    registry.register(&CodeGeneratorResponse::default());
+    registry.register(&CodeGeneratorResponseFile::default());
+}
 use super::super::descriptor::*;
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CodeGeneratorResponseFeature(pub u32);

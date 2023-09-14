@@ -3,7 +3,35 @@
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
 use crate::*;
-pub fn register_types(_registry: &mut crate::textformat::reflect::Registry) {}
+pub fn register_types(registry: &mut crate::textformat::reflect::Registry) {
+    registry.register(&FileDescriptorSet::default());
+    registry.register(&FileDescriptorProto::default());
+    registry.register(&DescriptorProto::default());
+    registry.register(&DescriptorProtoExtensionRange::default());
+    registry.register(&DescriptorProtoReservedRange::default());
+    registry.register(&ExtensionRangeOptions::default());
+    registry.register(&FieldDescriptorProto::default());
+    registry.register(&OneofDescriptorProto::default());
+    registry.register(&EnumDescriptorProto::default());
+    registry.register(&EnumDescriptorProtoEnumReservedRange::default());
+    registry.register(&EnumValueDescriptorProto::default());
+    registry.register(&ServiceDescriptorProto::default());
+    registry.register(&MethodDescriptorProto::default());
+    registry.register(&FileOptions::default());
+    registry.register(&MessageOptions::default());
+    registry.register(&FieldOptions::default());
+    registry.register(&OneofOptions::default());
+    registry.register(&EnumOptions::default());
+    registry.register(&EnumValueOptions::default());
+    registry.register(&ServiceOptions::default());
+    registry.register(&MethodOptions::default());
+    registry.register(&UninterpretedOption::default());
+    registry.register(&UninterpretedOptionNamePart::default());
+    registry.register(&SourceCodeInfo::default());
+    registry.register(&SourceCodeInfoLocation::default());
+    registry.register(&GeneratedCodeInfo::default());
+    registry.register(&GeneratedCodeInfoAnnotation::default());
+}
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FieldDescriptorProtoType(pub u32);
 #[protoenum]
