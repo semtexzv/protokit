@@ -3,7 +3,7 @@ name = "gendesc"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-readme = "README.MD"
+readme = "../README.MD"
 repository = "https://github.com/semtexzv/protokit"
 authors = ["<semtexzv@gmail.com>"]
 
