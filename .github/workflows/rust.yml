@@ -21,7 +21,7 @@ jobs:
       run: ./scripts/vendor.sh
 
     - name: Prepare
-      run: apt-get update && apt-get install protobuf-compiler
+      run: sudo apt-get update && sudo apt-get install protobuf-compiler
 
     - name: Build
       run: RUST_BACKTRACE=full cargo build
