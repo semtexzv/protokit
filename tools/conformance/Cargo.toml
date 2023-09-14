@@ -1,6 +1,6 @@
 [package]
 name = "conformance"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 license = "MIT"
 readme = "README.MD"
@@ -19,5 +19,5 @@ byteorder = "1.4.3"
 protokit = { path = "../../protokit", features = ["textformat"] }
 
 [build-dependencies]
-protokit_build = { path = "../../protokit_build", version = "0.0.2" }
+protokit_build = { path = "../../protokit_build", version = "0.0.3" }
 

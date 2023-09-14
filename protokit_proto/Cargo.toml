@@ -1,6 +1,6 @@
 [package]
 name = "protokit_proto"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 license = "MIT"
 readme = "README.MD"
@@ -14,11 +14,11 @@ descriptors = ["protokit_desc/descriptors"]
 
 [dependencies.protokit_textformat]
 path = "../protokit_textformat"
-version = "0.0.2"
+version = "0.0.3"
 
 [dependencies.protokit_desc]
 path = "../protokit_desc"
-version = "0.0.2"
+version = "0.0.3"
 
 [dependencies]
 nom = "7.1.1"
