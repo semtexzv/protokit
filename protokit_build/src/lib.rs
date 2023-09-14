@@ -63,7 +63,9 @@ impl ProtocContext {
     pub fn finish(self) -> Result<FileSetDef> {
         let mut cmd = std::process::Command::new("protoc");
 
+        cmd.arg("--experimental_allow_proto3_optional");
         cmd.arg("--include_imports");
+        
         for i in self.includes {
             cmd.arg(format!("-I{}", i.display()));
         }
@@ -118,9 +120,9 @@ fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: P
 
     // Generate a valid module file in every subdirectory
     for path in &dirs {
-        for i in 0 .. path.len() {
+        for i in 0..path.len() {
             subdirs
-                .entry(path[0 .. i].join("/"))
+                .entry(path[0..i].join("/"))
                 .or_insert_with(BTreeSet::new)
                 .insert(path[i]);
         }
