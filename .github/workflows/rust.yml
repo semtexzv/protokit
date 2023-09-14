@@ -10,6 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -18,9 +19,12 @@ jobs:
         submodules: recursive
     - name: Vendor
       run: ./scripts/vendor.sh
+
     - name: Build
-      run: cargo build
+      run: RUST_BACKTRACE=full cargo build
+
     - name: Run tests
-      run: cargo test
+      run: RUST_BACKTRACE=full cargo test
+
     - name: Verify conformance
       run: ./scripts/conformance.sh
