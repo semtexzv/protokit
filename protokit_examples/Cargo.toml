@@ -13,7 +13,7 @@ publish = false
 
 
 [dependencies]
-protokit = { path = "../protokit", version = "0.1.2", features = ["textformat"] }
+protokit = { path = "../protokit", version = "0.1.2", features = ["textformat", "grpc"] }
 
 [build-dependencies]
 protokit_build = { path = "../protokit_build" }
