@@ -67,6 +67,7 @@ pub enum Token {
 #[cfg(test)]
 mod test {
     use logos::Lexer;
+
     use crate::lex::Token;
 
     #[test]

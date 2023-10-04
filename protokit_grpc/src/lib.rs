@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 pub use async_trait::async_trait;
-use binformat::{Error, OutputStream};
+use binformat::{Error, OutputStream, SizeStack};
 use bytes::Buf;
 pub use futures::future::LocalBoxFuture;
 pub use futures::stream::Stream;
@@ -52,11 +52,7 @@ impl<'buf, T: binformat::BinProto<'buf>> Encoder for TonicEncoder<T> {
 
     fn encode(&mut self, item: Self::Item, buf: &mut EncodeBuf<'_>) -> Result<(), Self::Error> {
         use bytes::BufMut;
-
-        let mut tmp = OutputStream::default();
-        item.encode(&mut tmp); //.expect("Message only errors if not enough space");
-        buf.put_slice(&tmp.finish());
-
+        buf.put_slice(&binformat::encode(&item).unwrap());
         Ok(())
     }
 }

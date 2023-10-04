@@ -1,6 +1,6 @@
 [package]
 name = "protokit_binformat"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 license = "MIT"
 readme = "../README.MD"
@@ -15,7 +15,7 @@ arena = ["bumpalo", "bumpalo/boxed", "bumpalo/collections"]
 [dependencies.derive]
 package = "protokit_derive"
 path = "../protokit_derive"
-version = "0.1.3"
+version = "0.1.4"
 
 [dependencies]
 indexmap = "1"
