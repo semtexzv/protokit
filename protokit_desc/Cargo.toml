@@ -1,6 +1,6 @@
 [package]
 name = "protokit_desc"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MIT"
 readme = "../README.MD"
@@ -15,17 +15,17 @@ descriptors = []
 [dependencies.binformat]
 package = "protokit_binformat"
 path = "../protokit_binformat"
-version = "0.1.2"
+version = "0.1.3"
 
 [dependencies.textformat]
 package = "protokit_textformat"
 path = "../protokit_textformat"
-version = "0.1.2"
+version = "0.1.3"
 
 [dependencies.derive]
 package = "protokit_derive"
 path = "../protokit_derive"
-version = "0.1.2"
+version = "0.1.3"
 
 [dependencies]
 arcstr = "1.1.4"

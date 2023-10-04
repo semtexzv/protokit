@@ -1,6 +1,6 @@
 [package]
 name = "protokit_examples"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MIT"
 readme = "../README.MD"
@@ -13,7 +13,7 @@ publish = false
 
 
 [dependencies]
-protokit = { path = "../protokit", version = "0.1.2", features = ["textformat", "grpc"] }
+protokit = { path = "../protokit", version = "0.1.3", features = ["textformat", "grpc"] }
 
 [build-dependencies]
 protokit_build = { path = "../protokit_build" }
