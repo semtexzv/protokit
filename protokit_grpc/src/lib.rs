@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 pub use async_trait::async_trait;
-use binformat::{Error, OutputStream, SizeStack};
+use binformat::Error;
 use bytes::Buf;
 pub use futures::future::LocalBoxFuture;
 pub use futures::stream::Stream;

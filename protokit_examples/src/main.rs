@@ -1,7 +1,6 @@
 use std::io::{stdin, BufRead};
 
 use protokit::textformat::reflect::Registry;
-use protokit::Proto;
 
 pub mod gen {
     include!(concat!(env!("OUT_DIR"), "/mod.rs"));

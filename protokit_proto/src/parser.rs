@@ -9,7 +9,6 @@ use nom::sequence::{delimited, pair, preceded, tuple};
 use nom::Slice;
 use nom_supreme::error::GenericErrorTree;
 use nom_supreme::tag::TagError;
-use protokit_desc::{BuiltinType, FieldNum, Frequency, ImportType};
 
 use crate::ast::*;
 use crate::deps::*;

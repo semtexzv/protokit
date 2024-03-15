@@ -731,7 +731,7 @@ mod BookSvc_server {
             }
         }
     }
-    impl<S: BookSvc> tonic::transport::NamedService for BookSvcServer<S> {
+    impl<S: BookSvc> tonic::server::NamedService for BookSvcServer<S> {
         const NAME: &'static str = "com.book.test1.BookSvc";
     }
 }

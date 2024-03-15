@@ -176,7 +176,7 @@ impl CodeGenerator<'_> {
                         }
                     }
                 }
-                impl<S: #svc_name> tonic::transport::NamedService for #server_name<S> {
+                impl<S: #svc_name> tonic::server::NamedService for #server_name<S> {
                     const NAME: &'static str = #svc_qualified_raw_name;
                 }
             }

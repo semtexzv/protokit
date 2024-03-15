@@ -1,7 +1,10 @@
 use core::str::FromStr;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::usize;
 
 pub use anyhow::Result;
+use petgraph::{Direction, Graph};
+use petgraph::graph::{NodeIndex, DefaultIx};
 use quote::__private::TokenStream;
 use quote::quote;
 
@@ -40,6 +43,7 @@ impl ParserContext {
         Ok(())
     }
     pub fn finish(self) -> Result<FileSetDef> {
+
         Ok(self.ctx.def)
     }
 }
@@ -97,8 +101,81 @@ pub struct Build {
     pub out_dir: Option<PathBuf>,
 }
 
-fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: PathBuf) -> Result<()> {
+fn generate(opts: &mut filegen::Options, set: &protokit_desc::FileSetDef, out_dir: PathBuf) -> Result<()> {
     create_dir_all(&out_dir).unwrap();
+
+    let mut graph = Graph::new();
+    let mut fields = HashMap::<NodeIndex, usize>::new();
+    for (fidx, file) in set.files.values().enumerate() {
+        for (midx, msg) in file.messages.values().enumerate() {
+            eprintln!("msg: {:?}", msg.name);
+            let src = local_to_global(fidx, LOCAL_DEFID_MSG | (midx as u32));
+            // let src = resolve_name(set, src).unwrap();
+            let src = graph.add_node(src);
+            for field in msg.fields.by_number.values() {
+                match &field.typ {
+                    DataType::Unresolved(_, _) => {
+                        panic!("Should be resolved");
+                    }
+                    DataType::Message(msg) => {
+                        // let msg = resolve_name(set, *msg).unwrap();
+                        let dst = graph.add_node(*msg);
+                        graph.add_edge(src, dst, ());
+                        *fields.entry(src).or_default() += 1;
+                    }
+                    DataType::Group(msg) => {
+                        // let msg = resolve_name(set, *msg).unwrap();
+                        let dst = graph.add_node(*msg);
+                        graph.add_edge(src, dst, ());
+                        *fields.entry(src).or_default() += 1;
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    let mut cycles: Vec<HashSet<NodeIndex<DefaultIx>>> = petgraph::algo::tarjan_scc(&graph)
+        .into_iter()
+        .map(|v| HashSet::from_iter(v.into_iter())).collect();
+
+    let mut to_remove = HashSet::new();
+
+    loop {
+        let mut counts: HashMap<NodeIndex, usize> = HashMap::new();
+        for cycle in &cycles {
+            for node in cycle.iter() {
+                *counts.entry(*node).or_default() += 1;
+            }
+        }
+        if let Some(max) = counts
+            .iter()
+            .filter_map(|a| fields.get(a.0).map(|fcount| (a.0, a.1, fcount)))
+            .max_by(|a, b| {
+                let ac = graph.edges_directed(*a.0, Direction::Incoming).count();
+                let bc = graph.edges_directed(*b.0, Direction::Incoming).count();
+                (ac * 100 + a.1 * 10 + a.2).cmp(&(bc * 100 + b.1 * 10 + b.2))
+            })
+        {
+            to_remove.insert(*max.0);
+            cycles.retain_mut(|cycle| {
+                !cycle.contains(&max.0)
+            })
+        } else {
+            break;
+        }
+    }
+
+    let nodes = to_remove
+        .into_iter()
+        .map(|item| {
+            graph.node_weight(item).cloned().unwrap()
+        }).collect::<HashSet<_>>();
+
+    // panic!("TO REMOVE: {:?}", nodes);
+
+    opts.force_box = nodes;
+
 
     // TODO: Use package name + file name
     let mut generated_names = vec![];
@@ -120,9 +197,9 @@ fn generate(opts: &filegen::Options, set: &protokit_desc::FileSetDef, out_dir: P
 
     // Generate a valid module file in every subdirectory
     for path in &dirs {
-        for i in 0 .. path.len() {
+        for i in 0..path.len() {
             subdirs
-                .entry(path[0 .. i].join("/"))
+                .entry(path[0..i].join("/"))
                 .or_insert_with(BTreeSet::new)
                 .insert(path[i]);
         }
@@ -199,10 +276,10 @@ impl Build {
         Ok(self)
     }
 
-    pub fn generate(self) -> anyhow::Result<()> {
+    pub fn generate(mut self) -> anyhow::Result<()> {
         let out_dir = self
             .out_dir
             .unwrap_or_else(|| PathBuf::from(std::env::var("OUT_DIR").unwrap()));
-        generate(&self.options, &self.ctx.finish()?, out_dir)
+        generate(&mut self.options, &self.ctx.finish()?, out_dir)
     }
 }

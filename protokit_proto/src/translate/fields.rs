@@ -1,4 +1,4 @@
-use protokit_desc::{BuiltinType, DataType, EnumFields, FieldDef, MessageFields, UnresolvedHint, VariantDef};
+use protokit_desc::{DataType, EnumFields, FieldDef, MessageFields, UnresolvedHint, VariantDef};
 
 use crate::ast::*;
 // use crate::translate::opts::opts;

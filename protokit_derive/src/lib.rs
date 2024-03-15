@@ -284,6 +284,9 @@ fn _impl_proto(
                     emit_bin.push(quote_spanned! { ident.span() =>
                         self.#ident.encode(stream);
                     });
+                    size_bin.push(quote_spanned! { ident.span() =>
+                        self.#ident.size(stack)
+                    });
                 }
             }
             Item::Field {

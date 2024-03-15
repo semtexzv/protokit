@@ -1,6 +1,6 @@
 use core::ops::Deref;
 use core::str::FromStr;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
@@ -54,6 +54,8 @@ pub struct Options {
     pub generics: Generics,
     pub protoattrs: Vec<TokenStream>,
 
+    pub force_box: HashSet<GlobalDefId>,
+
     pub track_unknowns: bool,
 }
 
@@ -75,6 +77,7 @@ impl Default for Options {
             unknown_type: quote! { ::protokit::binformat::UnknownFieldsOwned },
             generics: Generics::default(),
             protoattrs: vec![],
+            force_box: Default::default(),
             track_unknowns: false,
         }
     }
@@ -142,22 +145,26 @@ pub struct CodeGenerator<'a> {
     output: Vec<TokenStream>,
 }
 
-impl CodeGenerator<'_> {
-    pub fn resolve_name(&self, id: GlobalDefId) -> Result<String> {
-        if let Some((msg, _)) = self.context.message_by_id(id) {
-            return Ok(rustify_name(msg.name.as_str()));
-        } else if let Some((en, _)) = self.context.enum_by_id(id) {
-            return Ok(rustify_name(en.name.as_str()));
-        } else {
-            bail!(
+pub fn resolve_name(set: &FileSetDef, id: GlobalDefId) -> Result<String> {
+    if let Some((msg, _)) = set.message_by_id(id) {
+        return Ok(rustify_name(msg.name.as_str()));
+    } else if let Some((en, _)) = set.enum_by_id(id) {
+        return Ok(rustify_name(en.name.as_str()));
+    } else {
+        bail!(
                 "Could not resolve {} {} {:b} files:{}: {:#?}",
                 id,
                 id >> 32,
                 id & 0xFFFFFFFF,
-                self.context.files.len(),
-                self.context.files.keys()
+                set.files.len(),
+                set.files.keys()
             );
-        }
+    }
+}
+
+impl CodeGenerator<'_> {
+    pub fn resolve_name(&self, id: GlobalDefId) -> Result<String> {
+        resolve_name(self.context, id)
     }
     pub fn builtin_rusttype(&self, typ: BuiltinType) -> TokenStream {
         TokenStream::from_str(match typ {
@@ -228,13 +235,26 @@ impl CodeGenerator<'_> {
         let base = self.base_type(&field.typ)?;
         let is_msg = matches!(field.typ, DataType::Message(..) | DataType::Group(_));
 
-        match (field.frequency, is_msg) {
-            (Frequency::Singular | Frequency::Required, false) => Ok(base),
-            (Frequency::Required, true) => Ok(quote!(Box<#base>)),
-            (Frequency::Singular, true) => Ok(quote!(Option<Box<#base>>)),
-            (Frequency::Optional, false) => Ok(quote!(Option<#base>)),
-            (Frequency::Optional, true) => Ok(quote!(Option<Box<#base>>)),
-            (Frequency::Repeated, _) => Ok(quote!(Vec<#base>)),
+        let force_box = match field.typ {
+            DataType::Message(m) | DataType::Group(m) => self.options.force_box.contains(&m),
+            _ => false,
+        };
+
+        match (field.frequency, is_msg, force_box) {
+            (Frequency::Singular | Frequency::Required, false, _) => Ok(base),
+
+            (Frequency::Required, true, true) => Ok(quote!(Box<#base>)),
+            (Frequency::Singular, true, true) => Ok(quote!(Option<Box<#base>>)),
+
+            (Frequency::Required, true, false) => Ok(quote!(#base)),
+            (Frequency::Singular, true, false) => Ok(quote!(Option<#base>)),
+
+            (Frequency::Optional, false, _) => Ok(quote!(Option<#base>)),
+
+            (Frequency::Optional, true, true) => Ok(quote!(Option<Box<#base>>)),
+            (Frequency::Optional, true, false) => Ok(quote!(Option<#base>)),
+
+            (Frequency::Repeated, _, _) => Ok(quote!(Vec<#base>)),
         }
     }
 

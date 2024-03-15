@@ -152,7 +152,7 @@ pub struct TestAllTypesProto3 {
     #[field(18u32, "optional_nested_message", nested, optional)]
     pub optional_nested_message: Option<Box<TestAllTypesProto3NestedMessage>>,
     #[field(19u32, "optional_foreign_message", nested, optional)]
-    pub optional_foreign_message: Option<Box<ForeignMessage>>,
+    pub optional_foreign_message: Option<ForeignMessage>,
     #[field(21u32, "optional_nested_enum", protoenum, singular)]
     pub optional_nested_enum: TestAllTypesProto3NestedEnum,
     #[field(22u32, "optional_foreign_enum", protoenum, singular)]
@@ -308,23 +308,23 @@ pub struct TestAllTypesProto3 {
     #[field(74u32, "map_string_foreign_enum", map(string, protoenum), singular)]
     pub map_string_foreign_enum: ::protokit::IndexMap<String, ForeignEnum>,
     #[field(201u32, "optional_bool_wrapper", nested, optional)]
-    pub optional_bool_wrapper: Option<Box<BoolValue>>,
+    pub optional_bool_wrapper: Option<BoolValue>,
     #[field(202u32, "optional_int32_wrapper", nested, optional)]
-    pub optional_int32_wrapper: Option<Box<Int32Value>>,
+    pub optional_int32_wrapper: Option<Int32Value>,
     #[field(203u32, "optional_int64_wrapper", nested, optional)]
-    pub optional_int64_wrapper: Option<Box<Int64Value>>,
+    pub optional_int64_wrapper: Option<Int64Value>,
     #[field(204u32, "optional_uint32_wrapper", nested, optional)]
-    pub optional_uint32_wrapper: Option<Box<UInt32Value>>,
+    pub optional_uint32_wrapper: Option<UInt32Value>,
     #[field(205u32, "optional_uint64_wrapper", nested, optional)]
-    pub optional_uint64_wrapper: Option<Box<UInt64Value>>,
+    pub optional_uint64_wrapper: Option<UInt64Value>,
     #[field(206u32, "optional_float_wrapper", nested, optional)]
-    pub optional_float_wrapper: Option<Box<FloatValue>>,
+    pub optional_float_wrapper: Option<FloatValue>,
     #[field(207u32, "optional_double_wrapper", nested, optional)]
-    pub optional_double_wrapper: Option<Box<DoubleValue>>,
+    pub optional_double_wrapper: Option<DoubleValue>,
     #[field(208u32, "optional_string_wrapper", nested, optional)]
-    pub optional_string_wrapper: Option<Box<StringValue>>,
+    pub optional_string_wrapper: Option<StringValue>,
     #[field(209u32, "optional_bytes_wrapper", nested, optional)]
-    pub optional_bytes_wrapper: Option<Box<BytesValue>>,
+    pub optional_bytes_wrapper: Option<BytesValue>,
     #[field(211u32, "repeated_bool_wrapper", nested, repeated)]
     pub repeated_bool_wrapper: Vec<BoolValue>,
     #[field(212u32, "repeated_int32_wrapper", nested, repeated)]
@@ -344,17 +344,17 @@ pub struct TestAllTypesProto3 {
     #[field(219u32, "repeated_bytes_wrapper", nested, repeated)]
     pub repeated_bytes_wrapper: Vec<BytesValue>,
     #[field(301u32, "optional_duration", nested, optional)]
-    pub optional_duration: Option<Box<Duration>>,
+    pub optional_duration: Option<Duration>,
     #[field(302u32, "optional_timestamp", nested, optional)]
-    pub optional_timestamp: Option<Box<Timestamp>>,
+    pub optional_timestamp: Option<Timestamp>,
     #[field(303u32, "optional_field_mask", nested, optional)]
-    pub optional_field_mask: Option<Box<FieldMask>>,
+    pub optional_field_mask: Option<FieldMask>,
     #[field(304u32, "optional_struct", nested, optional)]
-    pub optional_struct: Option<Box<Struct>>,
+    pub optional_struct: Option<Struct>,
     #[field(305u32, "optional_any", nested, optional)]
-    pub optional_any: Option<Box<Any>>,
+    pub optional_any: Option<Any>,
     #[field(306u32, "optional_value", nested, optional)]
-    pub optional_value: Option<Box<Value>>,
+    pub optional_value: Option<Value>,
     #[field(307u32, "optional_null_value", protoenum, singular)]
     pub optional_null_value: NullValue,
     #[field(311u32, "repeated_duration", nested, repeated)]

@@ -9,24 +9,7 @@ use crate::{BinProto, BytesLike, Error, Fixed, Result, Sigint, SizeStack, Varint
 const MSB: u8 = 0b1000_0000;
 const DROP_MSB: u8 = 0b0111_1111;
 
-pub trait Output {
-    // Emit a tag
-    fn tag(&mut self, t: u32);
-
-    /// Tag in these methods is only informative, it has already been emitted previously
-    fn varint<V: Varint>(&mut self, num: u32, v: &V);
-    fn sigint<V: Sigint>(&mut self, num: u32, v: &V);
-    fn fixed<E: Fixed>(&mut self, num: u32, v: &E);
-
-    fn bytes<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B);
-    fn string<'buf, B: BytesLike<'buf>>(&mut self, num: u32, b: &B) {
-        self.bytes(num, b)
-    }
-
-    fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P);
-    fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P);
-}
-
+#[derive(Debug)]
 pub struct InputStream<'buf> {
     pub(crate) buf: &'buf [u8],
     pub(crate) pos: usize,
@@ -203,12 +186,12 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn bytes<'x, T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
-        field.set(self._bytes()?)?;
+        field.set_slice(self._bytes()?)?;
         Ok(())
     }
 
     pub fn string<T: BytesLike<'buf>>(&mut self, field: &mut T) -> Result<()> {
-        field.set(self._bytes()?)?;
+        field.set_slice(self._bytes()?)?;
         Ok(())
     }
 
@@ -251,28 +234,26 @@ impl<'buf> InputStream<'buf> {
 }
 
 #[derive(Default)]
-pub struct OutputStream {
+pub struct OutputStream<'o> {
     pub(crate) stack: SizeStack,
-    pub(crate) buf: Vec<u8>,
+    pub(crate) buf: &'o mut [u8],
+    pub(crate) pos: usize
 }
 
-impl OutputStream {
-    pub fn new(vec: Vec<u8>) -> Self {
+impl<'o> OutputStream<'o> {
+    pub fn new(stack: SizeStack, buf: &'o mut [u8]) -> Self {
         Self {
-            stack: SizeStack::default(),
-            buf: vec,
+            stack,
+            buf,
+            pos: 0
         }
     }
-    pub fn len(&self) -> usize {
-        self.buf.len()
-    }
+    // pub fn len(&self) -> usize {
+    //     self.buf.len() - self.pos
+    // }
 
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    pub fn finish(self) -> Vec<u8> {
-        self.buf
+        self.buf.len() == self.pos - 1
     }
 
     pub(crate) fn _tag(&mut self, t: u32) {
@@ -284,17 +265,21 @@ impl OutputStream {
         let mut n = v.into_u64();
 
         let len = _size_varint(n);
-        self.buf.reserve(len);
+        // assert!(self.len() >= len);
 
         for _ in 0 .. len - 1 {
-            self.buf.push(MSB | (n as u8 & DROP_MSB));
+            self.buf[self.pos] = MSB | (n as u8 & DROP_MSB);
+            self.pos += 1;
             n >>= 7;
         }
-        self.buf.push(n as u8);
+        self.buf[self.pos] = n as u8;
+        self.pos += 1;
     }
 
-    pub(crate) fn _bytes(&mut self, v: &[u8]) {
-        self.buf.extend_from_slice(v);
+    pub(crate) fn raw_bytes(&mut self, v: &[u8]) {
+        assert!(self.buf.len() - self.pos >= v.len());
+        self.buf[self.pos.. self.pos + v.len()].copy_from_slice(v);
+        self.pos += v.len();
     }
 
     pub fn varint<V: Varint + Debug>(&mut self, _: u32, v: &V) {
@@ -316,7 +301,7 @@ impl OutputStream {
     pub fn fixed<V: Fixed>(&mut self, _: u32, v: &V) {
         let wire = v.to_wire();
         let slice = unsafe { from_raw_parts(&wire as *const V::Wire as *const u8, size_of::<V::Wire>()) };
-        self.buf.extend_from_slice(slice);
+        self.raw_bytes(slice);
     }
 
     pub fn fixed32<V: Fixed>(&mut self, _: u32, v: &V) {
@@ -329,12 +314,12 @@ impl OutputStream {
 
     pub fn bytes<'x, B: BytesLike<'x>>(&mut self, _: u32, b: &B) {
         self._varint(b.buf().len());
-        self._bytes(b.buf());
+        self.raw_bytes(b.buf());
     }
 
     pub fn string<'out, B: BytesLike<'out>>(&mut self, _: u32, b: &B) {
         self._varint(b.buf().len());
-        self._bytes(b.buf());
+        self.raw_bytes(b.buf());
     }
 
     #[inline(never)]
@@ -344,8 +329,9 @@ impl OutputStream {
     }
 
     pub fn nested<'buf, P: BinProto<'buf>>(&mut self, _: u32, v: &P) {
-        assert_eq!(v as *const P as *const u8, self.stack.top().0);
-        let len = self.stack.pop().1;
+        let (ptr, len) = self.stack.pop();
+        debug_assert_eq!(v as *const P as *const u8, ptr);
+
         self._nested(len, v);
     }
 

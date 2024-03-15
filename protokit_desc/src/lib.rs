@@ -670,7 +670,7 @@ impl ServiceDef {
     #[cfg(feature = "descriptors")]
     fn from_descriptor(
         set: &mut FileSetDef,
-        file: &FileDescriptorProto,
+        _: &FileDescriptorProto,
         name: &ArcStr,
         desc: &ServiceDescriptorProto,
     ) -> Self {
@@ -798,6 +798,7 @@ impl FileDef {
     }
 
     pub fn resolve_types(&mut self, file_id: usize, prevs: &IndexMap<ArcStr, FileDef>) {
+        // panic!("RESOLVING TYPES");
         self.messages.values_mut().for_each(|m: &mut MessageDef| {
             m.fields
                 .by_number
@@ -1109,11 +1110,11 @@ impl FileDef {
     }
 }
 
-fn local_to_global(file_id: usize, local_id: LocalDefId) -> GlobalDefId {
+pub fn local_to_global(file_id: usize, local_id: LocalDefId) -> GlobalDefId {
     (file_id as u64) << 32 | (local_id as u64)
 }
 
-fn global_to_type(def_id: GlobalDefId, hint: &UnresolvedHint) -> DataType {
+pub fn global_to_type(def_id: GlobalDefId, hint: &UnresolvedHint) -> DataType {
     if def_id & LOCAL_DEFID_MSG as u64 != 0 {
         return if let UnresolvedHint::Group = hint {
             DataType::Group(def_id)

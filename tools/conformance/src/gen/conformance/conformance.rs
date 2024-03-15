@@ -76,7 +76,7 @@ pub struct ConformanceRequest {
     #[field(5u32, "test_category", protoenum, singular)]
     pub test_category: TestCategory,
     #[field(6u32, "jspb_encoding_options", nested, optional)]
-    pub jspb_encoding_options: Option<Box<JspbEncodingConfig>>,
+    pub jspb_encoding_options: Option<JspbEncodingConfig>,
     #[field(9u32, "print_unknown_fields", bool, singular)]
     pub print_unknown_fields: bool,
     #[oneof(

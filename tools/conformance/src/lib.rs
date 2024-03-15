@@ -79,7 +79,6 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
     let data = from_raw_parts(data, len as usize);
 
     let req = protokit::binformat::decode::<conformance::ConformanceRequest>(data).unwrap();
-
     let msg_type = req.message_type;
     let out = if let Some(ConformanceRequestOneOfPayload::JsonPayload(_)) = req.payload {
         ConformanceResponse {
