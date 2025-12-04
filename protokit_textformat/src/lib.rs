@@ -13,7 +13,7 @@ pub mod reflect;
 pub mod stream;
 
 use escape::unescape;
-use lex::Token;
+pub use lex::Token;
 use lex::Token::*;
 use reflect::Registry;
 pub use stream::{InputStream, OutputStream};
@@ -61,17 +61,17 @@ pub fn unknown<T>(name: &str) -> Result<T> {
     Err(Error::UnknownIdent(name.to_string()))
 }
 
-pub trait TextProto<'buf> {
-    /// Parse a message from a stream
+pub trait TextFormatProxy: Send + Sync {
+    fn merge<'buf>(&self, msg: &mut dyn TextProto<'buf>, stream: &mut InputStream<'buf>) -> Result<()>;
+    fn encode<'buf>(&self, msg: &dyn TextProto<'buf>, stream: &mut OutputStream);
+}
+
+pub trait TextProto<'buf>: binformat::ProtoName {
+    /// Decodes a message from the stream
     ///
     /// Start position: `Token::StartOfFile` or `Token::LBrace`
     /// End position: `Token::EndOfFile` or `Token::RBrace`
-    fn decode(&mut self, stream: &mut InputStream<'buf>) -> Result<()>
-    where
-        Self: Sized,
-    {
-        stream.message_fields(self)
-    }
+    fn decode(&mut self, stream: &mut InputStream<'buf>) -> Result<()>;
 
     /// Merge a single field into this message from input stream
     ///
@@ -86,12 +86,9 @@ pub trait Enum: From<u32> + Into<u32> + FromStr<Err = Error> + Display {}
 
 impl<'buf, T> TextProto<'buf> for Box<T>
 where
-    T: TextProto<'buf>,
+    T: ?Sized + TextProto<'buf>,
 {
-    fn decode(&mut self, stream: &mut InputStream<'buf>) -> Result<()>
-    where
-        Self: Sized,
-    {
+    fn decode(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().decode(stream)
     }
 
@@ -232,7 +229,7 @@ impl<'buf> TextField<'buf> for String {
     fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         stream.string(|s| {
             if s.contains('\\') {
-                let unescaped = unescape(s.bytes()).collect::<Vec<_>>();
+                let unescaped = unescape(s.bytes()).collect::<Result<Vec<_>, _>>()?;
                 self.push_str(core::str::from_utf8(&unescaped)?);
             } else {
                 self.push_str(s);
@@ -272,7 +269,7 @@ impl<'buf> TextField<'buf> for Vec<u8> {
     fn merge_value(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
         stream.bytes(|s| {
             if s.contains(&b'\\') {
-                let unescaped = unescape(s.iter().cloned()).collect::<Vec<_>>();
+                let unescaped = unescape(s.iter().cloned()).collect::<Result<Vec<_>, _>>()?;
                 self.extend_from_slice(&unescaped);
             } else {
                 self.extend_from_slice(s);
@@ -424,6 +421,16 @@ where
         fn encode(&self, stream: &mut OutputStream) {
             emit_optional(&self.key, "key", stream);
             emit_raw(&self.value, "value", stream);
+        }
+
+        fn decode(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
+            stream.message_fields(self)
+        }
+    }
+
+    impl<'buf, K: TextField<'buf> + Default, V: TextField<'buf> + Default> binformat::ProtoName for Help<K, V> {
+        fn qualified_name(&self) -> &'static str {
+            ""
         }
     }
 

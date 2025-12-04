@@ -397,12 +397,22 @@ fn _impl_proto(
         }
     };
 
+    let proto_name_impl = quote! {
+        impl <#text_impl_params> protokit::binformat::ProtoName for #ident #type_gen #where_gen {
+            fn qualified_name(&self) -> &'static str {
+                #qname
+            }
+        }
+        impl <#text_impl_params> protokit::binformat::TypedProtoName for #ident #type_gen #where_gen {
+            fn qualified_name() -> &'static str {
+                #qname
+            }
+        }
+    };
+
     let bin_impl = if bin {
         Some(quote! {
              impl <#text_impl_params> protokit::binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
-                fn qualified_name(&self) -> &'static str {
-                    #qname
-                }
                 fn merge_field(&mut self, tag: u32, stream: &mut protokit::binformat::InputStream<#buf_param>) -> protokit::binformat::Result<()> {
                     #![deny(unreachable_patterns)]
                     match tag {
@@ -425,7 +435,13 @@ fn _impl_proto(
     let text_impl = if text {
         Some(quote! {
             impl<#text_impl_params> protokit::textformat::TextProto< #buf_param > for #ident #type_gen #where_gen {
-                fn merge_field(&mut self, stream: &mut protokit::textformat::InputStream< #buf_param >) -> protokit::textformat::Result<()> {
+                fn decode(&mut self, stream: &mut protokit::textformat::InputStream<#buf_param>) -> protokit::textformat::Result<()> {
+                    if let Some(proxy) = stream.reg.find_proxy(<Self as protokit::binformat::ProtoName>::qualified_name(self)) {
+                        return proxy.merge(self, stream);
+                    }
+                    stream.message_fields(self)
+                }
+                fn merge_field(&mut self, stream: &mut protokit::textformat::InputStream<#buf_param>) -> protokit::textformat::Result<()> {
                     const FIELDS: &[(&str, u32)] = &[#(#text_names,)*];
                     match protokit::textformat::_find(stream, FIELDS) {
                         #(#merge_txt)*
@@ -433,6 +449,9 @@ fn _impl_proto(
                     }
                 }
                 fn encode(&self, stream: &mut protokit::textformat::OutputStream) {
+                    if let Some(proxy) = stream.reg.find_proxy(<Self as protokit::binformat::ProtoName>::qualified_name(self)) {
+                        return proxy.encode(self, stream);
+                    }
                     #(#emit_txt)*
                 }
             }
@@ -442,6 +461,7 @@ fn _impl_proto(
     };
 
     Ok(quote! {
+        #proto_name_impl
         #bin_impl
         #text_impl
     })
@@ -568,12 +588,35 @@ fn _impl_oneof(
 
     let text_impl_params = quote! { #additional_lifetime #(#lp,)* #(#tp,)* #(#cp,)* };
 
+    let qname = match (meta.package, meta.name) {
+        (Some(pkg), Some(nam)) => {
+            let name = format!("{}.{}", pkg.value(), nam.value());
+            quote! { #name }
+        }
+        (None, Some(name)) => {
+            quote! { #name }
+        }
+        _ => {
+            quote! { "" }
+        }
+    };
+
+    let proto_name_impl = quote! {
+        impl <#text_impl_params> protokit::binformat::ProtoName for #ident #type_gen #where_gen {
+            fn qualified_name(&self) -> &'static str {
+                #qname
+            }
+        }
+        impl <#text_impl_params> protokit::binformat::TypedProtoName for #ident #type_gen #where_gen {
+            fn qualified_name() -> &'static str {
+                #qname
+            }
+        }
+    };
+
     let bin_impl = if bin {
         Some(quote! {
             impl <#text_impl_params> protokit::binformat::BinProto<#buf_param> for #ident #type_gen #where_gen {
-                fn qualified_name(&self) -> &'static str {
-                    todo!()
-                }
                 fn merge_field(&mut self, tag: u32, stream: &mut protokit::binformat::InputStream<#buf_param>) -> protokit::binformat::Result<()> {
                     #![deny(unreachable_patterns)]
                     match tag {
@@ -602,6 +645,9 @@ fn _impl_oneof(
     let text_impl = if text {
         Some(quote! {
             impl<#text_impl_params> protokit::textformat::TextProto<#buf_param> for #ident #type_gen #where_gen {
+                fn decode(&mut self, stream: &mut protokit::textformat::InputStream<#buf_param>) -> protokit::textformat::Result<()> {
+                    stream.message_fields(self)
+                }
                 fn merge_field(&mut self, stream: &mut protokit::textformat::InputStream<#buf_param>) -> protokit::textformat::Result<()> {
                     match stream.field() {
                         #(#merge_txt)*
@@ -624,6 +670,7 @@ fn _impl_oneof(
         impl #orig_impl_gen #ident #type_gen #where_gen {
             #(#setters)*
         }
+        #proto_name_impl
         #bin_impl
         #text_impl
     })

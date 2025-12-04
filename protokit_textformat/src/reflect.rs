@@ -8,9 +8,19 @@ use binformat::{BinProto, InputStream, OutputStream, SizeStack};
 
 use crate::TextProto;
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct Registry {
     pub messages: BTreeMap<&'static str, Box<dyn AnyMessage>>,
+    pub proxies: BTreeMap<&'static str, Box<dyn crate::TextFormatProxy>>,
+}
+
+impl Debug for Registry {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Registry")
+            .field("messages", &self.messages)
+            .field("proxies", &self.proxies.keys())
+            .finish()
+    }
 }
 
 impl Registry {
@@ -24,8 +34,16 @@ impl Registry {
         self.messages.insert(msg.qualified_name(), msg.new());
     }
 
+    pub fn register_proxy(&mut self, name: &'static str, proxy: Box<dyn crate::TextFormatProxy>) {
+        self.proxies.insert(name, proxy);
+    }
+
     pub fn find(&self, name: &str) -> Option<&dyn AnyMessage> {
         self.messages.get(name).map(|v| v.deref())
+    }
+
+    pub fn find_proxy(&self, name: &str) -> Option<&dyn crate::TextFormatProxy> {
+        self.proxies.get(name).map(|b| b.as_ref())
     }
 }
 
@@ -63,7 +81,7 @@ where
     }
 
     fn qualified_name(&self) -> &'static str {
-        <T as BinProto>::qualified_name(self)
+        <T as binformat::ProtoName>::qualified_name(self)
     }
 
     fn as_bin<'buf>(&self) -> &dyn BinProto<'buf> {
@@ -83,11 +101,13 @@ where
     }
 }
 
-impl<'buf> BinProto<'buf> for dyn AnyMessage {
+impl binformat::ProtoName for dyn AnyMessage {
     fn qualified_name(&self) -> &'static str {
         self.as_bin().qualified_name()
     }
+}
 
+impl<'buf> BinProto<'buf> for dyn AnyMessage {
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> binformat::Result<()> {
         self.as_bin_mut().merge_field(tag_wire, stream)
     }
@@ -108,5 +128,9 @@ impl<'buf> TextProto<'buf> for dyn AnyMessage {
 
     fn encode(&self, stream: &mut crate::OutputStream) {
         self.as_text().encode(stream)
+    }
+
+    fn decode(&mut self, stream: &mut crate::InputStream<'buf>) -> crate::Result<()> {
+        self.as_text_mut().decode(stream)
     }
 }

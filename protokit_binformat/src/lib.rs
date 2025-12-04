@@ -64,22 +64,30 @@ pub fn unknown_wire<T>(w: u8) -> Result<T> {
     Err(Error::UnknownWire(w))
 }
 
-pub trait BinProto<'buf> {
+pub trait ProtoName {
     fn qualified_name(&self) -> &'static str;
+}
+
+pub trait TypedProtoName: ProtoName {
+    fn qualified_name() -> &'static str;
+}
+
+pub trait BinProto<'buf>: ProtoName {
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()>;
     fn size(&self, stack: &mut SizeStack) -> usize;
     fn encode<'out>(&self, stream: &mut OutputStream<'out>);
+}
+
+impl<T: ProtoName + ?Sized> ProtoName for Box<T> {
+    fn qualified_name(&self) -> &'static str {
+        self.deref().qualified_name()
+    }
 }
 
 impl<'buf, T> BinProto<'buf> for Box<T>
 where
     T: BinProto<'buf>,
 {
-    #[inline(always)]
-    fn qualified_name(&self) -> &'static str {
-        self.deref().qualified_name()
-    }
-
     #[inline(always)]
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
@@ -97,14 +105,17 @@ where
 }
 
 #[cfg(feature = "arena")]
+impl<'arena, T: ProtoName + ?Sized> ProtoName for bumpalo::boxed::Box<'arena, T> {
+    fn qualified_name(&self) -> &'static str {
+        self.deref().qualified_name()
+    }
+}
+
+#[cfg(feature = "arena")]
 impl<'buf, 'arena, T> BinProto<'buf> for bumpalo::boxed::Box<'arena, T>
 where
     T: BinProto<'buf>,
 {
-    fn qualified_name(&self) -> &'static str {
-        self.deref().qualified_name()
-    }
-
     fn merge_field(&mut self, tag_wire: u32, stream: &mut InputStream<'buf>) -> Result<()> {
         self.deref_mut().merge_field(tag_wire, stream)
     }
@@ -525,14 +536,13 @@ where
     T: Default,
     F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 {
-
     this.clear();
     let len = stream._varint::<usize>()?;
     if stream.len() < len {
         return Err(Error::UnexpectedEOF);
     }
     let mut is = InputStream {
-        buf: &stream.buf[stream.pos .. stream.pos + len],
+        buf: &stream.buf[stream.pos..stream.pos + len],
         pos: 0,
         limit: len,
     };
@@ -586,8 +596,12 @@ pub fn merge_oneof<'buf, T: Default + BinProto<'buf>>(
 }
 
 #[inline(never)]
-pub fn emit_raw<'out, T>(this: &T, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
-
+pub fn emit_raw<'out, T>(
+    this: &T,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     stream._tag(tag);
     mapper(stream, tag, this);
 }
@@ -605,7 +619,12 @@ pub fn emit_single<'out, T: Debug + Default + PartialEq>(
 }
 
 #[inline(never)]
-pub fn emit_optional<'out, T>(this: &Option<T>, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
+pub fn emit_optional<'out, T>(
+    this: &Option<T>,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     if let Some(v) = this {
         stream._tag(tag);
         mapper(stream, tag, v);
@@ -613,7 +632,12 @@ pub fn emit_optional<'out, T>(this: &Option<T>, tag: u32, stream: &mut OutputStr
 }
 
 #[inline(never)]
-pub fn emit_repeated<'out, T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
+pub fn emit_repeated<'out, T>(
+    this: &Vec<T>,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     for v in this {
         stream._tag(tag);
         mapper(stream, tag, v)
@@ -621,7 +645,12 @@ pub fn emit_repeated<'out, T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream
 }
 
 #[inline(never)]
-pub fn emit_packed<'out, T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
+pub fn emit_packed<'out, T>(
+    this: &Vec<T>,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     if !this.is_empty() {
         let (ptr, len) = stream.stack.pop();
         debug_assert_eq!(this as *const Vec<T> as *const u8, ptr);
@@ -664,7 +693,6 @@ pub fn emit_oneof<'buf, T: BinProto<'buf>>(o: &Option<T>, stream: &mut OutputStr
 }
 
 pub fn _size_varint<T: Varint>(value: T) -> usize {
-
     const VINT_LENS: [u8; 65] = [
         10, 9, 9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 4,
         4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -781,9 +809,7 @@ where
     F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
     if !v.is_empty() {
-        let len = stack.memo(v, |v, stack| {
-            v.iter().rev().map(|v| measure(v, tag, stack)).sum()
-        });
+        let len = stack.memo(v, |v, stack| v.iter().rev().map(|v| measure(v, tag, stack)).sum());
         _size_varint(tag) + _size_varint(len) + len
     } else {
         0
@@ -846,11 +872,10 @@ pub fn encode<'buf, T: BinProto<'buf>>(b: &T) -> Result<Vec<u8>> {
 pub fn encode_to<'buf, T: BinProto<'buf>>(b: &T, mut out: Vec<u8>) -> Result<Vec<u8>> {
     let mut stack = SizeStack::default();
     let size = b.size(&mut stack);
-    out.resize(out.len() +  size, 0);
+    out.resize(out.len() + size, 0);
     let start = out.len() - size;
     let mut ostream = OutputStream::new(stack, &mut out[start..]);
     b.encode(&mut ostream);
     assert_eq!(ostream.stack.stack.len(), 0);
     Ok(out)
 }
-

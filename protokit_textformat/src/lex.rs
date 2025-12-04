@@ -30,7 +30,7 @@ pub enum Token {
     #[regex(r"(?&dig)(.(?&dig))?([eE][+-]?(?&dig))?", priority = 1)]
     FltLit,
 
-    #[regex(r#""([^"\\]|\\.)*"|'([^'\\]|\\.)*'"#)]
+    #[regex(r#""([^"\\\n]|\\.)*"|'([^'\\\n]|\\.)*'"#)]
     StrLit,
 
     #[token("{")]

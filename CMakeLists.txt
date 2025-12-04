@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(protobuf_ABSL_PROVIDER "package" CACHE STRING "Change absl" FORCE)
+set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Change absl" FORCE)
 set(protobuf_VERBOSE ON CACHE BOOL "enable verbose mode" FORCE)
 set(protobuf_BUILD_CONFORMANCE ON CACHE BOOL "enable conformance" FORCE)
 set(protobuf_BUILD_LIBPROTOC ON CACHE BOOL "enable libprotoc" FORCE)
@@ -20,7 +20,7 @@ include(FetchContent)
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.4 # Optionally specify a commit hash, version tag or branch here
+        GIT_TAG v0.6 # Optionally specify a commit hash, version tag or branch here
 )
 
 FetchContent_MakeAvailable(Corrosion)
@@ -40,10 +40,7 @@ set_source_files_properties(
         ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
         ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
         ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.cc
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.cc
+
 
         PROPERTIES GENERATED TRUE
 )
@@ -63,10 +60,7 @@ add_executable(rust_conformance_runner
         ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
         ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
         ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto3_editions.pb.cc
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/editions/golden/test_messages_proto2_editions.pb.cc
+
         )
 
 # This ensures that cmake actually generates mentioned files, raw dep doesn't work

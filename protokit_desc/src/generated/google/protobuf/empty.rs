@@ -2,9 +2,8 @@
 #![allow(nonstandard_style)]
 #![allow(unreachable_patterns)]
 #![allow(clippy::module_inception)]
-use protokit::*;
-
 use crate as protokit;
+use protokit::*;
 pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&Empty::default());
 }

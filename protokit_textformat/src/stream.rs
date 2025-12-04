@@ -14,7 +14,7 @@ pub struct InputStream<'buf> {
     pub(crate) lex: Lexer<'buf, Token>,
     pub(crate) cur: Token,
     // TODO: will be required for any support
-    pub(crate) _reg: &'buf Registry,
+    pub reg: &'buf Registry,
     // Whether we are parsing root message, or we're expecting more braces
     root: bool,
 }
@@ -25,7 +25,7 @@ impl<'buf> InputStream<'buf> {
         Self {
             lex,
             cur: StartOfFile,
-            _reg: reg,
+            reg,
             root: true,
         }
     }
@@ -33,6 +33,10 @@ impl<'buf> InputStream<'buf> {
     #[must_use]
     pub fn next_token(&mut self) -> Token {
         self.advance();
+        self.cur
+    }
+
+    pub fn token(&self) -> Token {
         self.cur
     }
 
@@ -81,7 +85,7 @@ impl<'buf> InputStream<'buf> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf();
-            f(&buf[1 .. buf.len() - 1])?;
+            f(&buf[1..buf.len() - 1])?;
             self.advance();
         }
         Ok(())
@@ -91,7 +95,7 @@ impl<'buf> InputStream<'buf> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf().as_bytes();
-            f(&buf[1 .. buf.len() - 1])?;
+            f(&buf[1..buf.len() - 1])?;
             self.advance();
         }
         Ok(())
@@ -110,7 +114,7 @@ impl<'buf> InputStream<'buf> {
 
     pub fn u64(&mut self) -> Result<u64> {
         let out = match self.token_and_span() {
-            (HexLit, h) => u64::from_str_radix(&h[2 ..], 16)?,
+            (HexLit, h) => u64::from_str_radix(&h[2..], 16)?,
             (DecLit, h) => u64::from_str_radix(h, 10)?,
             (OctLit, h) => u64::from_str_radix(h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
@@ -121,7 +125,7 @@ impl<'buf> InputStream<'buf> {
 
     pub fn u32(&mut self) -> Result<u32> {
         let out = match self.token_and_span() {
-            (HexLit, h) => u32::from_str_radix(&h[2 ..], 16)?,
+            (HexLit, h) => u32::from_str_radix(&h[2..], 16)?,
             (DecLit, h) => u32::from_str_radix(h, 10)?,
             (OctLit, h) => u32::from_str_radix(h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
@@ -131,17 +135,29 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn i64(&mut self) -> Result<i64> {
-        // TODO: There is a bug here, fix
         let neg = self.try_consume(Minus);
-        let v = TryInto::<i64>::try_into(self.u64()?)?;
-        Ok(if neg { -v } else { v })
+        let v = self.u64()?;
+        if neg {
+            if v > i64::MAX as u64 + 1 {
+                return Err(i64::try_from(v).unwrap_err().into());
+            }
+            Ok((v as i64).wrapping_neg())
+        } else {
+            Ok(TryInto::<i64>::try_into(v)?)
+        }
     }
 
     pub fn i32(&mut self) -> Result<i32> {
-        // TODO: There is a bug here. Fix
         let neg = self.try_consume(Minus);
-        let v = TryInto::<i32>::try_into(self.u32()?)?;
-        Ok(if neg { -v } else { v })
+        let v = self.u32()?;
+        if neg {
+            if v > i32::MAX as u32 + 1 {
+                return Err(i32::try_from(v).unwrap_err().into());
+            }
+            Ok((v as i32).wrapping_neg())
+        } else {
+            Ok(TryInto::<i32>::try_into(v)?)
+        }
     }
 
     pub fn f64(&mut self) -> Result<f64> {
@@ -169,7 +185,7 @@ impl<'buf> InputStream<'buf> {
         Ok(self.f64()? as _)
     }
 
-    pub(crate) fn message_fields(&mut self, p: &mut dyn TextProto<'buf>) -> Result<()> {
+    pub fn message_fields(&mut self, p: &mut dyn TextProto<'buf>) -> Result<()> {
         let allow_eof = self.root;
         self.root = false;
         if self.cur == Colon {
@@ -219,7 +235,7 @@ impl<'buf> InputStream<'buf> {
 #[derive(Debug)]
 pub struct OutputStream<'r> {
     pub reg: &'r Registry,
-    pub(crate) buf: String,
+    pub buf: String,
     pad: usize,
 }
 
@@ -234,7 +250,7 @@ impl<'r> OutputStream<'r> {
 
     pub fn ln(&mut self) {
         self.buf.push('\n');
-        for _ in 0 .. self.pad {
+        for _ in 0..self.pad {
             self.buf.push(' ');
         }
     }
