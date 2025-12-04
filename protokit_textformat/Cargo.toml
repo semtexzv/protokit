@@ -17,5 +17,7 @@ path = "../protokit_binformat"
 version = "0.2.0"
 
 [dependencies]
-logos = { version = "0.13.0", default-features = false, features = ["export_derive"] }
+logos = { version = "0.13.0", default-features = false, features = [
+    "export_derive",
+] }
 thiserror = "1"

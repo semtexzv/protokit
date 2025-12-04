@@ -160,8 +160,8 @@ impl<'buf> InputStream<'buf> {
     }
 
     #[inline(always)]
-    pub fn protoenum<T: From<u32>>(&mut self, field: &mut T) -> Result<()> {
-        *field = self._varint::<u32>()?.into();
+    pub fn protoenum<T: From<i32>>(&mut self, field: &mut T) -> Result<()> {
+        *field = self._varint::<i32>()?.into();
         Ok(())
     }
 
@@ -290,7 +290,7 @@ impl<'o> OutputStream<'o> {
         self._varint(if *b { 1 } else { 0 });
     }
 
-    pub fn protoenum<V: Clone + Copy + Into<u32>>(&mut self, _: u32, v: &V) {
+    pub fn protoenum<V: Clone + Copy + Into<i32>>(&mut self, _: u32, v: &V) {
         self._varint((*v).into());
     }
 

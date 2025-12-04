@@ -13,7 +13,7 @@ use bytes::Bytes;
 use indexmap::IndexMap;
 pub use stream::{InputStream, OutputStream};
 use thiserror::Error;
-pub use value::{Field, UnknownFieldsBorrow, UnknownFieldsOwned, Value};
+pub use value::{Field, UnknownFields, UnknownFieldsBorrow, UnknownFieldsOwned, Value};
 
 pub mod stream;
 pub mod value;
@@ -717,8 +717,8 @@ pub fn size_string<'x, T: BytesLike<'x>>(v: &T, _: u32, _: &mut SizeStack) -> us
 }
 
 #[inline(always)]
-pub fn size_protoenum<T: Copy + Into<u32>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
-    _size_varint(Into::<u32>::into(*v))
+pub fn size_protoenum<T: Copy + Into<i32>>(v: &T, _: u32, _: &mut SizeStack) -> usize {
+    _size_varint(Into::<i32>::into(*v))
 }
 
 #[inline(always)]

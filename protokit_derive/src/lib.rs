@@ -40,10 +40,10 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
 
     (quote! {
         #block
-        impl From<u32> for #ident {
-            fn from(v: u32) -> Self { Self(v) }
+        impl From<i32> for #ident {
+            fn from(v: i32) -> Self { Self(v) }
         }
-        impl From<#ident> for u32 {
+        impl From<#ident> for i32 {
             fn from(v: #ident) -> Self { v.0 }
         }
         impl<'buf> protokit::textformat::TextField<'buf> for #ident {
@@ -279,13 +279,18 @@ fn _impl_proto(
             Item::Unknowns { ident } => {
                 if bin {
                     merge_bin.push(quote_spanned! { ident.span() =>
-                        tag => self.#ident.merge_field(tag, stream),
+                        tag => protokit::binformat::BinProto::merge_field(&mut self.#ident, tag, stream),
                     });
                     emit_bin.push(quote_spanned! { ident.span() =>
-                        self.#ident.encode(stream);
+                        protokit::binformat::BinProto::encode(&self.#ident, stream);
                     });
                     size_bin.push(quote_spanned! { ident.span() =>
-                        self.#ident.size(stack)
+                        protokit::binformat::BinProto::size(&self.#ident, stack)
+                    });
+                }
+                if text {
+                    emit_txt.push(quote_spanned! { ident.span() =>
+                        protokit::textformat::TextProto::encode(&self.#ident, stream);
                     });
                 }
             }

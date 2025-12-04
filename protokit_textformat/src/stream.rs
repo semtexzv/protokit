@@ -237,6 +237,7 @@ pub struct OutputStream<'r> {
     pub reg: &'r Registry,
     pub buf: String,
     pad: usize,
+    pub print_unknown_fields: bool,
 }
 
 impl<'r> OutputStream<'r> {
@@ -245,6 +246,7 @@ impl<'r> OutputStream<'r> {
             reg,
             buf: "".to_string(),
             pad: 0,
+            print_unknown_fields: true,
         }
     }
 

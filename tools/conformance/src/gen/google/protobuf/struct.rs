@@ -9,11 +9,11 @@ pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&ListValue::default());
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct NullValue(pub u32);
+pub struct NullValue(pub i32);
 #[protoenum]
 impl NullValue {
-    #[var(0u32, "NULL_VALUE")]
-    pub const NULL_VALUE: NullValue = NullValue(0u32);
+    #[var(0i32, "NULL_VALUE")]
+    pub const NULL_VALUE: NullValue = NullValue(0i32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(name = "Struct", package = "google.protobuf")]

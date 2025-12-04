@@ -64,7 +64,7 @@ impl TranslateCtx {
         Ok(match &resolved[..] {
             [] => {
                 self.error(format!("{p:?} was not found"))?;
-                return Err(io::Error::new(io::ErrorKind::Other, format!("{p:?} was not found")));
+                return Err(io::Error::other(format!("{p:?} was not found")));
             }
             [x] => x.clone(),
             [x, ..] => {
@@ -134,7 +134,7 @@ impl TranslateCtx {
     fn error(&mut self, s: impl Into<String>) -> io::Result<()> {
         let s = s.into();
         self.errors.push(s.clone());
-        Err(io::Error::new(io::ErrorKind::Other, s))
+        Err(io::Error::other(s))
     }
 }
 

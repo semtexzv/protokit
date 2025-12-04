@@ -1,3 +1,4 @@
+#![allow(clippy::needless_update)]
 use protokit_desc::{DataType, EnumFields, FieldDef, MessageFields, UnresolvedHint, VariantDef};
 
 use crate::ast::*;

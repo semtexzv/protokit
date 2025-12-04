@@ -10,36 +10,36 @@ pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&JspbEncodingConfig::default());
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct WireFormat(pub u32);
+pub struct WireFormat(pub i32);
 #[protoenum]
 impl WireFormat {
-    #[var(0u32, "UNSPECIFIED")]
-    pub const UNSPECIFIED: WireFormat = WireFormat(0u32);
-    #[var(1u32, "PROTOBUF")]
-    pub const PROTOBUF: WireFormat = WireFormat(1u32);
-    #[var(2u32, "JSON")]
-    pub const JSON: WireFormat = WireFormat(2u32);
-    #[var(3u32, "JSPB")]
-    pub const JSPB: WireFormat = WireFormat(3u32);
-    #[var(4u32, "TEXT_FORMAT")]
-    pub const TEXT_FORMAT: WireFormat = WireFormat(4u32);
+    #[var(0i32, "UNSPECIFIED")]
+    pub const UNSPECIFIED: WireFormat = WireFormat(0i32);
+    #[var(1i32, "PROTOBUF")]
+    pub const PROTOBUF: WireFormat = WireFormat(1i32);
+    #[var(2i32, "JSON")]
+    pub const JSON: WireFormat = WireFormat(2i32);
+    #[var(3i32, "JSPB")]
+    pub const JSPB: WireFormat = WireFormat(3i32);
+    #[var(4i32, "TEXT_FORMAT")]
+    pub const TEXT_FORMAT: WireFormat = WireFormat(4i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestCategory(pub u32);
+pub struct TestCategory(pub i32);
 #[protoenum]
 impl TestCategory {
-    #[var(0u32, "UNSPECIFIED_TEST")]
-    pub const UNSPECIFIED_TEST: TestCategory = TestCategory(0u32);
-    #[var(1u32, "BINARY_TEST")]
-    pub const BINARY_TEST: TestCategory = TestCategory(1u32);
-    #[var(2u32, "JSON_TEST")]
-    pub const JSON_TEST: TestCategory = TestCategory(2u32);
-    #[var(3u32, "JSON_IGNORE_UNKNOWN_PARSING_TEST")]
-    pub const JSON_IGNORE_UNKNOWN_PARSING_TEST: TestCategory = TestCategory(3u32);
-    #[var(4u32, "JSPB_TEST")]
-    pub const JSPB_TEST: TestCategory = TestCategory(4u32);
-    #[var(5u32, "TEXT_FORMAT_TEST")]
-    pub const TEXT_FORMAT_TEST: TestCategory = TestCategory(5u32);
+    #[var(0i32, "UNSPECIFIED_TEST")]
+    pub const UNSPECIFIED_TEST: TestCategory = TestCategory(0i32);
+    #[var(1i32, "BINARY_TEST")]
+    pub const BINARY_TEST: TestCategory = TestCategory(1i32);
+    #[var(2i32, "JSON_TEST")]
+    pub const JSON_TEST: TestCategory = TestCategory(2i32);
+    #[var(3i32, "JSON_IGNORE_UNKNOWN_PARSING_TEST")]
+    pub const JSON_IGNORE_UNKNOWN_PARSING_TEST: TestCategory = TestCategory(3i32);
+    #[var(4i32, "JSPB_TEST")]
+    pub const JSPB_TEST: TestCategory = TestCategory(4i32);
+    #[var(5i32, "TEXT_FORMAT_TEST")]
+    pub const TEXT_FORMAT_TEST: TestCategory = TestCategory(5i32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(name = "FailureSet", package = "conformance")]

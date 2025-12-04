@@ -19,39 +19,37 @@ pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&ProtoWithKeywords::default());
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ForeignEnumProto2(pub u32);
+pub struct ForeignEnumProto2(pub i32);
 #[protoenum]
 impl ForeignEnumProto2 {
-    #[var(0u32, "FOREIGN_FOO")]
-    pub const FOREIGN_FOO: ForeignEnumProto2 = ForeignEnumProto2(0u32);
-    #[var(1u32, "FOREIGN_BAR")]
-    pub const FOREIGN_BAR: ForeignEnumProto2 = ForeignEnumProto2(1u32);
-    #[var(2u32, "FOREIGN_BAZ")]
-    pub const FOREIGN_BAZ: ForeignEnumProto2 = ForeignEnumProto2(2u32);
+    #[var(0i32, "FOREIGN_FOO")]
+    pub const FOREIGN_FOO: ForeignEnumProto2 = ForeignEnumProto2(0i32);
+    #[var(1i32, "FOREIGN_BAR")]
+    pub const FOREIGN_BAR: ForeignEnumProto2 = ForeignEnumProto2(1i32);
+    #[var(2i32, "FOREIGN_BAZ")]
+    pub const FOREIGN_BAZ: ForeignEnumProto2 = ForeignEnumProto2(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestAllTypesProto2NestedEnum(pub u32);
+pub struct TestAllTypesProto2NestedEnum(pub i32);
 #[protoenum]
 impl TestAllTypesProto2NestedEnum {
-    #[var(0u32, "FOO")]
-    pub const FOO: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(0u32);
-    #[var(1u32, "BAR")]
-    pub const BAR: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(1u32);
-    #[var(2u32, "BAZ")]
-    pub const BAZ: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(2u32);
-    #[var(4294967295u32, "NEG")]
-    pub const NEG: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(
-        4294967295u32,
-    );
+    #[var(0i32, "FOO")]
+    pub const FOO: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(0i32);
+    #[var(1i32, "BAR")]
+    pub const BAR: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(1i32);
+    #[var(2i32, "BAZ")]
+    pub const BAZ: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(2i32);
+    #[var(-1i32, "NEG")]
+    pub const NEG: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(-1i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct EnumOnlyProto2Bool(pub u32);
+pub struct EnumOnlyProto2Bool(pub i32);
 #[protoenum]
 impl EnumOnlyProto2Bool {
-    #[var(0u32, "kFalse")]
-    pub const kFalse: EnumOnlyProto2Bool = EnumOnlyProto2Bool(0u32);
-    #[var(1u32, "kTrue")]
-    pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1u32);
+    #[var(0i32, "kFalse")]
+    pub const kFalse: EnumOnlyProto2Bool = EnumOnlyProto2Bool(0i32);
+    #[var(1i32, "kTrue")]
+    pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1i32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(

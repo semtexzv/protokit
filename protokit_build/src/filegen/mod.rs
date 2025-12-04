@@ -415,7 +415,7 @@ impl CodeGenerator<'_> {
         let variants = def.variants.by_name.iter().map(|(_, def)| {
             let name = def.name.as_str();
             let var_ident = format_ident!("{}", def.name.as_str());
-            let num = def.num as u32;
+            let num = def.num;
             quote! {
                 #[var(#num, #name)]
                 pub const #var_ident: #ident = #ident(#num);
@@ -423,7 +423,7 @@ impl CodeGenerator<'_> {
         });
         self.output.push(quote! {
             #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-            pub struct #ident(pub u32);
+            pub struct #ident(pub i32);
             #[protoenum]
             impl #ident {
                 #(#variants)*
@@ -457,6 +457,13 @@ impl CodeGenerator<'_> {
             Frequency::Singular => "singular",
             Frequency::Optional => "optional",
             Frequency::Repeated if def.is_packed() => "packed",
+            #[cfg(feature = "descriptors")]
+            Frequency::Repeated
+                if file.syntax == Proto3 && def.typ.is_scalar() && def.options.packed != Some(false) =>
+            {
+                "packed"
+            }
+            #[cfg(not(feature = "descriptors"))]
             Frequency::Repeated if file.syntax == Proto3 && def.typ.is_scalar() => "packed",
             Frequency::Repeated => "repeated",
             Frequency::Required => "required",

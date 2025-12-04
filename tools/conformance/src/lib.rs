@@ -1,3 +1,4 @@
+#![allow(clippy::manual_range_patterns)]
 use core::slice::{from_raw_parts, from_raw_parts_mut};
 
 use anyhow::bail;
@@ -19,8 +20,8 @@ use crate::gen::conformance::conformance::{
 
 #[derive(Debug)]
 enum Output {
-    Proto2(TestAllTypesProto2),
-    Proto3(TestAllTypesProto3),
+    Proto2(Box<TestAllTypesProto2>),
+    Proto3(Box<TestAllTypesProto3>),
 }
 
 struct AnyProxy;
@@ -180,44 +181,42 @@ fn register_proxies(reg: &mut Registry) {
 }
 
 fn input(payload: ConformanceRequestOneOfPayload, proto3: bool) -> anyhow::Result<Output> {
-    let out = match (&payload, proto3) {
+    match (&payload, proto3) {
         (ConformanceRequestOneOfPayload::ProtobufPayload(pb), false) => {
-            Ok::<_, anyhow::Error>(Output::Proto2(binformat::decode::<TestAllTypesProto2>(pb)?))
+            let msg = binformat::decode::<TestAllTypesProto2>(pb)?;
+            Ok(Output::Proto2(Box::new(msg)))
         }
         (ConformanceRequestOneOfPayload::ProtobufPayload(pb), true) => {
-            Ok(Output::Proto3(binformat::decode::<TestAllTypesProto3>(pb)?))
+            let msg = binformat::decode::<TestAllTypesProto3>(pb)?;
+            Ok(Output::Proto3(Box::new(msg)))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), false) => {
-            Ok(Output::Proto2(textformat::decode::<TestAllTypesProto2>(
-                pb,
-                &Registry::init(register_proxies),
-            )?))
+            let msg = textformat::decode::<TestAllTypesProto2>(pb, &Registry::init(register_proxies))?;
+            Ok(Output::Proto2(Box::new(msg)))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), true) => {
-            Ok(Output::Proto3(textformat::decode::<TestAllTypesProto3>(
-                pb,
-                &Registry::init(register_proxies),
-            )?))
+            let msg = textformat::decode::<TestAllTypesProto3>(pb, &Registry::init(register_proxies))?;
+            Ok(Output::Proto3(Box::new(msg)))
         }
         (other, _) => bail!("Unknown payload {other:?}"),
-    }?;
-    Ok(out)
+    }
 }
 
-fn output(r: anyhow::Result<Output>, wire: WireFormat) -> ConformanceResponseOneOfResult {
+fn output(r: anyhow::Result<Output>, wire: WireFormat, print_unknown_fields: bool) -> ConformanceResponseOneOfResult {
+    let options = textformat::EncodeOptions { print_unknown_fields };
     match (r, wire) {
         (Ok(Output::Proto2(v)), WireFormat::PROTOBUF) => {
-            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap())
+            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&*v).unwrap())
         }
         (Ok(Output::Proto3(v)), WireFormat::PROTOBUF) => {
-            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&v).unwrap())
+            ConformanceResponseOneOfResult::ProtobufPayload(binformat::encode(&*v).unwrap())
         }
         (Ok(Output::Proto2(v)), WireFormat::TEXT_FORMAT) => {
-            let out = textformat::encode(&v, &Registry::default()).unwrap();
+            let out = textformat::encode_with_options(&*v, &Registry::default(), options).unwrap();
             ConformanceResponseOneOfResult::TextPayload(out)
         }
         (Ok(Output::Proto3(v)), WireFormat::TEXT_FORMAT) => {
-            let out = textformat::encode(&v, &Registry::default()).unwrap();
+            let out = textformat::encode_with_options(&*v, &Registry::default(), options).unwrap();
             ConformanceResponseOneOfResult::TextPayload(out)
         }
         (_, WireFormat::JSON) => ConformanceResponseOneOfResult::Skipped("No json".to_string()),
@@ -243,7 +242,7 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
         }
     } else if msg_type.contains("Proto3") || msg_type.contains("Proto2") {
         let out = input(req.payload.unwrap(), msg_type.contains("Proto3"));
-        let data_out = output(out, req.requested_output_format);
+        let data_out = output(out, req.requested_output_format, req.print_unknown_fields);
         ConformanceResponse {
             result: Some(data_out),
             ..Default::default()

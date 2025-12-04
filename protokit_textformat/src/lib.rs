@@ -4,7 +4,7 @@ use core::ops::{Deref, DerefMut};
 use core::str::{FromStr, Utf8Error};
 use std::num::ParseFloatError;
 
-use binformat::Map;
+use binformat::{BinProto, Map};
 use thiserror::Error;
 
 mod escape;
@@ -571,8 +571,112 @@ pub fn decode<'buf, T: TextProto<'buf> + Default>(data: &'buf str, reg: &'buf Re
     Ok(out)
 }
 
+pub struct EncodeOptions {
+    pub print_unknown_fields: bool,
+}
+
+impl Default for EncodeOptions {
+    fn default() -> Self {
+        Self {
+            print_unknown_fields: true,
+        }
+    }
+}
+
 pub fn encode<'any, T: TextProto<'any>>(b: &T, reg: &'any Registry) -> Result<String> {
+    encode_with_options(b, reg, EncodeOptions::default())
+}
+
+pub fn encode_with_options<'any, T: TextProto<'any>>(
+    b: &T,
+    reg: &'any Registry,
+    options: EncodeOptions,
+) -> Result<String> {
     let mut out = OutputStream::new(reg);
+    out.print_unknown_fields = options.print_unknown_fields;
     b.encode(&mut out);
     Ok(out.buf)
+}
+
+impl<'buf, B: binformat::BytesLike<'buf>> TextProto<'buf> for binformat::UnknownFields<B> {
+    fn decode(&mut self, _stream: &mut InputStream<'buf>) -> Result<()> {
+        Ok(())
+    }
+
+    fn merge_field(&mut self, _stream: &mut InputStream<'buf>) -> Result<()> {
+        Ok(())
+    }
+
+    fn encode(&self, stream: &mut OutputStream) {
+        if !stream.print_unknown_fields {
+            return;
+        }
+        if let Some(fields) = &self.fields {
+            for field in fields.iter() {
+                emit_unknown_field(field, stream);
+            }
+        }
+    }
+}
+
+fn emit_unknown_field<'buf, B: binformat::BytesLike<'buf>>(field: &binformat::Field<B>, stream: &mut OutputStream) {
+    stream.ln();
+    stream.push(&field.num.to_string());
+    stream.colon();
+    stream.space();
+    match &field.val {
+        binformat::Value::Varint(v) => stream.disp(v),
+        binformat::Value::Fixed32(v) => stream.disp(v),
+        binformat::Value::Fixed64(v) => stream.disp(v),
+        binformat::Value::Bytes(v) => {
+            // Try to parse as message
+            let mut inner_unknowns = binformat::UnknownFields::<Vec<u8>>::default();
+            let mut buf_stream = binformat::InputStream::new(v.buf());
+            let mut success = true;
+
+            if buf_stream.is_empty() {
+                success = false;
+            } else {
+                while !buf_stream.is_empty() {
+                    match buf_stream._varint::<u32>() {
+                        Ok(tag) => {
+                            if tag == 0 {
+                                success = false;
+                                break;
+                            }
+                            if BinProto::merge_field(&mut inner_unknowns, tag, &mut buf_stream).is_err() {
+                                success = false;
+                                break;
+                            }
+                        }
+                        Err(_) => {
+                            success = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if success && inner_unknowns.fields.is_some() {
+                stream.lbrace();
+                stream.enter();
+                TextProto::encode(&inner_unknowns, stream);
+                stream.exit();
+                stream.ln();
+                stream.rbrace();
+            } else {
+                stream.bytes(v.buf());
+            }
+        }
+        binformat::Value::Group(g) => {
+            stream.lbrace();
+            stream.enter();
+            for f in g {
+                emit_unknown_field(f, stream);
+            }
+            stream.exit();
+            stream.ln();
+            stream.rbrace();
+        }
+    }
 }

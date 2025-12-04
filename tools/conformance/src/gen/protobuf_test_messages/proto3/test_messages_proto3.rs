@@ -17,62 +17,60 @@ use super::super::super::google::protobuf::r#struct::*;
 use super::super::super::google::protobuf::timestamp::*;
 use super::super::super::google::protobuf::wrappers::*;
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ForeignEnum(pub u32);
+pub struct ForeignEnum(pub i32);
 #[protoenum]
 impl ForeignEnum {
-    #[var(0u32, "FOREIGN_FOO")]
-    pub const FOREIGN_FOO: ForeignEnum = ForeignEnum(0u32);
-    #[var(1u32, "FOREIGN_BAR")]
-    pub const FOREIGN_BAR: ForeignEnum = ForeignEnum(1u32);
-    #[var(2u32, "FOREIGN_BAZ")]
-    pub const FOREIGN_BAZ: ForeignEnum = ForeignEnum(2u32);
+    #[var(0i32, "FOREIGN_FOO")]
+    pub const FOREIGN_FOO: ForeignEnum = ForeignEnum(0i32);
+    #[var(1i32, "FOREIGN_BAR")]
+    pub const FOREIGN_BAR: ForeignEnum = ForeignEnum(1i32);
+    #[var(2i32, "FOREIGN_BAZ")]
+    pub const FOREIGN_BAZ: ForeignEnum = ForeignEnum(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestAllTypesProto3NestedEnum(pub u32);
+pub struct TestAllTypesProto3NestedEnum(pub i32);
 #[protoenum]
 impl TestAllTypesProto3NestedEnum {
-    #[var(0u32, "FOO")]
-    pub const FOO: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(0u32);
-    #[var(1u32, "BAR")]
-    pub const BAR: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(1u32);
-    #[var(2u32, "BAZ")]
-    pub const BAZ: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(2u32);
-    #[var(4294967295u32, "NEG")]
-    pub const NEG: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(
-        4294967295u32,
-    );
+    #[var(0i32, "FOO")]
+    pub const FOO: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(0i32);
+    #[var(1i32, "BAR")]
+    pub const BAR: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(1i32);
+    #[var(2i32, "BAZ")]
+    pub const BAZ: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(2i32);
+    #[var(-1i32, "NEG")]
+    pub const NEG: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(-1i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestAllTypesProto3AliasedEnum(pub u32);
+pub struct TestAllTypesProto3AliasedEnum(pub i32);
 #[protoenum]
 impl TestAllTypesProto3AliasedEnum {
-    #[var(0u32, "ALIAS_FOO")]
+    #[var(0i32, "ALIAS_FOO")]
     pub const ALIAS_FOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
-        0u32,
+        0i32,
     );
-    #[var(1u32, "ALIAS_BAR")]
+    #[var(1i32, "ALIAS_BAR")]
     pub const ALIAS_BAR: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
-        1u32,
+        1i32,
     );
-    #[var(2u32, "ALIAS_BAZ")]
+    #[var(2i32, "ALIAS_BAZ")]
     pub const ALIAS_BAZ: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
-        2u32,
+        2i32,
     );
-    #[var(2u32, "MOO")]
-    pub const MOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2u32);
-    #[var(2u32, "moo")]
-    pub const moo: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2u32);
-    #[var(2u32, "bAz")]
-    pub const bAz: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2u32);
+    #[var(2i32, "MOO")]
+    pub const MOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
+    #[var(2i32, "moo")]
+    pub const moo: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
+    #[var(2i32, "bAz")]
+    pub const bAz: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct EnumOnlyProto3Bool(pub u32);
+pub struct EnumOnlyProto3Bool(pub i32);
 #[protoenum]
 impl EnumOnlyProto3Bool {
-    #[var(0u32, "kFalse")]
-    pub const kFalse: EnumOnlyProto3Bool = EnumOnlyProto3Bool(0u32);
-    #[var(1u32, "kTrue")]
-    pub const kTrue: EnumOnlyProto3Bool = EnumOnlyProto3Bool(1u32);
+    #[var(0i32, "kFalse")]
+    pub const kFalse: EnumOnlyProto3Bool = EnumOnlyProto3Bool(0i32);
+    #[var(1i32, "kTrue")]
+    pub const kTrue: EnumOnlyProto3Bool = EnumOnlyProto3Bool(1i32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(
@@ -235,33 +233,33 @@ pub struct TestAllTypesProto3 {
     pub packed_bool: Vec<bool>,
     #[field(88u32, "packed_nested_enum", protoenum, packed)]
     pub packed_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
-    #[field(89u32, "unpacked_int32", varint, packed)]
+    #[field(89u32, "unpacked_int32", varint, repeated)]
     pub unpacked_int32: Vec<i32>,
-    #[field(90u32, "unpacked_int64", varint, packed)]
+    #[field(90u32, "unpacked_int64", varint, repeated)]
     pub unpacked_int64: Vec<i64>,
-    #[field(91u32, "unpacked_uint32", varint, packed)]
+    #[field(91u32, "unpacked_uint32", varint, repeated)]
     pub unpacked_uint32: Vec<u32>,
-    #[field(92u32, "unpacked_uint64", varint, packed)]
+    #[field(92u32, "unpacked_uint64", varint, repeated)]
     pub unpacked_uint64: Vec<u64>,
-    #[field(93u32, "unpacked_sint32", sigint, packed)]
+    #[field(93u32, "unpacked_sint32", sigint, repeated)]
     pub unpacked_sint32: Vec<i32>,
-    #[field(94u32, "unpacked_sint64", sigint, packed)]
+    #[field(94u32, "unpacked_sint64", sigint, repeated)]
     pub unpacked_sint64: Vec<i64>,
-    #[field(95u32, "unpacked_fixed32", fixed32, packed)]
+    #[field(95u32, "unpacked_fixed32", fixed32, repeated)]
     pub unpacked_fixed32: Vec<u32>,
-    #[field(96u32, "unpacked_fixed64", fixed64, packed)]
+    #[field(96u32, "unpacked_fixed64", fixed64, repeated)]
     pub unpacked_fixed64: Vec<u64>,
-    #[field(97u32, "unpacked_sfixed32", fixed32, packed)]
+    #[field(97u32, "unpacked_sfixed32", fixed32, repeated)]
     pub unpacked_sfixed32: Vec<i32>,
-    #[field(98u32, "unpacked_sfixed64", fixed64, packed)]
+    #[field(98u32, "unpacked_sfixed64", fixed64, repeated)]
     pub unpacked_sfixed64: Vec<i64>,
-    #[field(99u32, "unpacked_float", fixed32, packed)]
+    #[field(99u32, "unpacked_float", fixed32, repeated)]
     pub unpacked_float: Vec<f32>,
-    #[field(100u32, "unpacked_double", fixed64, packed)]
+    #[field(100u32, "unpacked_double", fixed64, repeated)]
     pub unpacked_double: Vec<f64>,
-    #[field(101u32, "unpacked_bool", bool, packed)]
+    #[field(101u32, "unpacked_bool", bool, repeated)]
     pub unpacked_bool: Vec<bool>,
-    #[field(102u32, "unpacked_nested_enum", protoenum, packed)]
+    #[field(102u32, "unpacked_nested_enum", protoenum, repeated)]
     pub unpacked_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
     #[field(56u32, "map_int32_int32", map(varint, varint), singular)]
     pub map_int32_int32: ::protokit::IndexMap<i32, i32>,

@@ -34,100 +34,112 @@ pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
     registry.register(&GeneratedCodeInfoAnnotation::default());
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FieldDescriptorProtoType(pub u32);
+pub struct FieldDescriptorProtoType(pub i32);
 #[protoenum]
 impl FieldDescriptorProtoType {
-    #[var(1u32, "TYPE_DOUBLE")]
-    pub const TYPE_DOUBLE: FieldDescriptorProtoType = FieldDescriptorProtoType(1u32);
-    #[var(2u32, "TYPE_FLOAT")]
-    pub const TYPE_FLOAT: FieldDescriptorProtoType = FieldDescriptorProtoType(2u32);
-    #[var(3u32, "TYPE_INT64")]
-    pub const TYPE_INT64: FieldDescriptorProtoType = FieldDescriptorProtoType(3u32);
-    #[var(4u32, "TYPE_UINT64")]
-    pub const TYPE_UINT64: FieldDescriptorProtoType = FieldDescriptorProtoType(4u32);
-    #[var(5u32, "TYPE_INT32")]
-    pub const TYPE_INT32: FieldDescriptorProtoType = FieldDescriptorProtoType(5u32);
-    #[var(6u32, "TYPE_FIXED64")]
-    pub const TYPE_FIXED64: FieldDescriptorProtoType = FieldDescriptorProtoType(6u32);
-    #[var(7u32, "TYPE_FIXED32")]
-    pub const TYPE_FIXED32: FieldDescriptorProtoType = FieldDescriptorProtoType(7u32);
-    #[var(8u32, "TYPE_BOOL")]
-    pub const TYPE_BOOL: FieldDescriptorProtoType = FieldDescriptorProtoType(8u32);
-    #[var(9u32, "TYPE_STRING")]
-    pub const TYPE_STRING: FieldDescriptorProtoType = FieldDescriptorProtoType(9u32);
-    #[var(10u32, "TYPE_GROUP")]
-    pub const TYPE_GROUP: FieldDescriptorProtoType = FieldDescriptorProtoType(10u32);
-    #[var(11u32, "TYPE_MESSAGE")]
-    pub const TYPE_MESSAGE: FieldDescriptorProtoType = FieldDescriptorProtoType(11u32);
-    #[var(12u32, "TYPE_BYTES")]
-    pub const TYPE_BYTES: FieldDescriptorProtoType = FieldDescriptorProtoType(12u32);
-    #[var(13u32, "TYPE_UINT32")]
-    pub const TYPE_UINT32: FieldDescriptorProtoType = FieldDescriptorProtoType(13u32);
-    #[var(14u32, "TYPE_ENUM")]
-    pub const TYPE_ENUM: FieldDescriptorProtoType = FieldDescriptorProtoType(14u32);
-    #[var(15u32, "TYPE_SFIXED32")]
-    pub const TYPE_SFIXED32: FieldDescriptorProtoType = FieldDescriptorProtoType(15u32);
-    #[var(16u32, "TYPE_SFIXED64")]
-    pub const TYPE_SFIXED64: FieldDescriptorProtoType = FieldDescriptorProtoType(16u32);
-    #[var(17u32, "TYPE_SINT32")]
-    pub const TYPE_SINT32: FieldDescriptorProtoType = FieldDescriptorProtoType(17u32);
-    #[var(18u32, "TYPE_SINT64")]
-    pub const TYPE_SINT64: FieldDescriptorProtoType = FieldDescriptorProtoType(18u32);
+    #[var(1i32, "TYPE_DOUBLE")]
+    pub const TYPE_DOUBLE: FieldDescriptorProtoType = FieldDescriptorProtoType(1i32);
+    #[var(2i32, "TYPE_FLOAT")]
+    pub const TYPE_FLOAT: FieldDescriptorProtoType = FieldDescriptorProtoType(2i32);
+    #[var(3i32, "TYPE_INT64")]
+    pub const TYPE_INT64: FieldDescriptorProtoType = FieldDescriptorProtoType(3i32);
+    #[var(4i32, "TYPE_UINT64")]
+    pub const TYPE_UINT64: FieldDescriptorProtoType = FieldDescriptorProtoType(4i32);
+    #[var(5i32, "TYPE_INT32")]
+    pub const TYPE_INT32: FieldDescriptorProtoType = FieldDescriptorProtoType(5i32);
+    #[var(6i32, "TYPE_FIXED64")]
+    pub const TYPE_FIXED64: FieldDescriptorProtoType = FieldDescriptorProtoType(6i32);
+    #[var(7i32, "TYPE_FIXED32")]
+    pub const TYPE_FIXED32: FieldDescriptorProtoType = FieldDescriptorProtoType(7i32);
+    #[var(8i32, "TYPE_BOOL")]
+    pub const TYPE_BOOL: FieldDescriptorProtoType = FieldDescriptorProtoType(8i32);
+    #[var(9i32, "TYPE_STRING")]
+    pub const TYPE_STRING: FieldDescriptorProtoType = FieldDescriptorProtoType(9i32);
+    #[var(10i32, "TYPE_GROUP")]
+    pub const TYPE_GROUP: FieldDescriptorProtoType = FieldDescriptorProtoType(10i32);
+    #[var(11i32, "TYPE_MESSAGE")]
+    pub const TYPE_MESSAGE: FieldDescriptorProtoType = FieldDescriptorProtoType(11i32);
+    #[var(12i32, "TYPE_BYTES")]
+    pub const TYPE_BYTES: FieldDescriptorProtoType = FieldDescriptorProtoType(12i32);
+    #[var(13i32, "TYPE_UINT32")]
+    pub const TYPE_UINT32: FieldDescriptorProtoType = FieldDescriptorProtoType(13i32);
+    #[var(14i32, "TYPE_ENUM")]
+    pub const TYPE_ENUM: FieldDescriptorProtoType = FieldDescriptorProtoType(14i32);
+    #[var(15i32, "TYPE_SFIXED32")]
+    pub const TYPE_SFIXED32: FieldDescriptorProtoType = FieldDescriptorProtoType(15i32);
+    #[var(16i32, "TYPE_SFIXED64")]
+    pub const TYPE_SFIXED64: FieldDescriptorProtoType = FieldDescriptorProtoType(16i32);
+    #[var(17i32, "TYPE_SINT32")]
+    pub const TYPE_SINT32: FieldDescriptorProtoType = FieldDescriptorProtoType(17i32);
+    #[var(18i32, "TYPE_SINT64")]
+    pub const TYPE_SINT64: FieldDescriptorProtoType = FieldDescriptorProtoType(18i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FieldDescriptorProtoLabel(pub u32);
+pub struct FieldDescriptorProtoLabel(pub i32);
 #[protoenum]
 impl FieldDescriptorProtoLabel {
-    #[var(1u32, "LABEL_OPTIONAL")]
-    pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(1u32);
-    #[var(2u32, "LABEL_REQUIRED")]
-    pub const LABEL_REQUIRED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(2u32);
-    #[var(3u32, "LABEL_REPEATED")]
-    pub const LABEL_REPEATED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(3u32);
+    #[var(1i32, "LABEL_OPTIONAL")]
+    pub const LABEL_OPTIONAL: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        1i32,
+    );
+    #[var(2i32, "LABEL_REQUIRED")]
+    pub const LABEL_REQUIRED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        2i32,
+    );
+    #[var(3i32, "LABEL_REPEATED")]
+    pub const LABEL_REPEATED: FieldDescriptorProtoLabel = FieldDescriptorProtoLabel(
+        3i32,
+    );
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FileOptionsOptimizeMode(pub u32);
+pub struct FileOptionsOptimizeMode(pub i32);
 #[protoenum]
 impl FileOptionsOptimizeMode {
-    #[var(1u32, "SPEED")]
-    pub const SPEED: FileOptionsOptimizeMode = FileOptionsOptimizeMode(1u32);
-    #[var(2u32, "CODE_SIZE")]
-    pub const CODE_SIZE: FileOptionsOptimizeMode = FileOptionsOptimizeMode(2u32);
-    #[var(3u32, "LITE_RUNTIME")]
-    pub const LITE_RUNTIME: FileOptionsOptimizeMode = FileOptionsOptimizeMode(3u32);
+    #[var(1i32, "SPEED")]
+    pub const SPEED: FileOptionsOptimizeMode = FileOptionsOptimizeMode(1i32);
+    #[var(2i32, "CODE_SIZE")]
+    pub const CODE_SIZE: FileOptionsOptimizeMode = FileOptionsOptimizeMode(2i32);
+    #[var(3i32, "LITE_RUNTIME")]
+    pub const LITE_RUNTIME: FileOptionsOptimizeMode = FileOptionsOptimizeMode(3i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FieldOptionsCType(pub u32);
+pub struct FieldOptionsCType(pub i32);
 #[protoenum]
 impl FieldOptionsCType {
-    #[var(0u32, "STRING")]
-    pub const STRING: FieldOptionsCType = FieldOptionsCType(0u32);
-    #[var(1u32, "CORD")]
-    pub const CORD: FieldOptionsCType = FieldOptionsCType(1u32);
-    #[var(2u32, "STRING_PIECE")]
-    pub const STRING_PIECE: FieldOptionsCType = FieldOptionsCType(2u32);
+    #[var(0i32, "STRING")]
+    pub const STRING: FieldOptionsCType = FieldOptionsCType(0i32);
+    #[var(1i32, "CORD")]
+    pub const CORD: FieldOptionsCType = FieldOptionsCType(1i32);
+    #[var(2i32, "STRING_PIECE")]
+    pub const STRING_PIECE: FieldOptionsCType = FieldOptionsCType(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FieldOptionsJSType(pub u32);
+pub struct FieldOptionsJSType(pub i32);
 #[protoenum]
 impl FieldOptionsJSType {
-    #[var(0u32, "JS_NORMAL")]
-    pub const JS_NORMAL: FieldOptionsJSType = FieldOptionsJSType(0u32);
-    #[var(1u32, "JS_STRING")]
-    pub const JS_STRING: FieldOptionsJSType = FieldOptionsJSType(1u32);
-    #[var(2u32, "JS_NUMBER")]
-    pub const JS_NUMBER: FieldOptionsJSType = FieldOptionsJSType(2u32);
+    #[var(0i32, "JS_NORMAL")]
+    pub const JS_NORMAL: FieldOptionsJSType = FieldOptionsJSType(0i32);
+    #[var(1i32, "JS_STRING")]
+    pub const JS_STRING: FieldOptionsJSType = FieldOptionsJSType(1i32);
+    #[var(2i32, "JS_NUMBER")]
+    pub const JS_NUMBER: FieldOptionsJSType = FieldOptionsJSType(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct MethodOptionsIdempotencyLevel(pub u32);
+pub struct MethodOptionsIdempotencyLevel(pub i32);
 #[protoenum]
 impl MethodOptionsIdempotencyLevel {
-    #[var(0u32, "IDEMPOTENCY_UNKNOWN")]
-    pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(0u32);
-    #[var(1u32, "NO_SIDE_EFFECTS")]
-    pub const NO_SIDE_EFFECTS: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(1u32);
-    #[var(2u32, "IDEMPOTENT")]
-    pub const IDEMPOTENT: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(2u32);
+    #[var(0i32, "IDEMPOTENCY_UNKNOWN")]
+    pub const IDEMPOTENCY_UNKNOWN: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        0i32,
+    );
+    #[var(1i32, "NO_SIDE_EFFECTS")]
+    pub const NO_SIDE_EFFECTS: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        1i32,
+    );
+    #[var(2i32, "IDEMPOTENT")]
+    pub const IDEMPOTENT: MethodOptionsIdempotencyLevel = MethodOptionsIdempotencyLevel(
+        2i32,
+    );
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(name = "FileDescriptorSet", package = "google.protobuf")]
