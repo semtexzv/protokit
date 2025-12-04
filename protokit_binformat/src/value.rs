@@ -73,7 +73,6 @@ impl<'buf, B: BytesLike<'buf>> BinProto<'buf> for UnknownFields<B> {
 
 impl<'buf, B: BytesLike<'buf>> UnknownFields<B> {
     fn emit_field(f: &Field<B>, stream: &mut OutputStream) {
-
         match &f.val {
             Value::Varint(v) => emit_raw(v, f.num << 3 | crate::VARINT as u32, stream, OutputStream::varint),
             Value::Fixed32(v) => emit_raw(v, f.num << 3 | crate::FIX32 as u32, stream, OutputStream::fixed32),

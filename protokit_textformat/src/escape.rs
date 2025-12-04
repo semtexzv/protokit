@@ -18,7 +18,7 @@ pub fn escape_bytes_to(bytes: &[u8], buf: &mut String) {
 
             63 => buf.push_str("\\?"),
 
-            b'\x20' ..= b'\x7e' => buf.push(*c as char),
+            b'\x20'..=b'\x7e' => buf.push(*c as char),
             _ => {
                 buf.push('\\');
                 buf.push((b'0' + (c >> 6)) as char);
@@ -93,11 +93,11 @@ impl<I: Iterator<Item = u8>> Iterator for Unescape<I> {
                     self.hleft = 3;
                     continue;
                 }
-                first @ b'0' ..= b'7' => {
+                first @ b'0'..=b'7' => {
                     let mut value = first - b'0';
-                    for _ in 0 .. 2 {
+                    for _ in 0..2 {
                         match self.it.peek() {
-                            Some(x @ b'0' ..= b'7') => {
+                            Some(x @ b'0'..=b'7') => {
                                 value = value << 3 | (*x - b'0');
                                 let _ = self.it.next();
                             }

@@ -16,6 +16,7 @@ pub const FIX32: u8 = 5;
 pub struct ProtoMeta {
     pub buf: Option<Lifetime>,
     pub name: Option<LitStr>,
+    #[allow(dead_code)]
     pub file: Option<LitStr>,
     pub package: Option<LitStr>,
 }
@@ -24,7 +25,7 @@ impl Parse for ProtoMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut out = Self::default();
         let mut oname: Option<Ident> = input.parse()?;
-        for _ in 0 .. 100 {
+        for _ in 0..100 {
             let Some(name) = &oname else {
                 return Ok(out);
             };

@@ -32,11 +32,11 @@ optional = true
 [dependencies]
 anyhow = "1"
 quote = "1"
-petgraph = "0.6.4"
+petgraph = "0.8"
 #graph-cycles = "0.1.0"
 
 syn = { version = "2", default-features = false, features = ["parsing", "proc-macro"] }
 proc-macro2 = "1"
 
 prettyplease = { version = "0.2.1", features = ["verbatim"] }
-convert_case = "0.6.0"
+convert_case = "0.10"

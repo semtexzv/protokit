@@ -47,7 +47,7 @@ pub fn format_parse_error<'a>(input: &'a str, e: MyParseError<'a>) -> FormattedE
             let offset = location.location_offset().into();
             FormattedError {
                 src: input,
-                span: miette::SourceSpan::new(offset, 0.into()),
+                span: miette::SourceSpan::new(offset, 0usize),
                 kind,
                 others: Vec::new(),
             }
@@ -60,7 +60,7 @@ pub fn format_parse_error<'a>(input: &'a str, e: MyParseError<'a>) -> FormattedE
                     let offset = location.location_offset().into();
                     FormattedErrorContext {
                         src: input,
-                        span: miette::SourceSpan::new(offset, 0.into()),
+                        span: miette::SourceSpan::new(offset, 0usize),
                         context,
                     }
                 })

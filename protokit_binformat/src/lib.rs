@@ -525,14 +525,13 @@ where
     T: Default,
     F: Fn(&mut InputStream<'buf>, &mut T) -> Result<()>,
 {
-
     this.clear();
     let len = stream._varint::<usize>()?;
     if stream.len() < len {
         return Err(Error::UnexpectedEOF);
     }
     let mut is = InputStream {
-        buf: &stream.buf[stream.pos .. stream.pos + len],
+        buf: &stream.buf[stream.pos..stream.pos + len],
         pos: 0,
         limit: len,
     };
@@ -586,8 +585,12 @@ pub fn merge_oneof<'buf, T: Default + BinProto<'buf>>(
 }
 
 #[inline(never)]
-pub fn emit_raw<'out, T>(this: &T, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
-
+pub fn emit_raw<'out, T>(
+    this: &T,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     stream._tag(tag);
     mapper(stream, tag, this);
 }
@@ -605,7 +608,12 @@ pub fn emit_single<'out, T: Debug + Default + PartialEq>(
 }
 
 #[inline(never)]
-pub fn emit_optional<'out, T>(this: &Option<T>, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
+pub fn emit_optional<'out, T>(
+    this: &Option<T>,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     if let Some(v) = this {
         stream._tag(tag);
         mapper(stream, tag, v);
@@ -613,7 +621,12 @@ pub fn emit_optional<'out, T>(this: &Option<T>, tag: u32, stream: &mut OutputStr
 }
 
 #[inline(never)]
-pub fn emit_repeated<'out, T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
+pub fn emit_repeated<'out, T>(
+    this: &Vec<T>,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     for v in this {
         stream._tag(tag);
         mapper(stream, tag, v)
@@ -621,7 +634,12 @@ pub fn emit_repeated<'out, T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream
 }
 
 #[inline(never)]
-pub fn emit_packed<'out, T>(this: &Vec<T>, tag: u32, stream: &mut OutputStream<'out>, mapper: fn(&mut OutputStream<'out>, u32, &T)) {
+pub fn emit_packed<'out, T>(
+    this: &Vec<T>,
+    tag: u32,
+    stream: &mut OutputStream<'out>,
+    mapper: fn(&mut OutputStream<'out>, u32, &T),
+) {
     if !this.is_empty() {
         let (ptr, len) = stream.stack.pop();
         debug_assert_eq!(this as *const Vec<T> as *const u8, ptr);
@@ -664,7 +682,6 @@ pub fn emit_oneof<'buf, T: BinProto<'buf>>(o: &Option<T>, stream: &mut OutputStr
 }
 
 pub fn _size_varint<T: Varint>(value: T) -> usize {
-
     const VINT_LENS: [u8; 65] = [
         10, 9, 9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 4,
         4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -772,7 +789,7 @@ pub fn size_repeated<T, F>(v: &Vec<T>, tag: u32, stack: &mut SizeStack, measure:
 where
     F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
-    v.iter().rev().map(|v| _size_varint(tag) + measure(v, tag, stack)).sum()
+    v.iter().map(|v| _size_varint(tag) + measure(v, tag, stack)).sum()
 }
 
 #[inline(never)]
@@ -781,9 +798,7 @@ where
     F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
     if !v.is_empty() {
-        let len = stack.memo(v, |v, stack| {
-            v.iter().rev().map(|v| measure(v, tag, stack)).sum()
-        });
+        let len = stack.memo(v, |v, stack| v.iter().map(|v| measure(v, tag, stack)).sum());
         _size_varint(tag) + _size_varint(len) + len
     } else {
         0
@@ -810,7 +825,8 @@ pub fn size_map<K, V, M: Map<K, V>>(
     measure_val: fn(&V, u32, &mut SizeStack) -> usize,
 ) -> usize {
     let mut sum = 0;
-    m.rev_for_each(|(k, v)| {
+    // Use forward iteration to serialize in insertion order
+    m.for_each(|(k, v)| {
         let elem = stack.memo(k, |_, stack| {
             let v = measure_val(v, vtag, stack);
             let k = measure_key(k, ktag, stack);
@@ -846,11 +862,10 @@ pub fn encode<'buf, T: BinProto<'buf>>(b: &T) -> Result<Vec<u8>> {
 pub fn encode_to<'buf, T: BinProto<'buf>>(b: &T, mut out: Vec<u8>) -> Result<Vec<u8>> {
     let mut stack = SizeStack::default();
     let size = b.size(&mut stack);
-    out.resize(out.len() +  size, 0);
+    out.resize(out.len() + size, 0);
     let start = out.len() - size;
     let mut ostream = OutputStream::new(stack, &mut out[start..]);
     b.encode(&mut ostream);
     assert_eq!(ostream.stack.stack.len(), 0);
     Ok(out)
 }
-

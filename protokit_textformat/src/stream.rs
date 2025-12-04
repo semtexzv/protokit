@@ -81,7 +81,7 @@ impl<'buf> InputStream<'buf> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf();
-            f(&buf[1 .. buf.len() - 1])?;
+            f(&buf[1..buf.len() - 1])?;
             self.advance();
         }
         Ok(())
@@ -91,7 +91,7 @@ impl<'buf> InputStream<'buf> {
         self.expect_curr(StrLit)?;
         while self.cur == StrLit {
             let buf = self.buf().as_bytes();
-            f(&buf[1 .. buf.len() - 1])?;
+            f(&buf[1..buf.len() - 1])?;
             self.advance();
         }
         Ok(())
@@ -110,7 +110,7 @@ impl<'buf> InputStream<'buf> {
 
     pub fn u64(&mut self) -> Result<u64> {
         let out = match self.token_and_span() {
-            (HexLit, h) => u64::from_str_radix(&h[2 ..], 16)?,
+            (HexLit, h) => u64::from_str_radix(&h[2..], 16)?,
             (DecLit, h) => u64::from_str_radix(h, 10)?,
             (OctLit, h) => u64::from_str_radix(h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
@@ -121,7 +121,7 @@ impl<'buf> InputStream<'buf> {
 
     pub fn u32(&mut self) -> Result<u32> {
         let out = match self.token_and_span() {
-            (HexLit, h) => u32::from_str_radix(&h[2 ..], 16)?,
+            (HexLit, h) => u32::from_str_radix(&h[2..], 16)?,
             (DecLit, h) => u32::from_str_radix(h, 10)?,
             (OctLit, h) => u32::from_str_radix(h, 8)?,
             (tok, _) => return unexpected(DecLit, tok, self.lex.remainder()),
@@ -234,7 +234,7 @@ impl<'r> OutputStream<'r> {
 
     pub fn ln(&mut self) {
         self.buf.push('\n');
-        for _ in 0 .. self.pad {
+        for _ in 0..self.pad {
             self.buf.push(' ');
         }
     }

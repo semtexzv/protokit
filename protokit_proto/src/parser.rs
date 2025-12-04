@@ -184,13 +184,13 @@ fn opt_sign(i: Span) -> IResult<Option<char>> {
     opt(one_of("+-"))(i)
 }
 
-fn compound_constant(_i: Span) -> IResult<Const<'_>> {
+fn compound_constant<'a>(_i: Span<'a>) -> IResult<'a, Const<'a>> {
     unimplemented!()
     // let (i, res) = protokit_textformat::parser::message_body(i)?;
     // Ok((i, Const::Compound(res)))
 }
 
-fn constant(i: Span) -> IResult<Const<'_>> {
+fn constant<'a>(i: Span<'a>) -> IResult<'a, Const<'a>> {
     let ilit = map(
         tuple((opt_sign, int_lit)),
         |(sign, val)| {
@@ -244,7 +244,7 @@ fn import_type(i: Span) -> IResult<ImportType> {
     )(i)
 }
 
-fn import(i: Span) -> IResult<Import<'_>> {
+fn import<'a>(i: Span<'a>) -> IResult<'a, Import<'a>> {
     prefixed("import", |i| {
         let (i, typ) = ws(import_type)(i)?;
         let (i, path) = ws(str_lit)(i)?;
@@ -253,7 +253,7 @@ fn import(i: Span) -> IResult<Import<'_>> {
     })(i)
 }
 
-fn package(i: Span) -> IResult<Package<'_>> {
+fn package<'a>(i: Span<'a>) -> IResult<'a, Package<'a>> {
     prefixed("package", |i| {
         let (i, path) = ws(recognize(full_ident))(i)?;
         let (i, _) = semicolon(i)?;
@@ -279,7 +279,7 @@ fn option_name(i: Span) -> IResult<OptName> {
     // recognize(tuple((alt((simple, complex_paren)), recognize(many0(complex_field)))))(i)
 }
 
-fn option(i: Span) -> IResult<super::ast::Opt<'_>> {
+fn option<'a>(i: Span<'a>) -> IResult<'a, super::ast::Opt<'a>> {
     let (i, _) = ws(tag("option"))(i)?;
     let (i, name) = ws(option_name)(i)?;
     let (i, _) = ws(tag("="))(i)?;
@@ -296,7 +296,7 @@ fn builtin(i: Span) -> IResult<BuiltinType> {
     ];
     for t in types {
         if i.len() >= t.len() && i.starts_with(t) {
-            return Ok((i.slice(t.len() ..), BuiltinType::from_str(&i[.. t.len()]).unwrap()));
+            return Ok((i.slice(t.len()..), BuiltinType::from_str(&i[..t.len()]).unwrap()));
         }
     }
     Err(nom::Err::Error(GenericErrorTree::from_external_error(
@@ -310,7 +310,7 @@ fn ftype(i: Span) -> IResult<Type> {
     alt((map(ws(builtin), Type::Builtin), ws(msg_or_enum_type)))(i)
 }
 
-fn field_option(i: Span) -> IResult<Opt<'_>> {
+fn field_option<'a>(i: Span<'a>) -> IResult<'a, Opt<'a>> {
     let (i, name) = ws(option_name)(i)?;
     let (i, _) = ws(tag("="))(i)?;
     let (i, value) = ws(constant)(i)?;
@@ -318,7 +318,7 @@ fn field_option(i: Span) -> IResult<Opt<'_>> {
     Ok((i, Opt { name, value }))
 }
 
-fn field_options_brackets(i: Span) -> IResult<Vec<Opt<'_>>> {
+fn field_options_brackets<'a>(i: Span<'a>) -> IResult<'a, Vec<Opt<'a>>> {
     let opts = separated_list1(tag(","), field_option);
     delimited(ws(char('[')), opts, ws(char(']')))(i)
 }
@@ -335,7 +335,7 @@ fn frequency(i: Span) -> IResult<Frequency> {
     Ok((i, freq))
 }
 
-fn field(i: Span) -> IResult<Field<'_>> {
+fn field<'a>(i: Span<'a>) -> IResult<'a, Field<'a>> {
     let (i, frequency) = ws(frequency)(i)?;
     let (i, ftype) = ws(ftype)(i)?;
     let (i, name) = ws(ident)(i)?;
@@ -357,7 +357,7 @@ fn field(i: Span) -> IResult<Field<'_>> {
     ))
 }
 
-fn oneof_field(i: Span) -> IResult<Field<'_>> {
+fn oneof_field<'a>(i: Span<'a>) -> IResult<'a, Field<'a>> {
     let (i, ftype) = ws(ftype)(i)?;
     let (i, name) = ws(ident)(i)?;
     let (i, _) = ws(tag("="))(i)?;
@@ -377,7 +377,7 @@ fn oneof_field(i: Span) -> IResult<Field<'_>> {
     ))
 }
 
-fn oneof_item(i: Span) -> IResult<OneOfItem<'_>> {
+fn oneof_item<'a>(i: Span<'a>) -> IResult<'a, OneOfItem<'a>> {
     alt((
         ws(map(option, OneOfItem::Option)),
         ws(map(group, OneOfItem::Group)),
@@ -385,11 +385,11 @@ fn oneof_item(i: Span) -> IResult<OneOfItem<'_>> {
     ))(i)
 }
 
-fn oneof_body(i: Span) -> IResult<Vec<OneOfItem<'_>>> {
+fn oneof_body<'a>(i: Span<'a>) -> IResult<'a, Vec<OneOfItem<'a>>> {
     delimited(ws(tag("{")), many0(ws(oneof_item)), ws(tag("}")))(i)
 }
 
-fn oneof(i: Span) -> IResult<OneOf<'_>> {
+fn oneof<'a>(i: Span<'a>) -> IResult<'a, OneOf<'a>> {
     prefixed("oneof", |i| {
         let (i, name) = ws(ident)(i)?;
         let (i, items) = oneof_body(i)?;
@@ -401,7 +401,7 @@ fn key_type(i: Span) -> IResult<BuiltinType> {
     builtin(i)
 }
 
-fn map_field(i: Span) -> IResult<MapField<'_>> {
+fn map_field<'a>(i: Span<'a>) -> IResult<'a, MapField<'a>> {
     prefixed("map", |i| {
         let (i, _) = ws(tag("<"))(i)?;
         let (i, key_type) = ws(key_type)(i)?;
@@ -452,7 +452,7 @@ fn res_str_item(i: Span) -> IResult<Span> {
     ))(i)
 }
 
-fn reserved(i: Span) -> IResult<Reserved<'_>> {
+fn reserved<'a>(i: Span<'a>) -> IResult<'a, Reserved<'a>> {
     prefixed("reserved", |i| {
         let ranges = separated_list1(ws(char(',')), ws(res_range));
         let str_names = separated_list1(ws(char(',')), ws(res_str_item));
@@ -483,7 +483,7 @@ fn enum_lit(i: Span) -> IResult<i32> {
     Ok((i, val.try_into().expect("Field number too big")))
 }
 
-fn enum_field(i: Span) -> IResult<EnumField<'_>> {
+fn enum_field<'a>(i: Span<'a>) -> IResult<'a, EnumField<'a>> {
     let (i, name) = ws(ident)(i)?;
     let (i, _) = ws(tag("="))(i)?;
     let (i, value) = ws(enum_lit)(i)?;
@@ -500,11 +500,11 @@ fn enum_field(i: Span) -> IResult<EnumField<'_>> {
     ))
 }
 
-fn enum_item(i: Span) -> IResult<EnumItem<'_>> {
+fn enum_item<'a>(i: Span<'a>) -> IResult<'a, EnumItem<'a>> {
     alt((map(option, EnumItem::Option), map(enum_field, EnumItem::Field)))(i)
 }
 
-fn enum_body(i: Span) -> IResult<Vec<EnumItem<'_>>> {
+fn enum_body<'a>(i: Span<'a>) -> IResult<'a, Vec<EnumItem<'a>>> {
     let (i, body) = delimited(ws(tag("{")), many0(ws(enum_item)), ws(tag("}")))(i)?;
     let (i, _) = ws(opt(char(';')))(i)?;
     Ok((i, body))
@@ -518,7 +518,7 @@ fn _enum(i: Span) -> IResult<Enum> {
     })(i)
 }
 
-fn message_item(i: Span) -> IResult<MessageItem<'_>> {
+fn message_item<'a>(i: Span<'a>) -> IResult<'a, MessageItem<'a>> {
     alt((
         map(group, MessageItem::Group),
         map(field, MessageItem::Field),
@@ -533,14 +533,14 @@ fn message_item(i: Span) -> IResult<MessageItem<'_>> {
     ))(i)
 }
 
-fn message_body(i: Span) -> IResult<Vec<MessageItem<'_>>> {
+fn message_body<'a>(i: Span<'a>) -> IResult<'a, Vec<MessageItem<'a>>> {
     let (i, body) = delimited(ws(tag("{")), many0(ws(message_item)), ws(tag("}")))(i)?;
     let (i, _) = ws(opt(char(';')))(i)?;
 
     Ok((i, body))
 }
 
-fn message(i: Span) -> IResult<Message<'_>> {
+fn message<'a>(i: Span<'a>) -> IResult<'a, Message<'a>> {
     determined(ws(tag("message")), |i| {
         let (i, name) = ws(ident)(i)?;
         let (i, items) = ws(message_body)(i)?;
@@ -556,7 +556,7 @@ fn rpc_arg(i: Span) -> IResult<(bool, Type)> {
     )(i)
 }
 
-fn rpc_options(i: Span) -> IResult<Vec<Opt<'_>>> {
+fn rpc_options<'a>(i: Span<'a>) -> IResult<'a, Vec<Opt<'a>>> {
     delimited(ws(char('{')), many0(option), ws(tag("}")))(i)
 }
 
@@ -584,7 +584,7 @@ fn rpc(i: Span) -> IResult<Rpc> {
     })(i)
 }
 
-fn service_body(i: Span) -> IResult<Vec<ServiceItem<'_>>> {
+fn service_body<'a>(i: Span<'a>) -> IResult<'a, Vec<ServiceItem<'a>>> {
     delimited(
         ws(tag("{")),
         many0(ws(alt((
@@ -596,7 +596,7 @@ fn service_body(i: Span) -> IResult<Vec<ServiceItem<'_>>> {
     )(i)
 }
 
-fn service(i: Span) -> IResult<Service<'_>> {
+fn service<'a>(i: Span<'a>) -> IResult<'a, Service<'a>> {
     prefixed("service", |i| {
         let (i, name) = ws(ident)(i)?;
         let (i, items) = ws(service_body)(i)?;
@@ -613,7 +613,7 @@ fn extend_body(i: Span) -> IResult<Vec<ExtensionItem>> {
     delimited(ws(char('{')), ws(many0(extend_item)), ws(char('}')))(i)
 }
 
-fn extend(i: Span) -> IResult<Extension<'_>> {
+fn extend<'a>(i: Span<'a>) -> IResult<'a, Extension<'a>> {
     prefixed("extend", |i| {
         let (i, mtype) = ws(recognize(full_ident))(i)?;
         let (i, items) = ws(extend_body)(i)?;
@@ -642,7 +642,7 @@ fn group(i: Span) -> IResult<Group> {
     })(i)
 }
 
-fn def(i: Span) -> IResult<Def<'_>> {
+fn def<'a>(i: Span<'a>) -> IResult<'a, Def<'a>> {
     alt((
         map(message, Def::Message),
         map(_enum, Def::Enum),

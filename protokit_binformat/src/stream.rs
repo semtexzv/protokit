@@ -98,7 +98,7 @@ impl<'buf> InputStream<'buf> {
 
         let mut success = false;
         // Safety: We must maintain correct limit in order for this to work
-        for b in unsafe { self.buf.get_unchecked(self.pos .. self.limit).iter() } {
+        for b in unsafe { self.buf.get_unchecked(self.pos..self.limit).iter() } {
             let msb_dropped = b & DROP_MSB;
             result |= (msb_dropped as u64) << shift;
             shift += 7;
@@ -140,7 +140,7 @@ impl<'buf> InputStream<'buf> {
             return Err(Error::UnexpectedEOF);
         }
         self.pos += len;
-        Ok(&self.buf[self.pos - len .. self.pos])
+        Ok(&self.buf[self.pos - len..self.pos])
     }
 
     /// Read length-prefixed slice from the stream and decode it a string
@@ -237,16 +237,12 @@ impl<'buf> InputStream<'buf> {
 pub struct OutputStream<'o> {
     pub(crate) stack: SizeStack,
     pub(crate) buf: &'o mut [u8],
-    pub(crate) pos: usize
+    pub(crate) pos: usize,
 }
 
 impl<'o> OutputStream<'o> {
     pub fn new(stack: SizeStack, buf: &'o mut [u8]) -> Self {
-        Self {
-            stack,
-            buf,
-            pos: 0
-        }
+        Self { stack, buf, pos: 0 }
     }
     // pub fn len(&self) -> usize {
     //     self.buf.len() - self.pos
@@ -267,7 +263,7 @@ impl<'o> OutputStream<'o> {
         let len = _size_varint(n);
         // assert!(self.len() >= len);
 
-        for _ in 0 .. len - 1 {
+        for _ in 0..len - 1 {
             self.buf[self.pos] = MSB | (n as u8 & DROP_MSB);
             self.pos += 1;
             n >>= 7;
@@ -278,7 +274,7 @@ impl<'o> OutputStream<'o> {
 
     pub(crate) fn raw_bytes(&mut self, v: &[u8]) {
         assert!(self.buf.len() - self.pos >= v.len());
-        self.buf[self.pos.. self.pos + v.len()].copy_from_slice(v);
+        self.buf[self.pos..self.pos + v.len()].copy_from_slice(v);
         self.pos += v.len();
     }
 

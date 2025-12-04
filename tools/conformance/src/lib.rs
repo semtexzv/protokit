@@ -116,6 +116,6 @@ pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, ole
     };
     let out = binformat::encode(&out).unwrap();
     let outslice = from_raw_parts_mut(odata, olen as usize);
-    outslice[0 .. out.len()].copy_from_slice(&out);
+    outslice[0..out.len()].copy_from_slice(&out);
     out.len() as u32
 }

@@ -25,8 +25,8 @@ nom = "7.1.1"
 nom_locate = "4.0.0"
 nom-supreme = "0.8.0"
 
-thiserror = "1"
-miette = { version = "5.5.0", default-features = false, features = ["fancy-no-backtrace"] }
+thiserror = "2"
+miette = { version = "7", default-features = false, features = ["fancy-no-backtrace", "derive"] }
 
 indexmap = "2"
 lex_core = { package = "lexical-core", version = "0.8.5", features = ["parse-integers", "power-of-two"] }
