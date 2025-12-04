@@ -16,13 +16,9 @@ pub struct CodeGeneratorResponseFeature(pub u32);
 #[protoenum]
 impl CodeGeneratorResponseFeature {
     #[var(0u32, "FEATURE_NONE")]
-    pub const FEATURE_NONE: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(
-        0u32,
-    );
+    pub const FEATURE_NONE: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(0u32);
     #[var(1u32, "FEATURE_PROTO3_OPTIONAL")]
-    pub const FEATURE_PROTO3_OPTIONAL: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(
-        1u32,
-    );
+    pub const FEATURE_PROTO3_OPTIONAL: CodeGeneratorResponseFeature = CodeGeneratorResponseFeature(1u32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(name = "Version", package = "google.protobuf.compiler")]

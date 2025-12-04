@@ -152,13 +152,13 @@ pub fn resolve_name(set: &FileSetDef, id: GlobalDefId) -> Result<String> {
         return Ok(rustify_name(en.name.as_str()));
     } else {
         bail!(
-                "Could not resolve {} {} {:b} files:{}: {:#?}",
-                id,
-                id >> 32,
-                id & 0xFFFFFFFF,
-                set.files.len(),
-                set.files.keys()
-            );
+            "Could not resolve {} {} {:b} files:{}: {:#?}",
+            id,
+            id >> 32,
+            id & 0xFFFFFFFF,
+            set.files.len(),
+            set.files.keys()
+        );
     }
 }
 
@@ -491,21 +491,21 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
         // }
 
         let their_name = if other.name.contains('/') {
-            &other.name.as_str()[other.name.rfind('/').unwrap() + 1 ..]
+            &other.name.as_str()[other.name.rfind('/').unwrap() + 1..]
         } else {
             other.name.as_str()
         };
         let their_name = if their_name.contains('.') {
-            &their_name[.. their_name.rfind('.').unwrap()]
+            &their_name[..their_name.rfind('.').unwrap()]
         } else {
             their_name
         };
         let mut our_module = file.package.as_str();
         let mut that_module = other.package.as_str();
 
-        while !our_module.is_empty() && !that_module.is_empty() && our_module[.. 1] == that_module[.. 1] {
-            our_module = &our_module[1 ..];
-            that_module = &that_module[1 ..];
+        while !our_module.is_empty() && !that_module.is_empty() && our_module[..1] == that_module[..1] {
+            our_module = &our_module[1..];
+            that_module = &that_module[1..];
         }
         let mut path = String::new();
         path.push_str("super::");

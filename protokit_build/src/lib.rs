@@ -3,8 +3,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::usize;
 
 pub use anyhow::Result;
+use petgraph::graph::{DefaultIx, NodeIndex};
 use petgraph::{Direction, Graph};
-use petgraph::graph::{NodeIndex, DefaultIx};
 use quote::__private::TokenStream;
 use quote::quote;
 
@@ -43,7 +43,6 @@ impl ParserContext {
         Ok(())
     }
     pub fn finish(self) -> Result<FileSetDef> {
-
         Ok(self.ctx.def)
     }
 }
@@ -137,7 +136,8 @@ fn generate(opts: &mut filegen::Options, set: &protokit_desc::FileSetDef, out_di
 
     let mut cycles: Vec<HashSet<NodeIndex<DefaultIx>>> = petgraph::algo::tarjan_scc(&graph)
         .into_iter()
-        .map(|v| HashSet::from_iter(v.into_iter())).collect();
+        .map(|v| HashSet::from_iter(v.into_iter()))
+        .collect();
 
     let mut to_remove = HashSet::new();
 
@@ -158,9 +158,7 @@ fn generate(opts: &mut filegen::Options, set: &protokit_desc::FileSetDef, out_di
             })
         {
             to_remove.insert(*max.0);
-            cycles.retain_mut(|cycle| {
-                !cycle.contains(&max.0)
-            })
+            cycles.retain_mut(|cycle| !cycle.contains(&max.0))
         } else {
             break;
         }
@@ -168,14 +166,12 @@ fn generate(opts: &mut filegen::Options, set: &protokit_desc::FileSetDef, out_di
 
     let nodes = to_remove
         .into_iter()
-        .map(|item| {
-            graph.node_weight(item).cloned().unwrap()
-        }).collect::<HashSet<_>>();
+        .map(|item| graph.node_weight(item).cloned().unwrap())
+        .collect::<HashSet<_>>();
 
     // panic!("TO REMOVE: {:?}", nodes);
 
     opts.force_box = nodes;
-
 
     // TODO: Use package name + file name
     let mut generated_names = vec![];
