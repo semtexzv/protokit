@@ -12,12 +12,10 @@ description = "Usable protocol buffers"
 default = []
 
 [dependencies.binformat]
-package = "protokit_binformat"
-path = "../protokit_binformat"
-version = "0.2.0"
+workspace = true
 
 [dependencies]
-logos = { version = "0.13.0", default-features = false, features = [
+logos = { workspace = true, default-features = false, features = [
     "export_derive",
 ] }
-thiserror = "1"
+thiserror = { workspace = true }

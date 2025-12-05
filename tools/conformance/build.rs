@@ -1,5 +1,5 @@
 fn main() {
-    protokit_build::Build::new()
+    build::Build::new()
         .track_unknowns(true)
         .out_dir("src/gen")
         .include("../../vendor/protobuf/conformance")

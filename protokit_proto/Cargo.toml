@@ -10,28 +10,28 @@ description = "Usable protocol buffers"
 
 [features]
 default = []
-descriptors = ["protokit_desc/descriptors"]
+descriptors = ["desc/descriptors"]
 
-[dependencies.protokit_textformat]
-path = "../protokit_textformat"
-version = "0.2.0"
+[dependencies.textformat]
+workspace = true
 
-[dependencies.protokit_desc]
-path = "../protokit_desc"
-version = "0.2.0"
+[dependencies.desc]
+workspace = true
 
 [dependencies]
-nom = "7.1.1"
-nom_locate = "4.0.0"
-nom-supreme = "0.8.0"
+nom = { workspace = true }
+nom_locate = { workspace = true }
+nom-supreme = { workspace = true }
 
-thiserror = "1"
-miette = { version = "5.5.0", default-features = false, features = ["fancy-no-backtrace"] }
+thiserror = { workspace = true }
+miette = { workspace = true, default-features = false, features = [
+    "fancy-no-backtrace",
+] }
 
-indexmap = "2"
-lex_core = { package = "lexical-core", version = "0.8.5", features = ["parse-integers", "power-of-two"] }
-lex_float = { package = "minimal-lexical", version = "0.2.1" }
+indexmap = { workspace = true }
+lex_core = { workspace = true, features = ["parse-integers", "power-of-two"] }
+lex_float = { workspace = true }
 
 [dev-dependencies]
-tracing-subscriber = "0.3.11"
-glob = "0.3.0"
+tracing-subscriber = { workspace = true }
+glob = { workspace = true }

@@ -1,5 +1,5 @@
-use protokit_desc::arcstr::ArcStr;
-use protokit_desc::{
+use desc::arcstr::ArcStr;
+use desc::{
     DataType, EnumDef, ExtendDef, FileDef, ImportDef, MessageDef, OneOfDef, RpcDef, ServiceDef, UnresolvedHint,
 };
 

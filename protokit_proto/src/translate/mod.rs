@@ -3,8 +3,8 @@ use std::fs::read_to_string;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use protokit_desc::arcstr::ArcStr;
-use protokit_desc::{FileDef, FileSetDef};
+use desc::arcstr::ArcStr;
+use desc::{FileDef, FileSetDef};
 
 use crate::ast::*;
 use crate::Parse;

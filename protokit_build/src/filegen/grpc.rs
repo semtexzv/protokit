@@ -1,5 +1,5 @@
 use convert_case::{Case, Casing};
-use protokit_desc::{FileDef, RpcDef, ServiceDef};
+use desc::{FileDef, RpcDef, ServiceDef};
 use quote::__private::TokenStream;
 use quote::{format_ident, quote};
 

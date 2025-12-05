@@ -7,7 +7,7 @@
 //     pub opts: &'tcx mut E,
 // }
 
-// impl<E: protokit_textformat::Decodable> Visitor for InnerOptVisitor<'_, E> {
+// impl<E: textformat::Decodable> Visitor for InnerOptVisitor<'_, E> {
 //     fn visit_opt(&mut self, item: &mut Opt) {
 //         let ctx = Context::default();
 //         let n = match (*item.name.name, item.name.field_name.as_ref()) {
@@ -45,7 +45,7 @@
 //     pub opts: &'tcx mut E,
 // }
 //
-// impl<E: protokit_textformat::Decodable> Visitor for OuterOptVisitor<'_, E> {
+// impl<E: textformat::Decodable> Visitor for OuterOptVisitor<'_, E> {
 //     // Option visitor does not recurse into nested definitions
 //     fn visit_opt(&mut self, item: &mut Opt) {
 //         InnerOptVisitor {
@@ -111,7 +111,7 @@
 //     opts
 // }
 
-// pub fn opts<T: protokit_textformat::Decodable + Default>(ctx: &mut TranslateCtx, n: &mut impl AstNode) -> T {
+// pub fn opts<T: textformat::Decodable + Default>(ctx: &mut TranslateCtx, n: &mut impl AstNode) -> T {
 //     // let mut opts = opts(ctx, n);
 //     let mut out = T::default();
 //     // let ctx = Context::default();

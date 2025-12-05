@@ -30,7 +30,7 @@ const REMAPS: &[(&str, &str)] = &[
 #[cfg(feature = "parser")]
 #[derive(Default, Debug)]
 pub struct ParserContext {
-    ctx: protokit_proto::translate::TranslateCtx,
+    ctx: proto::translate::TranslateCtx,
 }
 
 #[cfg(feature = "parser")]
@@ -83,7 +83,7 @@ impl ProtocContext {
         }
 
         let data = std::fs::read(Path::new(&std::env::var("OUT_DIR").unwrap()).join("descriptor.bin")).unwrap();
-        let desc = protokit_binformat::decode::<protokit_desc::FileDescriptorSet>(data.as_slice())?;
+        let desc = binformat::decode::<desc::FileDescriptorSet>(data.as_slice())?;
 
         Ok(FileSetDef::from_descriptor(desc))
     }
@@ -100,7 +100,7 @@ pub struct Build {
     pub out_dir: Option<PathBuf>,
 }
 
-fn generate(opts: &mut filegen::Options, set: &protokit_desc::FileSetDef, out_dir: PathBuf) -> Result<()> {
+fn generate(opts: &mut filegen::Options, set: &desc::FileSetDef, out_dir: PathBuf) -> Result<()> {
     create_dir_all(&out_dir).unwrap();
 
     let mut graph = Graph::new();

@@ -14,37 +14,27 @@ grpc = ["dep:grpc"]
 descriptors = ["desc/descriptors"]
 
 [dependencies.binformat]
-package = "protokit_binformat"
-path = "../protokit_binformat"
-version = "0.2.0"
+workspace = true
 
 [dependencies.textformat]
-package = "protokit_textformat"
-path = "../protokit_textformat"
-version = "0.2.0"
+workspace = true
 optional = true
 
 [dependencies.desc]
-package = "protokit_desc"
-path = "../protokit_desc"
-version = "0.2.0"
+workspace = true
 optional = true
 
 [dependencies.grpc]
-package = "protokit_grpc"
-path = "../protokit_grpc"
-version = "0.2.0"
+workspace = true
 optional = true
 
 [dependencies.derive]
-package = "protokit_derive"
-path = "../protokit_derive"
-version = "0.2.0"
+workspace = true
 
 [dependencies]
-anyhow = "1"
-indexmap = "2"
-bumpalo = { version = "3", features = ["boxed", "collections"]}
+anyhow = { workspace = true }
+indexmap = { workspace = true }
+bumpalo = { workspace = true, features = ["boxed", "collections"] }
 
 [dev-dependencies]
-maplit = "1.0.2"
+maplit = { workspace = true }

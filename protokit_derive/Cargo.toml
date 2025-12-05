@@ -12,7 +12,7 @@ description = "Usable protocol buffers"
 proc-macro = true
 
 [dependencies]
-syn = { version = "2", features = ["full"]}
-quote = "1"
-proc-macro2 = "1"
-convert_case = "0.6.0"
+syn = { workspace = true, features = ["full"] }
+quote = { workspace = true }
+proc-macro2 = { workspace = true }
+convert_case = { workspace = true }

@@ -19,5 +19,4 @@ byteorder = "1.4.3"
 protokit = { path = "../../protokit", features = ["textformat"] }
 
 [build-dependencies]
-protokit_build = { path = "../../protokit_build", version = "0.2.0", features = ["protoc"] }
-
+build = { workspace = true, features = ["protoc"] }

@@ -10,18 +10,15 @@ description = "Usable protocol buffers"
 
 
 [dependencies.binformat]
-package = "protokit_binformat"
-path = "../protokit_binformat"
-version = "0.2.0"
+workspace = true
 
 [dependencies.tonic]
-version = "0.11.0"
+workspace = true
 default-features = false
 features = ["codegen", "transport"]
 
 [dependencies]
-anyhow = "1"
-futures = "0.3.21"
-bytes = "1.1.0"
-async-trait = "0.1.56"
-
+anyhow = { workspace = true }
+futures = { workspace = true }
+bytes = { workspace = true }
+async-trait = { workspace = true }

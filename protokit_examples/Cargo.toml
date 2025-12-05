@@ -13,7 +13,7 @@ publish = false
 
 
 [dependencies]
-protokit = { path = "../protokit", version = "0.2.0", features = ["textformat", "grpc"] }
+protokit = { workspace = true, features = ["textformat", "grpc"] }
 
 [build-dependencies]
-protokit_build = { path = "../protokit_build" }
+build = { workspace = true }

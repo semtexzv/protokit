@@ -4,8 +4,8 @@ use std::collections::{BTreeMap, HashSet};
 
 use anyhow::{Context, Result};
 use convert_case::{Case, Casing};
+use desc::Syntax::{Proto2, Proto3};
 use proc_macro2::TokenStream;
-use protokit_desc::Syntax::{Proto2, Proto3};
 use quote::{format_ident, quote};
 
 use crate::deps::*;

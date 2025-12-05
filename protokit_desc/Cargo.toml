@@ -13,23 +13,17 @@ default = []
 descriptors = []
 
 [dependencies.binformat]
-package = "protokit_binformat"
-path = "../protokit_binformat"
-version = "0.2.0"
+workspace = true
 
 [dependencies.textformat]
-package = "protokit_textformat"
-path = "../protokit_textformat"
-version = "0.2.0"
+workspace = true
 
 [dependencies.derive]
-package = "protokit_derive"
-path = "../protokit_derive"
-version = "0.2.0"
+workspace = true
 
 [dependencies]
-arcstr = "1.1.4"
-indexmap = "2"
+arcstr = { workspace = true }
+indexmap = { workspace = true }
 
 [dev-dependencies]
-maplit = "1.0.2"
+maplit = { workspace = true }

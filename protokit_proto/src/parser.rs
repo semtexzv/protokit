@@ -186,7 +186,7 @@ fn opt_sign(i: Span) -> IResult<Option<char>> {
 
 fn compound_constant(_i: Span<'_>) -> IResult<'_, Const<'_>> {
     unimplemented!()
-    // let (i, res) = protokit_textformat::parser::message_body(i)?;
+    // let (i, res) = textformat::parser::message_body(i)?;
     // Ok((i, Const::Compound(res)))
 }
 
@@ -673,7 +673,7 @@ impl<'i> Parse<'i> for Proto<'i> {
 // #[cfg(test)]
 // mod tests {
 //     use protokit_desc::BuiltinType::{Int32, Int64, String_};
-//     use protokit_textformat::ast::{FieldName, FieldValue, Literal};
+//     use textformat::ast::{FieldName, FieldValue, Literal};
 //
 //     use super::*;
 //
@@ -723,7 +723,7 @@ impl<'i> Parse<'i> for Proto<'i> {
 //             compound_constant("{a: true}"),
 //             Ok((
 //                 "",
-//                 Const::Compound(vec![protokit_textformat::ast::Field {
+//                 Const::Compound(vec![textformat::ast::Field {
 //                     name: FieldName::Normal("a"),
 //                     value: FieldValue::Scalar(Literal::Identifier("true")),
 //                 }])

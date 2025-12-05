@@ -3,5 +3,5 @@ pub use std::io::Write;
 pub use std::path::{Path, PathBuf};
 
 pub use anyhow::bail;
-pub use arcstr::ArcStr;
-pub use protokit_desc::*;
+pub use desc::arcstr::ArcStr;
+pub use desc::*;

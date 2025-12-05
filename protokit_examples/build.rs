@@ -1,5 +1,5 @@
-fn main() -> protokit_build::Result<()> {
-    protokit_build::Build::new()
+fn main() -> build::Result<()> {
+    build::Build::new()
         .track_unknowns(true)
         // .borrow_bufs()
         .include("../proto")

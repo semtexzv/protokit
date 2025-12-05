@@ -11,32 +11,31 @@ description = "Usable protocol buffers"
 [features]
 default = ["protoc"]
 protoc = ["descriptors"]
-parser = ["protokit_proto"]
+parser = ["proto"]
 
-descriptors = ["protokit_desc/descriptors"]
+descriptors = ["desc/descriptors"]
 
-[dependencies.protokit_binformat]
-path = "../protokit_binformat"
-version = "0.2.0"
+[dependencies.binformat]
+workspace = true
 
-[dependencies.protokit_desc]
-path = "../protokit_desc"
-version = "0.2.0"
+[dependencies.desc]
+workspace = true
 
-[dependencies.protokit_proto]
-path = "../protokit_proto"
-version = "0.2.0"
+[dependencies.proto]
+workspace = true
 default-features = false
 optional = true
 
 [dependencies]
-anyhow = "1"
-quote = "1"
-petgraph = "0.6.4"
-#graph-cycles = "0.1.0"
+anyhow = { workspace = true }
+quote = { workspace = true }
+petgraph = { workspace = true }
 
-syn = { version = "2", default-features = false, features = ["parsing", "proc-macro"] }
-proc-macro2 = "1"
+syn = { workspace = true, default-features = false, features = [
+    "parsing",
+    "proc-macro",
+] }
+proc-macro2 = { workspace = true }
 
-prettyplease = { version = "0.2.1", features = ["verbatim"] }
-convert_case = "0.6.0"
+prettyplease = { workspace = true, features = ["verbatim"] }
+convert_case = { workspace = true }
