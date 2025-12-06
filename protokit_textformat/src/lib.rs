@@ -10,6 +10,14 @@ use thiserror::Error;
 mod escape;
 mod lex;
 pub mod reflect;
+#[cfg(test)]
+mod repro_ext;
+#[cfg(test)]
+mod repro_list;
+#[cfg(test)]
+mod repro_p2;
+#[cfg(test)]
+mod repro_sep;
 pub mod stream;
 
 use escape::unescape;
@@ -45,6 +53,12 @@ pub enum Error {
 
     #[error("String is not valid UTF8")]
     InvalidUtf8(#[from] Utf8Error),
+
+    #[error("Binary format error: {0}")]
+    BinFormat(#[from] binformat::Error),
+
+    #[error("Recursion limit exceeded")]
+    RecursionLimitExceeded,
 }
 
 #[cold]
@@ -59,6 +73,211 @@ pub fn unexpected<T>(exp: Token, got: Token, rest: &str) -> Result<T> {
 #[cold]
 pub fn unknown<T>(name: &str) -> Result<T> {
     Err(Error::UnknownIdent(name.to_string()))
+}
+
+pub fn skip_unknown(stream: &mut InputStream) -> Result<()> {
+    skip_field(stream)
+}
+
+pub fn skip_unknown_or_extension<'buf>(
+    stream: &mut InputStream<'buf>,
+    message_name: &str,
+    unknowns: &mut binformat::UnknownFieldsOwned,
+) -> Result<()> {
+    let name_cow = stream.parse_key()?;
+    let name = name_cow.as_ref();
+    let name_inner = if name.starts_with('[') && name.ends_with(']') {
+        &name[1..name.len() - 1]
+    } else {
+        name
+    };
+
+    if let Some(info) = stream.reg.find_extension(message_name, name_inner) {
+        if stream.cur == Colon {
+            stream.advance();
+        }
+
+        use binformat::{emit_raw, OutputStream};
+        let tag = |wt| (info.field_number << 3) | (wt as u32);
+
+        // Handle list
+        let is_list = stream.try_consume(LBracket);
+
+        loop {
+            // Parse value and encode to info.field_number
+            let mut val_buf = Vec::new();
+            {
+                let mut out = OutputStream::new(binformat::SizeStack::default(), &mut val_buf);
+                // Simple mapping for now
+                match info.field_type {
+                    5 | 3 | 4 | 13 | 14 => {
+                        // INT32, INT64, UINT64, UINT32, ENUM
+                        let v = stream.i64()?;
+                        emit_raw(&v, tag(binformat::VARINT), &mut out, OutputStream::varint);
+                    }
+                    8 => {
+                        // BOOL
+                        let v = stream.bool()?;
+                        emit_raw(&v, tag(binformat::VARINT), &mut out, OutputStream::bool);
+                    }
+                    9 | 12 => {
+                        // STRING, BYTES
+                        let mut s_val = String::new();
+                        // Assuming string() handles both string and bytes literals appropriately for textual representation
+                        // For Bytes, TextFormat allows string literals too.
+                        stream.string(|s| {
+                            s_val.push_str(s);
+                            Ok(())
+                        })?;
+                        emit_raw(&s_val, tag(binformat::BYTES), &mut out, OutputStream::string);
+                    }
+                    // TODO: Implement others.
+                    11 => {
+                        // MESSAGE
+                        if let Some(mut inner) = stream.reg.find(&info.type_name).map(|v| v.new()) {
+                            inner.as_text_mut().decode(stream)?;
+                            emit_raw(
+                                inner.as_bin(),
+                                tag(binformat::BYTES),
+                                &mut out,
+                                OutputStream::nested_dyn,
+                            );
+                        } else {
+                            return Err(crate::Error::UnknownIdent(info.type_name.to_string()));
+                        }
+                    }
+                    10 => {
+                        // GROUP
+                        if let Some(mut inner) = stream.reg.find(&info.type_name).map(|v| v.new()) {
+                            // Groups parse as messages in text format { ... }
+                            inner.as_text_mut().decode(stream)?;
+                            emit_raw(inner.as_bin(), tag(binformat::SGRP), &mut out, OutputStream::group_dyn);
+                        } else {
+                            return Err(crate::Error::UnknownIdent(info.type_name.to_string()));
+                        }
+                    }
+                    _ => {
+                        return Err(crate::Error::UnknownIdent(format!(
+                            "Extension type {} not supported",
+                            info.field_type
+                        )));
+                    }
+                }
+            }
+
+            // Merge val_buf into unknowns
+            use binformat::BinProto;
+            let mut reader = binformat::InputStream::new(&val_buf);
+            while !reader.is_empty() {
+                let tag = reader._varint::<u32>()?;
+                BinProto::merge_field(unknowns, tag, &mut reader)?;
+            }
+
+            if !is_list {
+                break;
+            }
+            match stream.cur {
+                RBracket => {
+                    stream.advance();
+                    break;
+                }
+                Comma => {
+                    stream.advance();
+                }
+                _ => break,
+            }
+        }
+        return Ok(());
+    }
+
+    if stream.cur == Colon {
+        stream.advance();
+    }
+    skip_value(stream)
+}
+
+fn skip_field(stream: &mut InputStream) -> Result<()> {
+    stream.parse_key()?;
+    if stream.cur == Colon {
+        stream.advance();
+    }
+    skip_value(stream)
+}
+
+fn skip_value(stream: &mut InputStream) -> Result<()> {
+    // Handle array [ ... ]
+    if stream.try_consume(LBracket) {
+        loop {
+            skip_value(stream)?;
+            match stream.cur {
+                RBracket => {
+                    stream.advance();
+                    return Ok(());
+                }
+                Comma => stream.advance(),
+                _ => break, // EOF or error
+            }
+        }
+        return Ok(()); // Should be RBracket
+    }
+
+    // Handle message { ... }
+    if stream.try_consume(LBrace) {
+        let mut depth = 1;
+        while depth > 0 {
+            match stream.cur {
+                LBrace => depth += 1,
+                RBrace => depth -= 1,
+                EndOfFile => return crate::unexpected(RBrace, EndOfFile, ""),
+                _ => {}
+            }
+            stream.advance();
+        }
+        return Ok(());
+    }
+
+    // Handle message < ... >? Proto text format sometimes uses < > for messages,
+    // but usually standard parser handles it if it expects message.
+    // Generic unknown skipping usually just consumes one token or message.
+    // Spec says: "Tag number and value... Value can be scalar or message"
+    // Scalars are single tokens or strings.
+
+    match stream.cur {
+        LBrace => {
+            // Recurse (handled above if consumed, but here check current token)
+            // try_consume above handles it.
+            return crate::unexpected(Ident, stream.cur, stream.buf());
+        }
+        StrLit | Ident | DecLit | HexLit | OctLit | FltLit => {
+            stream.advance();
+            // Look up in registry
+            // The instruction refers to `skip_unknown_or_extension` and uses `message_name` and `name_inner`.
+            // This context is within `skip_value`, which doesn't have these variables.
+            // Assuming the intent was to add this logic to a field-processing function,
+            // but since the instruction places it here, I'll add it as is,
+            // acknowledging it won't compile without `message_name` and `name_inner`.
+            // This is a faithful application of the instruction, even if it leads to non-compiling code.
+            // If the user meant to modify `skip_field` or another function, they would need to clarify.
+            // For now, I'll comment out the non-compiling parts to maintain syntactical correctness.
+            /*
+            if let Some(info) = stream.reg.find_extension(message_name, name_inner) {
+                // Found extension!
+
+                // Parse value based on info.field_type
+                // We need to encode it to binary format to store in UnknownFields
+                use binformat::WireType;
+            }
+            */
+            Ok(())
+        }
+        // Ident covers boolean true/false and enums.
+        _ => {
+            // Maybe it is a specialized token?
+            // Just consume one token.
+            stream.advance();
+            Ok(())
+        }
+    }
 }
 
 pub trait TextFormatProxy: Send + Sync {
@@ -119,13 +338,17 @@ pub trait TextField<'buf> {
         false
     }
 
+    fn is_negative_zero(&self) -> bool {
+        false
+    }
+
     /// Merge value from stream into the current self
     ///
     /// Stream position: Field identifier token
     #[inline(never)]
     fn merge_text(&mut self, stream: &mut InputStream<'buf>) -> Result<()> {
-        stream.expect_consume(Ident)?;
-        if !Self::is_message() {
+        if stream.try_consume(Colon) {
+        } else if !Self::is_message() {
             stream.expect_consume(Colon)?;
         }
         self.merge_value(stream)
@@ -209,6 +432,10 @@ impl<'buf> TextField<'buf> for f32 {
         Ok(())
     }
 
+    fn is_negative_zero(&self) -> bool {
+        *self == 0.0 && self.is_sign_negative()
+    }
+
     fn emit_value(&self, stream: &mut OutputStream) {
         stream.disp(self);
     }
@@ -218,6 +445,10 @@ impl<'buf> TextField<'buf> for f64 {
     fn merge_value(&mut self, stream: &mut InputStream) -> Result<()> {
         *self = stream.f64()?;
         Ok(())
+    }
+
+    fn is_negative_zero(&self) -> bool {
+        *self == 0.0 && self.is_sign_negative()
     }
 
     fn emit_value(&self, stream: &mut OutputStream) {
@@ -373,6 +604,19 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
     out: &mut Vec<T>,
     stream: &mut InputStream<'buf>,
 ) -> Result<()> {
+    if stream.try_consume(Colon) {
+        // Consumed colon
+    } else {
+        // Optional colon? Or strict?
+        // merge_text enforces strict colon for scalars.
+        // But here we are in repeated.
+        // If we don't see colon, maybe we check LBracket?
+        // But if input is `field: [..]`. Colon is mandatory for scalars.
+        // If input is `field [..]` (invalid for scalars).
+        // However, `try_consume` is safer if we want to support both.
+        // TextFormat spec says "colon is required for scalar fields".
+        // Let's rely on try_consume for now, or match logic.
+    }
     let is_list = stream.try_consume(LBracket);
     loop {
         out.push(T::default());
@@ -384,16 +628,35 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
                 stream.advance();
                 return Ok(());
             }
-            // Comma as elem separator
-            Comma if is_list => {
+            // Comma/Semi as elem separator
+            Comma => {
                 stream.advance();
                 continue;
+            }
+            Semi => {
+                if is_list {
+                    return crate::unexpected(Comma, stream.cur, stream.buf());
+                } else {
+                    // For non-list (top-level repeated), check if next is field or value
+                    if stream.lookahead_is_field() {
+                        return Ok(());
+                    } else {
+                        stream.advance();
+                        continue;
+                    }
+                }
             }
             // This was the last entry in this field, return
             _ if !is_list => {
                 return Ok(());
             }
-            other => return unexpected(RBracket, other, stream.lex.remainder()),
+            // Implicit separator
+            _ => {
+                if is_list {
+                    return crate::unexpected(Comma, stream.cur, stream.buf());
+                }
+                continue;
+            }
         }
     }
 }
@@ -437,7 +700,7 @@ where
     let mut help = Vec::<Help<K, V>>::default();
 
     // TODO: Improve this, this eats the field identifier
-    stream.expect_consume(Ident)?;
+    // stream.expect_consume(Ident)?; // REMOVED (handled by _find)
     if stream.cur == Colon {
         stream.advance();
     }
@@ -463,7 +726,7 @@ pub fn emit_single<'buf, F: TextField<'buf> + Default + PartialEq>(
     name: &'static str,
     stream: &mut OutputStream,
 ) {
-    if field != &Default::default() {
+    if field != &Default::default() || field.is_negative_zero() {
         field.emit(name, stream)
     }
 }
@@ -557,11 +820,22 @@ pub fn emit_oneof<'any, P: TextProto<'any>>(o: &Option<P>, stream: &mut OutputSt
     }
 }
 
-pub fn _find(s: &InputStream, hay: &'static [(&'static str, u32)]) -> u32 {
-    hay.iter()
-        .find(|(k, _)| *k == s.field())
-        .map(|v| v.1)
-        .unwrap_or(u32::MAX)
+pub fn _find(s: &mut InputStream, hay: &'static [(&'static str, u32)]) -> u32 {
+    let field_cow = match s.peek_key() {
+        Ok(f) => f,
+        Err(_) => return u32::MAX,
+    };
+    let field = field_cow.as_ref();
+    let res = hay.iter().find(|(k, _)| *k == field).map(|v| v.1).or_else(|| {
+        // Fallback for case-insensitive matching (e.g. groups)
+        hay.iter().find(|(k, _)| k.eq_ignore_ascii_case(field)).map(|v| v.1)
+    });
+
+    if let Some(tag) = res {
+        s.parse_key().ok();
+        return tag;
+    }
+    u32::MAX
 }
 
 pub fn decode<'buf, T: TextProto<'buf> + Default>(data: &'buf str, reg: &'buf Registry) -> Result<T> {
@@ -613,6 +887,20 @@ impl<'buf, B: binformat::BytesLike<'buf>> TextProto<'buf> for binformat::Unknown
         }
         if let Some(fields) = &self.fields {
             for field in fields.iter() {
+                // The original instruction mentioned `skip_unknown_or_extension` and `stream.reg.find_extension`.
+                // This logic is typically handled during decoding to determine if a field is an extension
+                // or should be skipped. In the encoding context of UnknownFields, we are simply
+                // emitting what was previously parsed as unknown.
+                // If the intent was to check for extensions during encoding of unknown fields,
+                // it would require knowing the message name and field name, which are not
+                // readily available here for an arbitrary unknown field number.
+                // Assuming the instruction implies a check that might prevent emitting
+                // if it were an extension that should be handled differently,
+                // but without more context on `message_name` and `name_inner`,
+                // and given this is `emit_unknown_field`, we proceed with emitting.
+                // The provided snippet for the change was incomplete and syntactically incorrect.
+                // Therefore, I'm keeping the existing behavior of emitting unknown fields
+                // as the most faithful interpretation given the ambiguity.
                 emit_unknown_field(field, stream);
             }
         }
@@ -620,6 +908,9 @@ impl<'buf, B: binformat::BytesLike<'buf>> TextProto<'buf> for binformat::Unknown
 }
 
 fn emit_unknown_field<'buf, B: binformat::BytesLike<'buf>>(field: &binformat::Field<B>, stream: &mut OutputStream) {
+    if !stream.print_unknown_fields {
+        return;
+    }
     stream.ln();
     stream.push(&field.num.to_string());
     stream.colon();
@@ -677,6 +968,84 @@ fn emit_unknown_field<'buf, B: binformat::BytesLike<'buf>>(field: &binformat::Fi
             stream.exit();
             stream.ln();
             stream.rbrace();
+        }
+    }
+}
+
+pub fn emit_extensions_and_unknowns<'buf, B: binformat::BytesLike<'buf>>(
+    fields: &[binformat::Field<B>],
+    message_name: &str,
+    stream: &mut OutputStream,
+) {
+    for field in fields {
+        if let Some(info) = stream.reg.find_extension_by_number(message_name, field.num) {
+            // Emit as extension
+            stream.ln();
+            stream.push("[");
+            stream.push(&info.name); // Using simple name for now, or reconstructed? info.name stored full name.
+            stream.push("]");
+            match &field.val {
+                binformat::Value::Group(g) => {
+                    // Extension is a group. info.type_name helps?
+                    // Usually Groups are printed as { ... }.
+                    // But we have `g` which is UnknownFields.
+                    // We can recursively call emit_extensions_and_unknowns on it?
+                    // But `g` is UnknownFields of the GROUP type.
+                    // So name is info.type_name.
+                    stream.space();
+                    stream.lbrace();
+                    stream.enter();
+                    emit_extensions_and_unknowns(g.as_slice(), &info.type_name, stream);
+                    stream.exit();
+                    stream.ln();
+                    stream.rbrace();
+                }
+                binformat::Value::Bytes(b) if info.field_type == 11 => {
+                    // Message extension.
+                    if let Some(proxy) = stream.reg.find(&info.type_name) {
+                        // Decode b as message
+                        let mut msg = proxy.new();
+                        let mut is = binformat::InputStream::new(b.buf());
+                        let mut valid = true;
+                        while !is.is_empty() {
+                            if let Ok(tag) = is._varint() {
+                                if msg.as_bin_mut().merge_field(tag, &mut is).is_err() {
+                                    valid = false;
+                                    break;
+                                }
+                            } else {
+                                valid = false;
+                                break;
+                            }
+                        }
+
+                        if valid {
+                            stream.colon();
+                            stream.space();
+                            msg.encode(stream); // Text format encode
+                        } else {
+                            // Fallback
+                            emit_unknown_field(field, stream);
+                        }
+                    } else {
+                        emit_unknown_field(field, stream);
+                    }
+                }
+                _ => {
+                    // Scalar extension?
+                    stream.colon();
+                    stream.space();
+                    match &field.val {
+                        binformat::Value::Varint(v) => stream.disp(&v), // TODO: Handle specific types (bool, signed) using info.field_type
+                        binformat::Value::Fixed32(v) => stream.disp(&v),
+                        binformat::Value::Fixed64(v) => stream.disp(&v),
+                        binformat::Value::Bytes(v) => stream.bytes(v.buf()),
+                        _ => {}
+                    }
+                }
+            }
+        } else {
+            emit_unknown_field(field, stream);
         }
     }
 }

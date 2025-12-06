@@ -10,7 +10,7 @@ pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NullValue(pub i32);
-#[protoenum]
+#[protoenum(open)]
 impl NullValue {
     #[var(0i32, "NULL_VALUE")]
     pub const NULL_VALUE: NullValue = NullValue(0i32);

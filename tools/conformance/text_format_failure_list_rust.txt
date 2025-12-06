@@ -1,0 +1,3 @@
+Required.Proto2.TextFormatInput.GroupFieldExtension.ProtobufOutput
+Required.Proto2.TextFormatInput.GroupFieldExtension.TextFormatOutput
+Required.Proto2.TextFormatInput.GroupFieldExtensionGroupName

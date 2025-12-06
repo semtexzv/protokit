@@ -12,6 +12,20 @@ use crate::TextProto;
 pub struct Registry {
     pub messages: BTreeMap<&'static str, Box<dyn AnyMessage>>,
     pub proxies: BTreeMap<&'static str, Box<dyn crate::TextFormatProxy>>,
+    // Map from "ExtendingMessageName" -> "ExtensionName" -> ExtensionInfo
+    pub extensions: BTreeMap<String, BTreeMap<String, ExtensionInfo>>,
+    // Map from "ExtendingMessageName" -> FieldNumber -> ExtensionInfo (with name)
+    pub extensions_by_number: BTreeMap<String, BTreeMap<u32, ExtensionInfo>>,
+}
+
+#[derive(Clone, Debug)]
+pub struct ExtensionInfo {
+    pub field_number: u32,
+    pub field_type: u32,
+    pub is_repeated: bool,
+    pub type_name: String,
+    // We need name here for reverse lookup
+    pub name: String,
 }
 
 impl Debug for Registry {
@@ -19,6 +33,7 @@ impl Debug for Registry {
         f.debug_struct("Registry")
             .field("messages", &self.messages)
             .field("proxies", &self.proxies.keys())
+            .field("extensions", &self.extensions)
             .finish()
     }
 }
@@ -44,6 +59,42 @@ impl Registry {
 
     pub fn find_proxy(&self, name: &str) -> Option<&dyn crate::TextFormatProxy> {
         self.proxies.get(name).map(|b| b.as_ref())
+    }
+
+    pub fn register_extension(
+        &mut self,
+        extendee: &str,
+        field_name: &str,
+        number: u32,
+        field_type: u32,
+        is_repeated: bool,
+        type_name: &str,
+    ) {
+        let info = ExtensionInfo {
+            field_number: number,
+            field_type,
+            is_repeated,
+            type_name: type_name.to_string(),
+            name: field_name.to_string(),
+        };
+
+        self.extensions
+            .entry(extendee.to_string())
+            .or_default()
+            .insert(field_name.to_string(), info.clone());
+
+        self.extensions_by_number
+            .entry(extendee.to_string())
+            .or_default()
+            .insert(number, info);
+    }
+
+    pub fn find_extension(&self, extendee: &str, field_name: &str) -> Option<ExtensionInfo> {
+        self.extensions.get(extendee)?.get(field_name).cloned()
+    }
+
+    pub fn find_extension_by_number(&self, extendee: &str, number: u32) -> Option<ExtensionInfo> {
+        self.extensions_by_number.get(extendee)?.get(&number).cloned()
     }
 }
 

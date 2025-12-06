@@ -4,7 +4,7 @@
 #![allow(clippy::module_inception)]
 use protokit::*;
 pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
-    registry.register(&TestAllTypesProto3NestedMessage::default());
+    registry.register(&TestAllTypesProto3_NestedMessage::default());
     registry.register(&TestAllTypesProto3::default());
     registry.register(&ForeignMessage::default());
     registry.register(&NullHypothesisProto3::default());
@@ -18,7 +18,7 @@ use super::super::super::google::protobuf::timestamp::*;
 use super::super::super::google::protobuf::wrappers::*;
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ForeignEnum(pub i32);
-#[protoenum]
+#[protoenum(open)]
 impl ForeignEnum {
     #[var(0i32, "FOREIGN_FOO")]
     pub const FOREIGN_FOO: ForeignEnum = ForeignEnum(0i32);
@@ -28,56 +28,56 @@ impl ForeignEnum {
     pub const FOREIGN_BAZ: ForeignEnum = ForeignEnum(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestAllTypesProto3NestedEnum(pub i32);
-#[protoenum]
-impl TestAllTypesProto3NestedEnum {
+pub struct TestAllTypesProto3_NestedEnum(pub i32);
+#[protoenum(open)]
+impl TestAllTypesProto3_NestedEnum {
     #[var(0i32, "FOO")]
-    pub const FOO: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(0i32);
+    pub const FOO: TestAllTypesProto3_NestedEnum = TestAllTypesProto3_NestedEnum(0i32);
     #[var(1i32, "BAR")]
-    pub const BAR: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(1i32);
+    pub const BAR: TestAllTypesProto3_NestedEnum = TestAllTypesProto3_NestedEnum(1i32);
     #[var(2i32, "BAZ")]
-    pub const BAZ: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(2i32);
+    pub const BAZ: TestAllTypesProto3_NestedEnum = TestAllTypesProto3_NestedEnum(2i32);
     #[var(-1i32, "NEG")]
-    pub const NEG: TestAllTypesProto3NestedEnum = TestAllTypesProto3NestedEnum(-1i32);
+    pub const NEG: TestAllTypesProto3_NestedEnum = TestAllTypesProto3_NestedEnum(-1i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestAllTypesProto3AliasedEnum(pub i32);
-#[protoenum]
-impl TestAllTypesProto3AliasedEnum {
+pub struct TestAllTypesProto3_AliasedEnum(pub i32);
+#[protoenum(open)]
+impl TestAllTypesProto3_AliasedEnum {
     #[var(0i32, "ALIAS_FOO")]
-    pub const ALIAS_FOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+    pub const ALIAS_FOO: TestAllTypesProto3_AliasedEnum = TestAllTypesProto3_AliasedEnum(
         0i32,
     );
     #[var(1i32, "ALIAS_BAR")]
-    pub const ALIAS_BAR: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+    pub const ALIAS_BAR: TestAllTypesProto3_AliasedEnum = TestAllTypesProto3_AliasedEnum(
         1i32,
     );
     #[var(2i32, "ALIAS_BAZ")]
-    pub const ALIAS_BAZ: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(
+    pub const ALIAS_BAZ: TestAllTypesProto3_AliasedEnum = TestAllTypesProto3_AliasedEnum(
         2i32,
     );
     #[var(2i32, "MOO")]
-    pub const MOO: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
+    pub const MOO: TestAllTypesProto3_AliasedEnum = TestAllTypesProto3_AliasedEnum(2i32);
     #[var(2i32, "moo")]
-    pub const moo: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
+    pub const moo: TestAllTypesProto3_AliasedEnum = TestAllTypesProto3_AliasedEnum(2i32);
     #[var(2i32, "bAz")]
-    pub const bAz: TestAllTypesProto3AliasedEnum = TestAllTypesProto3AliasedEnum(2i32);
+    pub const bAz: TestAllTypesProto3_AliasedEnum = TestAllTypesProto3_AliasedEnum(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct EnumOnlyProto3Bool(pub i32);
-#[protoenum]
-impl EnumOnlyProto3Bool {
+pub struct EnumOnlyProto3_Bool(pub i32);
+#[protoenum(open)]
+impl EnumOnlyProto3_Bool {
     #[var(0i32, "kFalse")]
-    pub const kFalse: EnumOnlyProto3Bool = EnumOnlyProto3Bool(0i32);
+    pub const kFalse: EnumOnlyProto3_Bool = EnumOnlyProto3_Bool(0i32);
     #[var(1i32, "kTrue")]
-    pub const kTrue: EnumOnlyProto3Bool = EnumOnlyProto3Bool(1i32);
+    pub const kTrue: EnumOnlyProto3_Bool = EnumOnlyProto3_Bool(1i32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(
     name = "TestAllTypesProto3.NestedMessage",
     package = "protobuf_test_messages.proto3"
 )]
-pub struct TestAllTypesProto3NestedMessage {
+pub struct TestAllTypesProto3_NestedMessage {
     #[field(1u32, "a", varint, singular)]
     pub a: i32,
     #[field(2u32, "corecursive", nested, optional)]
@@ -90,7 +90,7 @@ pub enum TestAllTypesProto3OneOfOneofField {
     #[field(111u32, "oneof_uint32", varint, raw)]
     OneofUint32(u32),
     #[field(112u32, "oneof_nested_message", nested, raw)]
-    OneofNestedMessage(TestAllTypesProto3NestedMessage),
+    OneofNestedMessage(TestAllTypesProto3_NestedMessage),
     #[field(113u32, "oneof_string", string, raw)]
     OneofString(String),
     #[field(114u32, "oneof_bytes", bytes, raw)]
@@ -104,7 +104,7 @@ pub enum TestAllTypesProto3OneOfOneofField {
     #[field(118u32, "oneof_double", fixed64, raw)]
     OneofDouble(f64),
     #[field(119u32, "oneof_enum", protoenum, raw)]
-    OneofEnum(TestAllTypesProto3NestedEnum),
+    OneofEnum(TestAllTypesProto3_NestedEnum),
     #[field(120u32, "oneof_null_value", protoenum, raw)]
     OneofNullValue(NullValue),
     __Unused(::core::marker::PhantomData<&'static ()>),
@@ -148,15 +148,15 @@ pub struct TestAllTypesProto3 {
     #[field(15u32, "optional_bytes", bytes, singular)]
     pub optional_bytes: Vec<u8>,
     #[field(18u32, "optional_nested_message", nested, optional)]
-    pub optional_nested_message: Option<Box<TestAllTypesProto3NestedMessage>>,
+    pub optional_nested_message: Option<Box<TestAllTypesProto3_NestedMessage>>,
     #[field(19u32, "optional_foreign_message", nested, optional)]
     pub optional_foreign_message: Option<ForeignMessage>,
     #[field(21u32, "optional_nested_enum", protoenum, singular)]
-    pub optional_nested_enum: TestAllTypesProto3NestedEnum,
+    pub optional_nested_enum: TestAllTypesProto3_NestedEnum,
     #[field(22u32, "optional_foreign_enum", protoenum, singular)]
     pub optional_foreign_enum: ForeignEnum,
     #[field(23u32, "optional_aliased_enum", protoenum, singular)]
-    pub optional_aliased_enum: TestAllTypesProto3AliasedEnum,
+    pub optional_aliased_enum: TestAllTypesProto3_AliasedEnum,
     #[field(24u32, "optional_string_piece", string, singular)]
     pub optional_string_piece: String,
     #[field(25u32, "optional_cord", string, singular)]
@@ -194,11 +194,11 @@ pub struct TestAllTypesProto3 {
     #[field(45u32, "repeated_bytes", bytes, repeated)]
     pub repeated_bytes: Vec<Vec<u8>>,
     #[field(48u32, "repeated_nested_message", nested, repeated)]
-    pub repeated_nested_message: Vec<TestAllTypesProto3NestedMessage>,
+    pub repeated_nested_message: Vec<TestAllTypesProto3_NestedMessage>,
     #[field(49u32, "repeated_foreign_message", nested, repeated)]
     pub repeated_foreign_message: Vec<ForeignMessage>,
     #[field(51u32, "repeated_nested_enum", protoenum, packed)]
-    pub repeated_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
+    pub repeated_nested_enum: Vec<TestAllTypesProto3_NestedEnum>,
     #[field(52u32, "repeated_foreign_enum", protoenum, packed)]
     pub repeated_foreign_enum: Vec<ForeignEnum>,
     #[field(54u32, "repeated_string_piece", string, repeated)]
@@ -232,7 +232,7 @@ pub struct TestAllTypesProto3 {
     #[field(87u32, "packed_bool", bool, packed)]
     pub packed_bool: Vec<bool>,
     #[field(88u32, "packed_nested_enum", protoenum, packed)]
-    pub packed_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
+    pub packed_nested_enum: Vec<TestAllTypesProto3_NestedEnum>,
     #[field(89u32, "unpacked_int32", varint, repeated)]
     pub unpacked_int32: Vec<i32>,
     #[field(90u32, "unpacked_int64", varint, repeated)]
@@ -260,7 +260,7 @@ pub struct TestAllTypesProto3 {
     #[field(101u32, "unpacked_bool", bool, repeated)]
     pub unpacked_bool: Vec<bool>,
     #[field(102u32, "unpacked_nested_enum", protoenum, repeated)]
-    pub unpacked_nested_enum: Vec<TestAllTypesProto3NestedEnum>,
+    pub unpacked_nested_enum: Vec<TestAllTypesProto3_NestedEnum>,
     #[field(56u32, "map_int32_int32", map(varint, varint), singular)]
     pub map_int32_int32: ::protokit::IndexMap<i32, i32>,
     #[field(57u32, "map_int64_int64", map(varint, varint), singular)]
@@ -294,14 +294,14 @@ pub struct TestAllTypesProto3 {
     #[field(71u32, "map_string_nested_message", map(string, nested), singular)]
     pub map_string_nested_message: ::protokit::IndexMap<
         String,
-        TestAllTypesProto3NestedMessage,
+        TestAllTypesProto3_NestedMessage,
     >,
     #[field(72u32, "map_string_foreign_message", map(string, nested), singular)]
     pub map_string_foreign_message: ::protokit::IndexMap<String, ForeignMessage>,
     #[field(73u32, "map_string_nested_enum", map(string, protoenum), singular)]
     pub map_string_nested_enum: ::protokit::IndexMap<
         String,
-        TestAllTypesProto3NestedEnum,
+        TestAllTypesProto3_NestedEnum,
     >,
     #[field(74u32, "map_string_foreign_enum", map(string, protoenum), singular)]
     pub map_string_foreign_enum: ::protokit::IndexMap<String, ForeignEnum>,

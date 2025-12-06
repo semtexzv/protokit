@@ -6,7 +6,7 @@ git clone https://github.com/protocolbuffers/protobuf --no-checkout  vendor/prot
 git clone https://github.com/googleapis/googleapis --no-checkout vendor/googleapis
 git clone https://github.com/envoyproxy/protoc-gen-validate --no-checkout vendor/validate
 
-(cd vendor/protobuf && git fetch && git checkout a847a8dc4ba1d99e7ba917146c84438b4de7d085 --force && git submodule update --init --recursive)
+(cd vendor/protobuf && git fetch && git checkout a8d85ffbc7158660b4247f732371d1b07780510e --force && git submodule update --init --recursive)
 (cd vendor/googleapis && git fetch && git checkout master --force && git submodule update --init --recursive)
 (cd vendor/validate && git fetch && git checkout main --force && git submodule update --init --recursive)
 

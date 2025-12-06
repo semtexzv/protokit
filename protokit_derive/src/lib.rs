@@ -16,11 +16,18 @@ use syn::{
 use crate::util::{FieldKind, FieldMeta, Frequency, OneOfMeta, ProtoMeta, VarMeta};
 
 #[proc_macro_attribute]
-pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn protoenum(attr: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut block = parse_macro_input!(input as syn::ItemImpl);
+
     let ident = &block.self_ty;
+
+    // Check if "closed" is present in attributes
+    let closed = attr.to_string().contains("closed");
+
     let mut merge_txt = vec![];
     let mut emit_txt = vec![];
+    let mut known_nums = vec![];
+
     for b in &mut block.items {
         if let ImplItem::Const(c) = b {
             c.attrs.retain(|a| {
@@ -30,6 +37,7 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
                     let num = m.num;
                     merge_txt.push(quote! { #name => *self = Self::from(#num), });
                     emit_txt.push(quote! { #num => stream.ident(#name), });
+                    known_nums.push(num);
                     false
                 } else {
                     true
@@ -37,6 +45,16 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
             });
         }
     }
+
+    let validation = if closed {
+        quote! {
+            if !matches!(v, #(#known_nums)|*) {
+                return protokit::textformat::unknown(name);
+            }
+        }
+    } else {
+        quote! {}
+    };
 
     (quote! {
         #block
@@ -48,9 +66,17 @@ pub fn protoenum(_: proc_macro::TokenStream, input: proc_macro::TokenStream) -> 
         }
         impl<'buf> protokit::textformat::TextField<'buf> for #ident {
              fn merge_value(&mut self, stream: &mut protokit::textformat::InputStream<'buf>) -> protokit::textformat::Result<()> {
-                match stream.field() {
+                    match stream.field() {
                     #(#merge_txt)*
-                    name => return protokit::textformat::unknown(name),
+                    name => {
+                        if let Ok(v) = name.parse::<i32>() {
+                            #validation
+                            *self = Self::from(v);
+                            stream.advance();
+                        } else {
+                            return protokit::textformat::unknown(name)
+                        }
+                    },
                 }
 
                 Ok(())
@@ -130,6 +156,11 @@ fn bin_merge_arm(
     let tag = num << 3 | wt as u32;
     let merge_fn = format_ident!("merge_{}", freq.binformat_suffix(), span = ident.span());
     match kind {
+        FieldKind::Group => {
+            quote_spanned! { ident.span() =>
+                #tag => protokit::binformat::#merge_fn(#this, stream, |s, p| s.group_checked(#tag, p)),
+            }
+        }
         FieldKind::Map(t) => {
             let key_fn = format_ident!("{}", t.deref().0.to_string());
             let val_fn = format_ident!("{}", t.deref().1.to_string());
@@ -273,10 +304,12 @@ fn _impl_proto(
     let mut text_names = vec![];
     let mut merge_txt = vec![];
     let mut emit_txt = vec![];
+    let mut unknown_field = None;
 
     for it in items.iter() {
         match it {
             Item::Unknowns { ident } => {
+                unknown_field = Some(ident.clone());
                 if bin {
                     merge_bin.push(quote_spanned! { ident.span() =>
                         tag => protokit::binformat::BinProto::merge_field(&mut self.#ident, tag, stream),
@@ -290,7 +323,11 @@ fn _impl_proto(
                 }
                 if text {
                     emit_txt.push(quote_spanned! { ident.span() =>
-                        protokit::textformat::TextProto::encode(&self.#ident, stream);
+                        protokit::textformat::emit_extensions_and_unknowns(
+                            self.#ident.fields.as_deref().map(|v| v.as_slice()).unwrap_or(&[]),
+                            <Self as protokit::binformat::ProtoName>::qualified_name(self),
+                            stream
+                        );
                     });
                 }
             }
@@ -437,6 +474,16 @@ fn _impl_proto(
         None
     };
 
+    let fallback = match unknown_field {
+        Some(ref uf) => {
+            quote! {{
+                let qname = <Self as protokit::binformat::ProtoName>::qualified_name(self);
+                protokit::textformat::skip_unknown_or_extension(stream, qname, &mut self.#uf)
+            }}
+        }
+        None => quote! { protokit::textformat::skip_unknown(stream) },
+    };
+
     let text_impl = if text {
         Some(quote! {
             impl<#text_impl_params> protokit::textformat::TextProto< #buf_param > for #ident #type_gen #where_gen {
@@ -450,9 +497,10 @@ fn _impl_proto(
                     const FIELDS: &[(&str, u32)] = &[#(#text_names,)*];
                     match protokit::textformat::_find(stream, FIELDS) {
                         #(#merge_txt)*
-                        name => protokit::textformat::unknown(stream.field()),
+                        _ => #fallback,
                     }
                 }
+
                 fn encode(&self, stream: &mut protokit::textformat::OutputStream) {
                     if let Some(proxy) = stream.reg.find_proxy(<Self as protokit::binformat::ProtoName>::qualified_name(self)) {
                         return proxy.encode(self, stream);

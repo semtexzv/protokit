@@ -4,6 +4,7 @@
 #![allow(clippy::module_inception)]
 use protokit::*;
 pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
+    registry.register(&TestStatus::default());
     registry.register(&FailureSet::default());
     registry.register(&ConformanceRequest::default());
     registry.register(&ConformanceResponse::default());
@@ -11,7 +12,7 @@ pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WireFormat(pub i32);
-#[protoenum]
+#[protoenum(open)]
 impl WireFormat {
     #[var(0i32, "UNSPECIFIED")]
     pub const UNSPECIFIED: WireFormat = WireFormat(0i32);
@@ -26,7 +27,7 @@ impl WireFormat {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TestCategory(pub i32);
-#[protoenum]
+#[protoenum(open)]
 impl TestCategory {
     #[var(0i32, "UNSPECIFIED_TEST")]
     pub const UNSPECIFIED_TEST: TestCategory = TestCategory(0i32);
@@ -42,10 +43,22 @@ impl TestCategory {
     pub const TEXT_FORMAT_TEST: TestCategory = TestCategory(5i32);
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestStatus", package = "conformance")]
+pub struct TestStatus {
+    #[field(1u32, "name", string, singular)]
+    pub name: String,
+    #[field(2u32, "failure_message", string, singular)]
+    pub failure_message: String,
+    #[field(3u32, "matched_name", string, singular)]
+    pub matched_name: String,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(name = "FailureSet", package = "conformance")]
 pub struct FailureSet {
-    #[field(1u32, "failure", string, repeated)]
-    pub failure: Vec<String>,
+    #[field(2u32, "test", nested, repeated)]
+    pub test: Vec<TestStatus>,
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }

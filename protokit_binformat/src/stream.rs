@@ -203,6 +203,10 @@ impl<'buf> InputStream<'buf> {
         self._field_group(0, p)
     }
 
+    pub fn group_checked<P: BinProto<'buf>>(&mut self, tag: u32, p: &mut P) -> Result<()> {
+        self._field_group(tag, p)
+    }
+
     pub fn _field_nested(&mut self, proto: &mut dyn BinProto<'buf>) -> Result<()> {
         let len = self._varint()?;
         if len > self.len() {
@@ -220,16 +224,29 @@ impl<'buf> InputStream<'buf> {
         Ok(())
     }
 
-    pub fn _field_group(&mut self, _gtag: u32, proto: &mut dyn BinProto<'buf>) -> Result<()> {
+    pub fn _field_group(&mut self, start_tag: u32, proto: &mut dyn BinProto<'buf>) -> Result<()> {
+        let end_tag = if start_tag == 0 {
+            0
+        } else {
+            (start_tag & !0b111) | EGRP as u32
+        };
+
         while !self.is_empty() {
             let tag = self._varint()?;
-            // If this is the end group tag, we're done with current item.
-            if tag & 7 == EGRP as _ {
-                break;
+            if end_tag != 0 {
+                if tag == end_tag {
+                    return Ok(());
+                }
+                if tag & 7 == EGRP as _ {
+                    return Err(Error::UnterminatedGroup);
+                }
+            } else if tag & 7 == EGRP as _ {
+                // Legacy/Unchecked behavior
+                return Ok(());
             }
             proto.merge_field(tag, self)?
         }
-        Ok(())
+        Err(Error::UnterminatedGroup)
     }
 }
 
@@ -333,6 +350,17 @@ impl<'o> OutputStream<'o> {
 
     pub fn group<'buf, P: BinProto<'buf>>(&mut self, num: u32, v: &P) {
         // SGRP tag is encoded outside of this method
+        v.encode(self);
+        self._varint((num & !0b111) | EGRP as u32);
+    }
+
+    pub fn nested_dyn<'buf>(&mut self, _: u32, v: &dyn BinProto<'buf>) {
+        let (ptr, len) = self.stack.pop();
+        // debug_assert_eq!(v as *const _ as *const u8, ptr);
+        self._nested(len, v);
+    }
+
+    pub fn group_dyn<'buf>(&mut self, num: u32, v: &dyn BinProto<'buf>) {
         v.encode(self);
         self._varint((num & !0b111) | EGRP as u32);
     }

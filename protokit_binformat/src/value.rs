@@ -24,13 +24,23 @@ pub struct Field<B> {
 
 impl<'a, B: BytesLike<'a>> Field<B> {
     fn size(&self, stack: &mut SizeStack) -> usize {
-        _size_varint(self.num)
+        let tag = match &self.val {
+            Value::Varint(_) => self.num << 3 | crate::VARINT as u32,
+            Value::Fixed32(_) => self.num << 3 | crate::FIX32 as u32,
+            Value::Fixed64(_) => self.num << 3 | crate::FIX64 as u32,
+            Value::Bytes(_) => self.num << 3 | crate::BYTES as u32,
+            Value::Group(_) => self.num << 3 | crate::SGRP as u32,
+        };
+        _size_varint(tag)
             + match &self.val {
                 Value::Varint(v) => _size_varint(*v),
                 Value::Fixed32(_) => 4,
                 Value::Fixed64(_) => 8,
                 Value::Bytes(b) => _size_varint(b.len()) + b.len(),
-                Value::Group(g) => _size_varint(self.num) + g.iter().rev().map(|f| f.size(stack)).sum::<usize>(),
+                Value::Group(g) => {
+                    g.iter().rev().map(|f| f.size(stack)).sum::<usize>()
+                        + _size_varint(self.num << 3 | crate::EGRP as u32)
+                }
             }
     }
 }
@@ -79,7 +89,7 @@ impl<'buf, B: BytesLike<'buf>> UnknownFields<B> {
             Value::Varint(v) => emit_raw(v, f.num << 3 | crate::VARINT as u32, stream, OutputStream::varint),
             Value::Fixed32(v) => emit_raw(v, f.num << 3 | crate::FIX32 as u32, stream, OutputStream::fixed32),
             Value::Fixed64(v) => emit_raw(v, f.num << 3 | crate::FIX64 as u32, stream, OutputStream::fixed64),
-            Value::Bytes(v) => emit_raw(v, f.num << 3 | crate::VARINT as u32, stream, OutputStream::bytes),
+            Value::Bytes(v) => emit_raw(v, f.num << 3 | crate::BYTES as u32, stream, OutputStream::bytes),
             Value::Group(v) => {
                 stream._varint(f.num << 3 | crate::SGRP as u32);
                 for v in v {

@@ -17,6 +17,8 @@ pub struct InputStream<'buf> {
     pub reg: &'buf Registry,
     // Whether we are parsing root message, or we're expecting more braces
     root: bool,
+    override_slice: Option<&'buf str>,
+    depth: usize,
 }
 
 impl<'buf> InputStream<'buf> {
@@ -27,6 +29,8 @@ impl<'buf> InputStream<'buf> {
             cur: StartOfFile,
             reg,
             root: true,
+            override_slice: None,
+            depth: 0,
         }
     }
 
@@ -41,7 +45,9 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn advance(&mut self) {
-        self.cur = self.lex.next().unwrap_or(Ok(EndOfFile)).unwrap_or(Error);
+        self.override_slice = None;
+        let n = self.lex.next();
+        self.cur = n.unwrap_or(Ok(EndOfFile)).unwrap_or(Error);
     }
 
     pub fn buf(&self) -> &'buf str {
@@ -49,7 +55,11 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn field(&self) -> &'buf str {
-        self.lex.slice()
+        if let Some(s) = self.override_slice {
+            s
+        } else {
+            self.lex.slice()
+        }
     }
 
     fn token_and_span(&self) -> (Token, &'buf str) {
@@ -71,13 +81,114 @@ impl<'buf> InputStream<'buf> {
         Ok(())
     }
 
-    /// If current token == kind, then advance and return true, otherwise return false
     pub fn try_consume(&mut self, kind: Token) -> bool {
         if self.cur == kind {
             self.advance();
             true
         } else {
             false
+        }
+    }
+
+    /// Parses a field key, which can be a simple identifier or an extension name in brackets.
+    /// Returns the string representation of the key.
+    pub fn parse_key(&mut self) -> Result<std::borrow::Cow<'buf, str>> {
+        match self.cur {
+            Ident | DecLit => {
+                let s = std::borrow::Cow::Borrowed(self.lex.slice());
+                self.advance();
+                Ok(s)
+            }
+            LBracket => {
+                self.advance();
+                let start = self.lex.span().start;
+                // We need to handle [ type.name ]
+                // It seems the old lexer allowed [Ident . Ident . Ident]
+                // Let's replicate this loop.
+                // First ident
+                if self.cur != Ident {
+                    return unexpected(Ident, self.cur, self.lex.remainder());
+                }
+                let mut end = self.lex.span().end;
+                self.advance();
+
+                loop {
+                    match self.cur {
+                        Dot | Slash => {
+                            self.advance();
+                            if self.cur != Ident {
+                                return unexpected(Ident, self.cur, self.lex.remainder());
+                            }
+                            end = self.lex.span().end;
+                            self.advance();
+                        }
+                        RBracket => {
+                            self.advance();
+                            break;
+                        }
+                        other => return unexpected(RBracket, other, self.lex.remainder()),
+                    }
+                }
+
+                // We construct the string from the source slice.
+                // Note: The lexer state might have advanced past multiple tokens, so self.lex.slice() currently points to RBracket or one past last Ident.
+                // But we need the range [start..end].
+                // However, `self.lex` in `advance()` moves forward. We can't easily get the full span from `start` to `end` via `self.lex.source()`.
+                // Fortunately, `InputStream` has `lex`, and logos lexer gives access to `source()`.
+                Ok(std::borrow::Cow::Borrowed(&self.lex.source()[start..end]))
+            }
+            other => unexpected(Ident, other, self.lex.remainder()),
+        }
+    }
+
+    pub fn peek_key(&self) -> Result<std::borrow::Cow<'buf, str>> {
+        let probe = self.lex.clone();
+        let cur = self.cur;
+
+        // We need a temporary stream to run parse_key
+        let mut temp = Self {
+            lex: probe,
+            cur,
+            reg: self.reg,
+            root: self.root,
+            override_slice: self.override_slice,
+            depth: self.depth,
+        };
+
+        temp.parse_key()
+    }
+
+    pub fn lookahead_is_field(&self) -> bool {
+        let mut probe = self.lex.clone();
+        let next = probe.next().unwrap_or(Ok(EndOfFile)).unwrap_or(Error);
+        match next {
+            Ident | DecLit => {
+                let after = probe.next().unwrap_or(Ok(EndOfFile)).unwrap_or(Error);
+                matches!(after, Colon | LBrace | LAngle)
+            }
+            LBracket => {
+                // Heuristic: check if it looks like an extension?
+                // Or simply assume if it starts with [, it's a field in this context?
+                // But [ could be start of value array.
+                // If we are looking for a field key, [ usually means extension.
+                // But if we are in a list, [ means value.
+                // This function is used in `merge_repeated` to check if we hit a new field.
+                // If we see `[`, and it's followed by `Ident`, it *could* be extension.
+                // If it is followed by value chars, it's value.
+                // Let's assume consistent formatting:
+                // [extension_name]: value
+                // [value, value]
+
+                // If next is LBracket.
+                // Check if followed by Ident then Dot/Slash/RBracket?
+                if let Some(Ok(Ident)) = probe.next() {
+                    // It's [Ident ...
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
         }
     }
 
@@ -164,7 +275,11 @@ impl<'buf> InputStream<'buf> {
         let neg = if self.try_consume(Minus) { -1.0 } else { 1.0 };
         let res = neg
             * match self.token_and_span() {
-                (FltLit | DecLit, s) => f64::from_str(s).unwrap(),
+                (FltLit | DecLit, s) => {
+                    let s = s.trim_end_matches(['f', 'F']);
+                    f64::from_str(s).unwrap()
+                }
+                (OctLit, "0") => 0.0,
                 (Ident, txt) => {
                     if txt.eq_ignore_ascii_case("infinity") | txt.eq_ignore_ascii_case("inf") {
                         f64::INFINITY
@@ -182,10 +297,21 @@ impl<'buf> InputStream<'buf> {
     }
 
     pub fn f32(&mut self) -> Result<f64> {
-        Ok(self.f64()? as _)
+        let v = self.f64()?;
+        Ok(v)
     }
 
     pub fn message_fields(&mut self, p: &mut dyn TextProto<'buf>) -> Result<()> {
+        if self.depth >= 100 {
+            return Err(crate::Error::RecursionLimitExceeded);
+        }
+        self.depth += 1;
+        let res = self.message_fields_inner(p);
+        self.depth -= 1;
+        res
+    }
+
+    fn message_fields_inner(&mut self, p: &mut dyn TextProto<'buf>) -> Result<()> {
         let allow_eof = self.root;
         self.root = false;
         if self.cur == Colon {
@@ -203,7 +329,7 @@ impl<'buf> InputStream<'buf> {
 
         loop {
             match self.cur {
-                Ident | ExtIdent => {
+                Ident | DecLit | LBracket => {
                     p.merge_field(self)?;
                     if self.cur == Comma || self.cur == Semi {
                         self.advance();
@@ -225,6 +351,7 @@ impl<'buf> InputStream<'buf> {
                         unexpected(RBrace, RAngle, self.lex.remainder())
                     };
                 }
+
                 EndOfFile if allow_eof => return Ok(()),
                 other => return unexpected(Ident, other, self.lex.remainder()),
             }
@@ -313,5 +440,15 @@ impl<'r> OutputStream<'r> {
         self.buf.push('"');
         escape_bytes_to(s.as_bytes(), &mut self.buf);
         self.buf.push('"');
+    }
+}
+
+pub struct RecursionGuard<'a, 'buf> {
+    stream: &'a mut InputStream<'buf>,
+}
+
+impl<'a, 'buf> Drop for RecursionGuard<'a, 'buf> {
+    fn drop(&mut self) {
+        self.stream.depth -= 1;
     }
 }

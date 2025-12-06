@@ -37,8 +37,11 @@ impl textformat::TextFormatProxy for AnyProxy {
         }
 
         // Handle expanded format without braces: [type_url] { ... }
-        if stream.token() == textformat::Token::ExtIdent {
-            return self.merge_expanded(msg, stream, stream.field().to_string());
+        if stream.token() == textformat::Token::LBracket {
+            let key = stream.parse_key()?;
+            // If it was LBracket, parse_key consumed it and returned the inner string.
+            // We assume it is a type URL.
+            return self.merge_expanded(msg, stream, key.into_owned());
         }
 
         // Handle braced format: { [type_url] { ... } } or { type_url: "...", value: ... }
@@ -51,17 +54,15 @@ impl textformat::TextFormatProxy for AnyProxy {
             stream.advance();
 
             while stream.token() != end_token && stream.token() != textformat::Token::EndOfFile {
-                if stream.token() == textformat::Token::ExtIdent {
-                    let field = stream.field().to_string();
-                    // Check if it looks like a type URL (starts with [)
-                    if field.starts_with('[') {
-                        self.merge_expanded(msg, stream, field)?;
-                        // Optional separator
-                        if stream.token() == textformat::Token::Comma || stream.token() == textformat::Token::Semi {
-                            stream.advance();
-                        }
-                        continue;
+                if stream.token() == textformat::Token::LBracket {
+                    let key = stream.parse_key()?;
+                    // It was [type_url].
+                    self.merge_expanded(msg, stream, key.into_owned())?;
+                    // Optional separator
+                    if stream.token() == textformat::Token::Comma || stream.token() == textformat::Token::Semi {
+                        stream.advance();
                     }
+                    continue;
                 }
 
                 // Standard field
@@ -141,16 +142,16 @@ impl AnyProxy {
         &self,
         msg: &mut dyn textformat::TextProto<'buf>,
         stream: &mut textformat::InputStream<'buf>,
-        type_url: String,
+        type_url_inner: String,
     ) -> textformat::Result<()> {
-        stream.advance(); // consume ExtIdent
+        // stream.parse_key() already consumed the tokens.
+        // And it stripped loops.
 
-        // Strip brackets
-        let url_str = &type_url[1..type_url.len() - 1];
+        let url_str = &type_url_inner;
         let type_name = if let Some(pos) = url_str.rfind('/') {
             &url_str[pos + 1..]
         } else {
-            url_str
+            &url_str
         };
 
         if let Some(inner_msg) = stream.reg.find(type_name) {
@@ -170,7 +171,7 @@ impl AnyProxy {
 
             Ok(())
         } else {
-            textformat::unknown(&type_url)
+            textformat::unknown(&type_url_inner)
         }
     }
 }
@@ -191,7 +192,8 @@ fn input(payload: ConformanceRequestOneOfPayload, proto3: bool) -> anyhow::Resul
             Ok(Output::Proto3(Box::new(msg)))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), false) => {
-            let msg = textformat::decode::<TestAllTypesProto2>(pb, &Registry::init(register_proxies))?;
+            let msg = textformat::decode::<TestAllTypesProto2>(pb, &Registry::init(register_proxies));
+            let msg = msg?;
             Ok(Output::Proto2(Box::new(msg)))
         }
         (ConformanceRequestOneOfPayload::TextPayload(pb), true) => {
@@ -230,47 +232,70 @@ fn output(r: anyhow::Result<Output>, wire: WireFormat, print_unknown_fields: boo
 /// # Safety
 /// Trust me
 #[no_mangle]
+
 pub unsafe extern "C" fn run_rust(data: *const u8, len: u32, odata: &mut u8, olen: u32) -> u32 {
-    let data = from_raw_parts(data, len as usize);
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let data = from_raw_parts(data, len as usize);
 
-    let req = protokit::binformat::decode::<conformance::ConformanceRequest>(data).unwrap();
-    let msg_type = req.message_type;
-    let out = if let Some(ConformanceRequestOneOfPayload::JsonPayload(_)) = req.payload {
-        ConformanceResponse {
-            result: Some(ConformanceResponseOneOfResult::Skipped("No json support".to_string())),
-            ..Default::default()
-        }
-    } else if msg_type.contains("Proto3") || msg_type.contains("Proto2") {
-        let out = input(req.payload.unwrap(), msg_type.contains("Proto3"));
-        let data_out = output(out, req.requested_output_format, req.print_unknown_fields);
-        ConformanceResponse {
-            result: Some(data_out),
-            ..Default::default()
-        }
-    } else if msg_type.contains("FailureSet") {
-        let fs = FailureSet {
-            failure: vec![],
+        let req = protokit::binformat::decode::<conformance::ConformanceRequest>(data).unwrap();
+        let msg_type = req.message_type;
+        let out = if let Some(ConformanceRequestOneOfPayload::JsonPayload(_)) = req.payload {
+            ConformanceResponse {
+                result: Some(ConformanceResponseOneOfResult::Skipped("No json support".to_string())),
+                ..Default::default()
+            }
+        } else if msg_type.contains("Proto3") || msg_type.contains("Proto2") {
+            let out = input(req.payload.unwrap(), msg_type.contains("Proto3"));
+            let data_out = output(out, req.requested_output_format, req.print_unknown_fields);
+            ConformanceResponse {
+                result: Some(data_out),
+                ..Default::default()
+            }
+        } else if msg_type.contains("FailureSet") {
+            let fs = FailureSet {
+                test: vec![],
 
-            ..Default::default()
+                ..Default::default()
+            };
+
+            ConformanceResponse {
+                result: Some(ConformanceResponseOneOfResult::ProtobufPayload(
+                    binformat::encode(&fs).unwrap(),
+                )),
+                ..Default::default()
+            }
+        } else {
+            ConformanceResponse {
+                result: Some(ConformanceResponseOneOfResult::RuntimeError(format!(
+                    "Unknown req: {:?}",
+                    msg_type
+                ))),
+                ..Default::default()
+            }
         };
+        binformat::encode(&out).unwrap()
+    }));
 
-        ConformanceResponse {
-            result: Some(ConformanceResponseOneOfResult::ProtobufPayload(
-                binformat::encode(&fs).unwrap(),
-            )),
-            ..Default::default()
+    match result {
+        Ok(out) => {
+            let outslice = from_raw_parts_mut(odata, olen as usize);
+            if out.len() > outslice.len() {
+                eprintln!("Response buffer too small!");
+                return 0;
+            }
+            outslice[0..out.len()].copy_from_slice(&out);
+            out.len() as u32
         }
-    } else {
-        ConformanceResponse {
-            result: Some(ConformanceResponseOneOfResult::RuntimeError(format!(
-                "Unknown req: {:?}",
-                msg_type
-            ))),
-            ..Default::default()
+        Err(e) => {
+            let msg = if let Some(s) = e.downcast_ref::<&str>() {
+                format!("Panic: {}", s)
+            } else if let Some(s) = e.downcast_ref::<String>() {
+                format!("Panic: {}", s)
+            } else {
+                "Panic: unknown".to_string()
+            };
+            eprintln!("{}", msg);
+            0
         }
-    };
-    let out = binformat::encode(&out).unwrap();
-    let outslice = from_raw_parts_mut(odata, olen as usize);
-    outslice[0..out.len()].copy_from_slice(&out);
-    out.len() as u32
+    }
 }

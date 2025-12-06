@@ -246,7 +246,8 @@ impl Fixed for f32 {
 
     #[inline(always)]
     fn from_wire(v: Self::Wire) -> Self {
-        Self::from_bits(Self::Wire::from_le(v))
+        let r = Self::from_bits(Self::Wire::from_le(v));
+        r
     }
 
     #[inline(always)]
@@ -274,7 +275,7 @@ pub trait BytesLike<'a>: Debug + Default {
     fn len(&self) -> usize;
     /// Reference to underlying byte byffer
     fn buf(&self) -> &[u8];
-    /// Set this byte buffer to new value
+    /// Set this byte buffer to a new value
     fn set_slice(&mut self, b: &'a [u8]) -> Result<()>;
     fn set_bytes(&mut self, b: Bytes) -> Result<()>;
 }
@@ -596,7 +597,7 @@ pub fn merge_oneof<'buf, T: Default + BinProto<'buf>>(
 }
 
 #[inline(never)]
-pub fn emit_raw<'out, T>(
+pub fn emit_raw<'out, T: ?Sized>(
     this: &T,
     tag: u32,
     stream: &mut OutputStream<'out>,
@@ -607,13 +608,32 @@ pub fn emit_raw<'out, T>(
 }
 
 #[inline(never)]
-pub fn emit_single<'out, T: Debug + Default + PartialEq>(
+pub fn emit_single<'out, T: Debug + Default + PartialEq + 'static>(
     this: &T,
     tag: u32,
     stream: &mut OutputStream<'out>,
     mapper: fn(&mut OutputStream<'out>, u32, &T),
 ) {
-    if this != &T::default() {
+    let mut is_default = this == &T::default();
+
+    // Special handling for negative zero floats which compare equal to default (0.0)
+    // but should be treated as non-default for preservation.
+    if is_default {
+        use std::any::TypeId;
+        if TypeId::of::<T>() == TypeId::of::<f32>() {
+            let val = unsafe { *(this as *const T as *const f32) };
+            if val == 0.0 && val.is_sign_negative() {
+                is_default = false;
+            }
+        } else if TypeId::of::<T>() == TypeId::of::<f64>() {
+            let val = unsafe { *(this as *const T as *const f64) };
+            if val == 0.0 && val.is_sign_negative() {
+                is_default = false;
+            }
+        }
+    }
+
+    if !is_default {
         emit_raw(this, tag, stream, mapper)
     }
 }
@@ -773,10 +793,28 @@ where
 #[inline(never)]
 pub fn size_singular<T, F>(v: &T, tag: u32, stack: &mut SizeStack, measure: F) -> usize
 where
-    T: PartialEq + Default,
+    T: PartialEq + Default + 'static,
     F: Fn(&T, u32, &mut SizeStack) -> usize,
 {
-    if v != &Default::default() {
+    let mut is_default = v == &Default::default();
+
+    // Special handling for negative zero floats
+    if is_default {
+        use std::any::TypeId;
+        if TypeId::of::<T>() == TypeId::of::<f32>() {
+            let val = unsafe { *(v as *const T as *const f32) };
+            if val == 0.0 && val.is_sign_negative() {
+                is_default = false;
+            }
+        } else if TypeId::of::<T>() == TypeId::of::<f64>() {
+            let val = unsafe { *(v as *const T as *const f64) };
+            if val == 0.0 && val.is_sign_negative() {
+                is_default = false;
+            }
+        }
+    }
+
+    if !is_default {
         _size_varint(tag) + measure(v, tag, stack)
     } else {
         0

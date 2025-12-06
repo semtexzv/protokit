@@ -4,23 +4,40 @@
 #![allow(clippy::module_inception)]
 use protokit::*;
 pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
-    registry.register(&TestAllTypesProto2NestedMessage::default());
-    registry.register(&TestAllTypesProto2Data::default());
-    registry.register(&TestAllTypesProto2MessageSetCorrect::default());
-    registry.register(&TestAllTypesProto2MessageSetCorrectExtension1::default());
-    registry.register(&TestAllTypesProto2MessageSetCorrectExtension2::default());
+    registry.register(&TestAllTypesProto2_NestedMessage::default());
+    registry.register(&TestAllTypesProto2_Data::default());
+    registry.register(&TestAllTypesProto2_MultiWordGroupField::default());
+    registry.register(&TestAllTypesProto2_MessageSetCorrect::default());
+    registry.register(&TestAllTypesProto2_MessageSetCorrectExtension1::default());
+    registry.register(&TestAllTypesProto2_MessageSetCorrectExtension2::default());
+    registry.register(&TestAllTypesProto2_ExtensionWithOneof::default());
     registry.register(&TestAllTypesProto2::default());
     registry.register(&ForeignMessageProto2::default());
-    registry.register(&UnknownToTestAllTypesOptionalGroup::default());
+    registry.register(&GroupField::default());
+    registry.register(&UnknownToTestAllTypes_OptionalGroup::default());
     registry.register(&UnknownToTestAllTypes::default());
     registry.register(&NullHypothesisProto2::default());
     registry.register(&EnumOnlyProto2::default());
     registry.register(&OneStringProto2::default());
     registry.register(&ProtoWithKeywords::default());
+    registry.register(&TestAllRequiredTypesProto2_NestedMessage::default());
+    registry.register(&TestAllRequiredTypesProto2_Data::default());
+    registry.register(&TestAllRequiredTypesProto2_MessageSetCorrect::default());
+    registry
+        .register(&TestAllRequiredTypesProto2_MessageSetCorrectExtension1::default());
+    registry
+        .register(&TestAllRequiredTypesProto2_MessageSetCorrectExtension2::default());
+    registry.register(&TestAllRequiredTypesProto2::default());
+    registry.register(&TestLargeOneof_A1::default());
+    registry.register(&TestLargeOneof_A2::default());
+    registry.register(&TestLargeOneof_A3::default());
+    registry.register(&TestLargeOneof_A4::default());
+    registry.register(&TestLargeOneof_A5::default());
+    registry.register(&TestLargeOneof::default());
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ForeignEnumProto2(pub i32);
-#[protoenum]
+#[protoenum(closed)]
 impl ForeignEnumProto2 {
     #[var(0i32, "FOREIGN_FOO")]
     pub const FOREIGN_FOO: ForeignEnumProto2 = ForeignEnumProto2(0i32);
@@ -30,33 +47,54 @@ impl ForeignEnumProto2 {
     pub const FOREIGN_BAZ: ForeignEnumProto2 = ForeignEnumProto2(2i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TestAllTypesProto2NestedEnum(pub i32);
-#[protoenum]
-impl TestAllTypesProto2NestedEnum {
+pub struct TestAllTypesProto2_NestedEnum(pub i32);
+#[protoenum(closed)]
+impl TestAllTypesProto2_NestedEnum {
     #[var(0i32, "FOO")]
-    pub const FOO: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(0i32);
+    pub const FOO: TestAllTypesProto2_NestedEnum = TestAllTypesProto2_NestedEnum(0i32);
     #[var(1i32, "BAR")]
-    pub const BAR: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(1i32);
+    pub const BAR: TestAllTypesProto2_NestedEnum = TestAllTypesProto2_NestedEnum(1i32);
     #[var(2i32, "BAZ")]
-    pub const BAZ: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(2i32);
+    pub const BAZ: TestAllTypesProto2_NestedEnum = TestAllTypesProto2_NestedEnum(2i32);
     #[var(-1i32, "NEG")]
-    pub const NEG: TestAllTypesProto2NestedEnum = TestAllTypesProto2NestedEnum(-1i32);
+    pub const NEG: TestAllTypesProto2_NestedEnum = TestAllTypesProto2_NestedEnum(-1i32);
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct EnumOnlyProto2Bool(pub i32);
-#[protoenum]
-impl EnumOnlyProto2Bool {
+pub struct EnumOnlyProto2_Bool(pub i32);
+#[protoenum(closed)]
+impl EnumOnlyProto2_Bool {
     #[var(0i32, "kFalse")]
-    pub const kFalse: EnumOnlyProto2Bool = EnumOnlyProto2Bool(0i32);
+    pub const kFalse: EnumOnlyProto2_Bool = EnumOnlyProto2_Bool(0i32);
     #[var(1i32, "kTrue")]
-    pub const kTrue: EnumOnlyProto2Bool = EnumOnlyProto2Bool(1i32);
+    pub const kTrue: EnumOnlyProto2_Bool = EnumOnlyProto2_Bool(1i32);
+}
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct TestAllRequiredTypesProto2_NestedEnum(pub i32);
+#[protoenum(closed)]
+impl TestAllRequiredTypesProto2_NestedEnum {
+    #[var(0i32, "FOO")]
+    pub const FOO: TestAllRequiredTypesProto2_NestedEnum = TestAllRequiredTypesProto2_NestedEnum(
+        0i32,
+    );
+    #[var(1i32, "BAR")]
+    pub const BAR: TestAllRequiredTypesProto2_NestedEnum = TestAllRequiredTypesProto2_NestedEnum(
+        1i32,
+    );
+    #[var(2i32, "BAZ")]
+    pub const BAZ: TestAllRequiredTypesProto2_NestedEnum = TestAllRequiredTypesProto2_NestedEnum(
+        2i32,
+    );
+    #[var(-1i32, "NEG")]
+    pub const NEG: TestAllRequiredTypesProto2_NestedEnum = TestAllRequiredTypesProto2_NestedEnum(
+        -1i32,
+    );
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(
     name = "TestAllTypesProto2.NestedMessage",
     package = "protobuf_test_messages.proto2"
 )]
-pub struct TestAllTypesProto2NestedMessage {
+pub struct TestAllTypesProto2_NestedMessage {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
     #[field(2u32, "corecursive", nested, optional)]
@@ -66,7 +104,7 @@ pub struct TestAllTypesProto2NestedMessage {
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(name = "TestAllTypesProto2.Data", package = "protobuf_test_messages.proto2")]
-pub struct TestAllTypesProto2Data {
+pub struct TestAllTypesProto2_Data {
     #[field(202u32, "group_int32", varint, optional)]
     pub group_int32: Option<i32>,
     #[field(203u32, "group_uint32", varint, optional)]
@@ -76,10 +114,23 @@ pub struct TestAllTypesProto2Data {
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(
+    name = "TestAllTypesProto2.MultiWordGroupField",
+    package = "protobuf_test_messages.proto2"
+)]
+pub struct TestAllTypesProto2_MultiWordGroupField {
+    #[field(205u32, "group_int32", varint, optional)]
+    pub group_int32: Option<i32>,
+    #[field(206u32, "group_uint32", varint, optional)]
+    pub group_uint32: Option<u32>,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
     name = "TestAllTypesProto2.MessageSetCorrect",
     package = "protobuf_test_messages.proto2"
 )]
-pub struct TestAllTypesProto2MessageSetCorrect {
+pub struct TestAllTypesProto2_MessageSetCorrect {
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
@@ -88,7 +139,7 @@ pub struct TestAllTypesProto2MessageSetCorrect {
     name = "TestAllTypesProto2.MessageSetCorrectExtension1",
     package = "protobuf_test_messages.proto2"
 )]
-pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
+pub struct TestAllTypesProto2_MessageSetCorrectExtension1 {
     #[field(25u32, "str", string, optional)]
     pub str: Option<String>,
     #[unknown]
@@ -99,9 +150,33 @@ pub struct TestAllTypesProto2MessageSetCorrectExtension1 {
     name = "TestAllTypesProto2.MessageSetCorrectExtension2",
     package = "protobuf_test_messages.proto2"
 )]
-pub struct TestAllTypesProto2MessageSetCorrectExtension2 {
+pub struct TestAllTypesProto2_MessageSetCorrectExtension2 {
     #[field(9u32, "i", varint, optional)]
     pub i: Option<i32>,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Clone, PartialEq, Proto)]
+pub enum TestAllTypesProto2_ExtensionWithOneofOneOfOneofField {
+    #[field(1u32, "a", varint, raw)]
+    A(i32),
+    #[field(2u32, "b", varint, raw)]
+    B(i32),
+    __Unused(::core::marker::PhantomData<&'static ()>),
+}
+impl Default for TestAllTypesProto2_ExtensionWithOneofOneOfOneofField {
+    fn default() -> Self {
+        Self::A(Default::default())
+    }
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllTypesProto2.ExtensionWithOneof",
+    package = "protobuf_test_messages.proto2"
+)]
+pub struct TestAllTypesProto2_ExtensionWithOneof {
+    #[oneof([1u32, 2u32], ["a", "b"])]
+    pub oneof_field: Option<TestAllTypesProto2_ExtensionWithOneofOneOfOneofField>,
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
@@ -110,7 +185,7 @@ pub enum TestAllTypesProto2OneOfOneofField {
     #[field(111u32, "oneof_uint32", varint, raw)]
     OneofUint32(u32),
     #[field(112u32, "oneof_nested_message", nested, raw)]
-    OneofNestedMessage(TestAllTypesProto2NestedMessage),
+    OneofNestedMessage(TestAllTypesProto2_NestedMessage),
     #[field(113u32, "oneof_string", string, raw)]
     OneofString(String),
     #[field(114u32, "oneof_bytes", bytes, raw)]
@@ -124,7 +199,7 @@ pub enum TestAllTypesProto2OneOfOneofField {
     #[field(118u32, "oneof_double", fixed64, raw)]
     OneofDouble(f64),
     #[field(119u32, "oneof_enum", protoenum, raw)]
-    OneofEnum(TestAllTypesProto2NestedEnum),
+    OneofEnum(TestAllTypesProto2_NestedEnum),
     __Unused(::core::marker::PhantomData<&'static ()>),
 }
 impl Default for TestAllTypesProto2OneOfOneofField {
@@ -166,11 +241,11 @@ pub struct TestAllTypesProto2 {
     #[field(15u32, "optional_bytes", bytes, optional)]
     pub optional_bytes: Option<Vec<u8>>,
     #[field(18u32, "optional_nested_message", nested, optional)]
-    pub optional_nested_message: Option<Box<TestAllTypesProto2NestedMessage>>,
+    pub optional_nested_message: Option<Box<TestAllTypesProto2_NestedMessage>>,
     #[field(19u32, "optional_foreign_message", nested, optional)]
     pub optional_foreign_message: Option<ForeignMessageProto2>,
     #[field(21u32, "optional_nested_enum", protoenum, optional)]
-    pub optional_nested_enum: Option<TestAllTypesProto2NestedEnum>,
+    pub optional_nested_enum: Option<TestAllTypesProto2_NestedEnum>,
     #[field(22u32, "optional_foreign_enum", protoenum, optional)]
     pub optional_foreign_enum: Option<ForeignEnumProto2>,
     #[field(24u32, "optional_string_piece", string, optional)]
@@ -210,11 +285,11 @@ pub struct TestAllTypesProto2 {
     #[field(45u32, "repeated_bytes", bytes, repeated)]
     pub repeated_bytes: Vec<Vec<u8>>,
     #[field(48u32, "repeated_nested_message", nested, repeated)]
-    pub repeated_nested_message: Vec<TestAllTypesProto2NestedMessage>,
+    pub repeated_nested_message: Vec<TestAllTypesProto2_NestedMessage>,
     #[field(49u32, "repeated_foreign_message", nested, repeated)]
     pub repeated_foreign_message: Vec<ForeignMessageProto2>,
     #[field(51u32, "repeated_nested_enum", protoenum, repeated)]
-    pub repeated_nested_enum: Vec<TestAllTypesProto2NestedEnum>,
+    pub repeated_nested_enum: Vec<TestAllTypesProto2_NestedEnum>,
     #[field(52u32, "repeated_foreign_enum", protoenum, repeated)]
     pub repeated_foreign_enum: Vec<ForeignEnumProto2>,
     #[field(54u32, "repeated_string_piece", string, repeated)]
@@ -248,7 +323,7 @@ pub struct TestAllTypesProto2 {
     #[field(87u32, "packed_bool", bool, packed)]
     pub packed_bool: Vec<bool>,
     #[field(88u32, "packed_nested_enum", protoenum, packed)]
-    pub packed_nested_enum: Vec<TestAllTypesProto2NestedEnum>,
+    pub packed_nested_enum: Vec<TestAllTypesProto2_NestedEnum>,
     #[field(89u32, "unpacked_int32", varint, repeated)]
     pub unpacked_int32: Vec<i32>,
     #[field(90u32, "unpacked_int64", varint, repeated)]
@@ -276,7 +351,7 @@ pub struct TestAllTypesProto2 {
     #[field(101u32, "unpacked_bool", bool, repeated)]
     pub unpacked_bool: Vec<bool>,
     #[field(102u32, "unpacked_nested_enum", protoenum, repeated)]
-    pub unpacked_nested_enum: Vec<TestAllTypesProto2NestedEnum>,
+    pub unpacked_nested_enum: Vec<TestAllTypesProto2_NestedEnum>,
     #[field(56u32, "map_int32_int32", map(varint, varint), singular)]
     pub map_int32_int32: ::protokit::IndexMap<i32, i32>,
     #[field(57u32, "map_int64_int64", map(varint, varint), singular)]
@@ -297,10 +372,17 @@ pub struct TestAllTypesProto2 {
     pub map_sfixed32_sfixed32: ::protokit::IndexMap<i32, i32>,
     #[field(65u32, "map_sfixed64_sfixed64", map(fixed64, fixed64), singular)]
     pub map_sfixed64_sfixed64: ::protokit::IndexMap<i64, i64>,
+    #[field(104u32, "map_int32_bool", map(varint, bool), singular)]
+    pub map_int32_bool: ::protokit::IndexMap<i32, bool>,
     #[field(66u32, "map_int32_float", map(varint, fixed32), singular)]
     pub map_int32_float: ::protokit::IndexMap<i32, f32>,
     #[field(67u32, "map_int32_double", map(varint, fixed64), singular)]
     pub map_int32_double: ::protokit::IndexMap<i32, f64>,
+    #[field(103u32, "map_int32_nested_message", map(varint, nested), singular)]
+    pub map_int32_nested_message: ::protokit::IndexMap<
+        i32,
+        TestAllTypesProto2_NestedMessage,
+    >,
     #[field(68u32, "map_bool_bool", map(bool, bool), singular)]
     pub map_bool_bool: ::protokit::IndexMap<bool, bool>,
     #[field(69u32, "map_string_string", map(string, string), singular)]
@@ -310,19 +392,21 @@ pub struct TestAllTypesProto2 {
     #[field(71u32, "map_string_nested_message", map(string, nested), singular)]
     pub map_string_nested_message: ::protokit::IndexMap<
         String,
-        TestAllTypesProto2NestedMessage,
+        TestAllTypesProto2_NestedMessage,
     >,
     #[field(72u32, "map_string_foreign_message", map(string, nested), singular)]
     pub map_string_foreign_message: ::protokit::IndexMap<String, ForeignMessageProto2>,
     #[field(73u32, "map_string_nested_enum", map(string, protoenum), singular)]
     pub map_string_nested_enum: ::protokit::IndexMap<
         String,
-        TestAllTypesProto2NestedEnum,
+        TestAllTypesProto2_NestedEnum,
     >,
     #[field(74u32, "map_string_foreign_enum", map(string, protoenum), singular)]
     pub map_string_foreign_enum: ::protokit::IndexMap<String, ForeignEnumProto2>,
     #[field(201u32, "Data", group, optional)]
-    pub Data: Option<TestAllTypesProto2Data>,
+    pub Data: Option<TestAllTypesProto2_Data>,
+    #[field(204u32, "MultiWordGroupField", group, optional)]
+    pub MultiWordGroupField: Option<TestAllTypesProto2_MultiWordGroupField>,
     #[field(241u32, "default_int32", varint, optional)]
     pub default_int32: Option<i32>,
     #[field(242u32, "default_int64", varint, optional)]
@@ -389,6 +473,8 @@ pub struct TestAllTypesProto2 {
     pub field_name17__: Option<i32>,
     #[field(418u32, "Field_name18__", varint, optional)]
     pub Field_name18__: Option<i32>,
+    #[field(500u32, "message_set_correct", nested, optional)]
+    pub message_set_correct: Option<TestAllTypesProto2_MessageSetCorrect>,
     #[oneof(
         [111u32,
         112u32,
@@ -424,11 +510,21 @@ pub struct ForeignMessageProto2 {
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }
 #[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "GroupField", package = "protobuf_test_messages.proto2")]
+pub struct GroupField {
+    #[field(122u32, "group_int32", varint, optional)]
+    pub group_int32: Option<i32>,
+    #[field(123u32, "group_uint32", varint, optional)]
+    pub group_uint32: Option<u32>,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
 #[proto(
     name = "UnknownToTestAllTypes.OptionalGroup",
     package = "protobuf_test_messages.proto2"
 )]
-pub struct UnknownToTestAllTypesOptionalGroup {
+pub struct UnknownToTestAllTypes_OptionalGroup {
     #[field(1u32, "a", varint, optional)]
     pub a: Option<i32>,
     #[unknown]
@@ -444,7 +540,7 @@ pub struct UnknownToTestAllTypes {
     #[field(1003u32, "nested_message", nested, optional)]
     pub nested_message: Option<ForeignMessageProto2>,
     #[field(1004u32, "OptionalGroup", group, optional)]
-    pub OptionalGroup: Option<UnknownToTestAllTypesOptionalGroup>,
+    pub OptionalGroup: Option<UnknownToTestAllTypes_OptionalGroup>,
     #[field(1006u32, "optional_bool", bool, optional)]
     pub optional_bool: Option<bool>,
     #[field(1011u32, "repeated_int32", varint, repeated)]
@@ -481,6 +577,206 @@ pub struct ProtoWithKeywords {
     pub concept: Option<String>,
     #[field(3u32, "requires", string, repeated)]
     pub requires: Vec<String>,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllRequiredTypesProto2.NestedMessage",
+    package = "protobuf_test_messages.proto2"
+)]
+pub struct TestAllRequiredTypesProto2_NestedMessage {
+    #[field(1u32, "a", varint, required)]
+    pub a: i32,
+    #[field(2u32, "corecursive", nested, optional)]
+    pub corecursive: Option<Box<TestAllRequiredTypesProto2>>,
+    #[field(3u32, "optional_corecursive", nested, optional)]
+    pub optional_corecursive: Option<Box<TestAllRequiredTypesProto2>>,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllRequiredTypesProto2.Data",
+    package = "protobuf_test_messages.proto2"
+)]
+pub struct TestAllRequiredTypesProto2_Data {
+    #[field(202u32, "group_int32", varint, required)]
+    pub group_int32: i32,
+    #[field(203u32, "group_uint32", varint, required)]
+    pub group_uint32: u32,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllRequiredTypesProto2.MessageSetCorrect",
+    package = "protobuf_test_messages.proto2"
+)]
+pub struct TestAllRequiredTypesProto2_MessageSetCorrect {
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllRequiredTypesProto2.MessageSetCorrectExtension1",
+    package = "protobuf_test_messages.proto2"
+)]
+pub struct TestAllRequiredTypesProto2_MessageSetCorrectExtension1 {
+    #[field(25u32, "str", string, required)]
+    pub str: String,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(
+    name = "TestAllRequiredTypesProto2.MessageSetCorrectExtension2",
+    package = "protobuf_test_messages.proto2"
+)]
+pub struct TestAllRequiredTypesProto2_MessageSetCorrectExtension2 {
+    #[field(9u32, "i", varint, required)]
+    pub i: i32,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestAllRequiredTypesProto2", package = "protobuf_test_messages.proto2")]
+pub struct TestAllRequiredTypesProto2 {
+    #[field(1u32, "required_int32", varint, required)]
+    pub required_int32: i32,
+    #[field(2u32, "required_int64", varint, required)]
+    pub required_int64: i64,
+    #[field(3u32, "required_uint32", varint, required)]
+    pub required_uint32: u32,
+    #[field(4u32, "required_uint64", varint, required)]
+    pub required_uint64: u64,
+    #[field(5u32, "required_sint32", sigint, required)]
+    pub required_sint32: i32,
+    #[field(6u32, "required_sint64", sigint, required)]
+    pub required_sint64: i64,
+    #[field(7u32, "required_fixed32", fixed32, required)]
+    pub required_fixed32: u32,
+    #[field(8u32, "required_fixed64", fixed64, required)]
+    pub required_fixed64: u64,
+    #[field(9u32, "required_sfixed32", fixed32, required)]
+    pub required_sfixed32: i32,
+    #[field(10u32, "required_sfixed64", fixed64, required)]
+    pub required_sfixed64: i64,
+    #[field(11u32, "required_float", fixed32, required)]
+    pub required_float: f32,
+    #[field(12u32, "required_double", fixed64, required)]
+    pub required_double: f64,
+    #[field(13u32, "required_bool", bool, required)]
+    pub required_bool: bool,
+    #[field(14u32, "required_string", string, required)]
+    pub required_string: String,
+    #[field(15u32, "required_bytes", bytes, required)]
+    pub required_bytes: Vec<u8>,
+    #[field(18u32, "required_nested_message", nested, optional)]
+    pub required_nested_message: Option<Box<TestAllRequiredTypesProto2_NestedMessage>>,
+    #[field(19u32, "required_foreign_message", nested, required)]
+    pub required_foreign_message: ForeignMessageProto2,
+    #[field(21u32, "required_nested_enum", protoenum, required)]
+    pub required_nested_enum: TestAllRequiredTypesProto2_NestedEnum,
+    #[field(22u32, "required_foreign_enum", protoenum, required)]
+    pub required_foreign_enum: ForeignEnumProto2,
+    #[field(24u32, "required_string_piece", string, required)]
+    pub required_string_piece: String,
+    #[field(25u32, "required_cord", string, required)]
+    pub required_cord: String,
+    #[field(27u32, "recursive_message", nested, optional)]
+    pub recursive_message: Option<Box<TestAllRequiredTypesProto2>>,
+    #[field(28u32, "optional_recursive_message", nested, optional)]
+    pub optional_recursive_message: Option<Box<TestAllRequiredTypesProto2>>,
+    #[field(201u32, "Data", group, required)]
+    pub Data: TestAllRequiredTypesProto2_Data,
+    #[field(241u32, "default_int32", varint, required)]
+    pub default_int32: i32,
+    #[field(242u32, "default_int64", varint, required)]
+    pub default_int64: i64,
+    #[field(243u32, "default_uint32", varint, required)]
+    pub default_uint32: u32,
+    #[field(244u32, "default_uint64", varint, required)]
+    pub default_uint64: u64,
+    #[field(245u32, "default_sint32", sigint, required)]
+    pub default_sint32: i32,
+    #[field(246u32, "default_sint64", sigint, required)]
+    pub default_sint64: i64,
+    #[field(247u32, "default_fixed32", fixed32, required)]
+    pub default_fixed32: u32,
+    #[field(248u32, "default_fixed64", fixed64, required)]
+    pub default_fixed64: u64,
+    #[field(249u32, "default_sfixed32", fixed32, required)]
+    pub default_sfixed32: i32,
+    #[field(250u32, "default_sfixed64", fixed64, required)]
+    pub default_sfixed64: i64,
+    #[field(251u32, "default_float", fixed32, required)]
+    pub default_float: f32,
+    #[field(252u32, "default_double", fixed64, required)]
+    pub default_double: f64,
+    #[field(253u32, "default_bool", bool, required)]
+    pub default_bool: bool,
+    #[field(254u32, "default_string", string, required)]
+    pub default_string: String,
+    #[field(255u32, "default_bytes", bytes, required)]
+    pub default_bytes: Vec<u8>,
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestLargeOneof.A1", package = "protobuf_test_messages.proto2")]
+pub struct TestLargeOneof_A1 {
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestLargeOneof.A2", package = "protobuf_test_messages.proto2")]
+pub struct TestLargeOneof_A2 {
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestLargeOneof.A3", package = "protobuf_test_messages.proto2")]
+pub struct TestLargeOneof_A3 {
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestLargeOneof.A4", package = "protobuf_test_messages.proto2")]
+pub struct TestLargeOneof_A4 {
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestLargeOneof.A5", package = "protobuf_test_messages.proto2")]
+pub struct TestLargeOneof_A5 {
+    #[unknown]
+    pub unknown: ::protokit::binformat::UnknownFieldsOwned,
+}
+#[derive(Debug, Clone, PartialEq, Proto)]
+pub enum TestLargeOneofOneOfLargeOneof {
+    #[field(1u32, "a1", nested, raw)]
+    A1(TestLargeOneof_A1),
+    #[field(2u32, "a2", nested, raw)]
+    A2(TestLargeOneof_A2),
+    #[field(3u32, "a3", nested, raw)]
+    A3(TestLargeOneof_A3),
+    #[field(4u32, "a4", nested, raw)]
+    A4(TestLargeOneof_A4),
+    #[field(5u32, "a5", nested, raw)]
+    A5(TestLargeOneof_A5),
+    __Unused(::core::marker::PhantomData<&'static ()>),
+}
+impl Default for TestLargeOneofOneOfLargeOneof {
+    fn default() -> Self {
+        Self::A1(Default::default())
+    }
+}
+#[derive(Debug, Default, Clone, PartialEq, Proto)]
+#[proto(name = "TestLargeOneof", package = "protobuf_test_messages.proto2")]
+pub struct TestLargeOneof {
+    #[oneof([1u32, 2u32, 3u32, 4u32, 5u32], ["a1", "a2", "a3", "a4", "a5"])]
+    pub large_oneof: Option<TestLargeOneofOneOfLargeOneof>,
     #[unknown]
     pub unknown: ::protokit::binformat::UnknownFieldsOwned,
 }

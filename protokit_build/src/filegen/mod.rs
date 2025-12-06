@@ -97,7 +97,7 @@ const RESERVED: &[&str] = &[
 pub const TYPES: &[&str] = &["Option", "Result"];
 
 pub fn rustify_name(n: impl AsRef<str>) -> String {
-    let n = n.as_ref();
+    let n = n.as_ref().replace('.', "_");
     // let pos = n.find('.');
     // let n = if let Some(pos) = pos {
     //     &n[pos + 1..]
@@ -243,7 +243,7 @@ impl CodeGenerator<'_> {
         match (field.frequency, is_msg, force_box) {
             (Frequency::Singular | Frequency::Required, false, _) => Ok(base),
 
-            (Frequency::Required, true, true) => Ok(quote!(Box<#base>)),
+            (Frequency::Required, true, true) => Ok(quote!(Option<Box<#base>>)),
             (Frequency::Singular, true, true) => Ok(quote!(Option<Box<#base>>)),
 
             (Frequency::Required, true, false) => Ok(quote!(#base)),
@@ -346,7 +346,11 @@ impl CodeGenerator<'_> {
 
     pub fn oneof(&mut self, msg_name: &str, def: &OneOfDef) -> Result<TokenStream> {
         let field_ident = format_ident!("{}", rustify_name(&def.name));
-        let oneof_type = format_ident!("{msg_name}OneOf{}", def.name.as_str().to_case(Case::Pascal));
+        let oneof_type = format_ident!(
+            "{}OneOf{}",
+            rustify_name(msg_name),
+            def.name.as_str().to_case(Case::Pascal)
+        );
         // let borrow = self.borrow();
         let generics = self.options.generics.struct_def_generics();
         let use_generics = self.options.generics.struct_use_generics();
@@ -405,13 +409,13 @@ impl CodeGenerator<'_> {
         })
     }
 
-    pub fn r#enum(&mut self, _: &FileDef, def: &EnumDef) -> Result<()> {
+    pub fn r#enum(&mut self, file: &FileDef, def: &EnumDef) -> Result<()> {
         let ident = format_ident!("{}", rustify_name(def.name.as_str()));
-        // let open = if file.syntax == Proto3 {
-        //     quote!{ open }
-        // } else {
-        //     quote!{ closed }
-        // };
+        let open = if file.syntax == Proto3 {
+            quote! { open }
+        } else {
+            quote! { closed }
+        };
         let variants = def.variants.by_name.iter().map(|(_, def)| {
             let name = def.name.as_str();
             let var_ident = format_ident!("{}", def.name.as_str());
@@ -424,7 +428,7 @@ impl CodeGenerator<'_> {
         self.output.push(quote! {
             #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
             pub struct #ident(pub i32);
-            #[protoenum]
+            #[protoenum(#open)]
             impl #ident {
                 #(#variants)*
             }
@@ -451,6 +455,11 @@ impl CodeGenerator<'_> {
 
         let num = def.num as u32;
 
+        let force_box = match def.typ {
+            DataType::Message(m) | DataType::Group(m) => self.options.force_box.contains(&m),
+            _ => false,
+        };
+
         let kind = Self::type_marker(&def.typ);
         let freq = TokenStream::from_str(match def.frequency {
             Frequency::Singular if def.typ.is_message() => "optional",
@@ -466,6 +475,7 @@ impl CodeGenerator<'_> {
             #[cfg(not(feature = "descriptors"))]
             Frequency::Repeated if file.syntax == Proto3 && def.typ.is_scalar() => "packed",
             Frequency::Repeated => "repeated",
+            Frequency::Required if force_box => "optional",
             Frequency::Required => "required",
         })
         .unwrap();
@@ -486,6 +496,35 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
     };
 
     generator.file(file)?;
+
+    let mut extensions = vec![];
+    for ext_def in file.extensions.values() {
+        let extendee = &ext_def.in_message;
+        for field in ext_def.fields.by_number.values() {
+            let name = &field.name;
+            let number = field.num as u32;
+            let typ = match field.typ {
+                DataType::Builtin(t) => t as u32,
+                DataType::Enum(_) => 0,     // ENUM
+                DataType::Message(_) => 11, // MESSAGE
+                DataType::Group(_) => 10,   // GROUP
+                _ => continue,
+            };
+            let repeated = field.frequency == Frequency::Repeated;
+            let extendee = extendee.as_str();
+            let name = name.as_str();
+
+            let type_name_str = match field.typ {
+                DataType::Message(id) | DataType::Group(id) | DataType::Enum(id) => resolve_name(ctx, id).unwrap(),
+                _ => "".to_string(),
+            };
+            let type_name = type_name_str.as_str();
+
+            extensions.push(quote! {
+                registry.register_extension(#extendee, #number, #name, #typ, #repeated, #type_name);
+            });
+        }
+    }
 
     let root = opts.import_root.clone();
     let imports = file.imports.iter().map(|imp| imp.file_idx).map(|file_idx| {
@@ -555,6 +594,7 @@ pub fn generate_file(ctx: &FileSetDef, opts: &Options, name: PathBuf, file: &Fil
 
         pub fn register_types(registry: &mut protokit::textformat::reflect::Registry) {
             #(registry.register(&#types::default());)*
+            #(#extensions)*
         }
 
         #(#imports)*

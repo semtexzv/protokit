@@ -15,6 +15,7 @@ default = []
 workspace = true
 
 [dependencies]
+lazy_static = "1.5.0"
 logos = { workspace = true, default-features = false, features = [
     "export_derive",
 ] }

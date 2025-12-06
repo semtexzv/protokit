@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(protokit)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -33,13 +33,13 @@ corrosion_import_crate(
 
 # These files are generated as part of the conformance_cpp build
 set_source_files_properties(
-        ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
-        ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
+        ${CMAKE_BINARY_DIR}/${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
+        ${CMAKE_BINARY_DIR}/${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
 
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
+        ${CMAKE_BINARY_DIR}/${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
+        ${CMAKE_BINARY_DIR}/${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
+        ${CMAKE_BINARY_DIR}/${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
+        ${CMAKE_BINARY_DIR}/${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
 
 
         PROPERTIES GENERATED TRUE
@@ -53,14 +53,8 @@ add_executable(rust_conformance_runner
         ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.h
         ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
         ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
-
-        ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
-        ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
-        ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
-
+        ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.cc
+        ${protobuf_SOURCE_DIR}/conformance/binary_wireformat.cc
         )
 
 # This ensures that cmake actually generates mentioned files, raw dep doesn't work
@@ -72,11 +66,15 @@ target_include_directories(rust_conformance_runner PUBLIC
         vendor/protobuf/conformance
         vendor/protobuf/third_party/abseil-cpp
         vendor/protobuf/third_party/jsoncpp/include
+        ${CMAKE_BINARY_DIR}/vendor/protobuf
+        ${CMAKE_BINARY_DIR}/vendor/protobuf/src
         )
 
 target_link_libraries(rust_conformance_runner
         PUBLIC
         libprotobuf
         ${protobuf_ABSL_USED_TARGETS}
-        jsoncpp_lib conformance
+        jsoncpp_lib conformance libconformance_common
         )
+
+target_compile_features(rust_conformance_runner PRIVATE cxx_std_20)
