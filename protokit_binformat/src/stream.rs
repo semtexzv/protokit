@@ -355,7 +355,7 @@ impl<'o> OutputStream<'o> {
     }
 
     pub fn nested_dyn<'buf>(&mut self, _: u32, v: &dyn BinProto<'buf>) {
-        let (ptr, len) = self.stack.pop();
+        let (_ptr, len) = self.stack.pop();
         // debug_assert_eq!(v as *const _ as *const u8, ptr);
         self._nested(len, v);
     }

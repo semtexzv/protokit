@@ -2,7 +2,6 @@
 mod tests {
     use crate::reflect::Registry;
     use crate::stream::InputStream;
-    use crate::Token;
     use crate::*;
 
     #[derive(Default)]
