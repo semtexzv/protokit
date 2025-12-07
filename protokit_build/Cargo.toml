@@ -9,22 +9,14 @@ authors = ["<semtexzv@gmail.com>"]
 description = "Usable protocol buffers"
 
 [features]
-default = ["protoc"]
-protoc = ["descriptors"]
-parser = ["proto"]
-
-descriptors = ["desc/descriptors"]
+default = []
 
 [dependencies.binformat]
 workspace = true
 
 [dependencies.desc]
 workspace = true
-
-[dependencies.proto]
-workspace = true
-default-features = false
-optional = true
+features = ["descriptors"]
 
 [dependencies]
 anyhow = { workspace = true }
