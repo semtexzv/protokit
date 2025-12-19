@@ -4,7 +4,6 @@ members = [
     "tools/conformance",
     "protokit",
     "protokit_build",
-    "protokit_proto",
     "protokit_grpc",
     "protokit_desc",
     "protokit_textformat",
@@ -53,7 +52,6 @@ textformat = { path = "protokit_textformat", package = "protokit_textformat", ve
 desc = { path = "protokit_desc", package = "protokit_desc", version = "0.2.0" }
 grpc = { path = "protokit_grpc", package = "protokit_grpc", version = "0.2.0" }
 derive = { path = "protokit_derive", package = "protokit_derive", version = "0.2.0" }
-proto = { path = "protokit_proto", package = "protokit_proto", version = "0.2.0", default-features = false }
 protokit = { path = "protokit", version = "0.2.0" }
 
 lex_core = { package = "lexical-core", version = "0.8.5" }

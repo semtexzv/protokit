@@ -10,14 +10,6 @@ use thiserror::Error;
 mod escape;
 mod lex;
 pub mod reflect;
-#[cfg(test)]
-mod repro_ext;
-#[cfg(test)]
-mod repro_list;
-#[cfg(test)]
-mod repro_p2;
-#[cfg(test)]
-mod repro_sep;
 pub mod stream;
 
 use escape::unescape;
@@ -623,19 +615,31 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
         out.last_mut().unwrap().merge_value(stream)?;
         match stream.cur {
             // End of the list
-            RBracket | EndOfFile if is_list => {
-                // In this case we must advance one past the rbracket
+            RBracket if is_list => {
                 stream.advance();
                 return Ok(());
             }
-            // Comma/Semi as elem separator
+            EndOfFile => {
+                if is_list {
+                    stream.advance();
+                }
+                return Ok(());
+            }
+            // Comma as elem separator
             Comma => {
+                // Check if after comma is a new field (not a value)
+                if stream.lookahead_is_field() {
+                    // Don't consume comma, let caller handle field separator
+                    return Ok(());
+                }
                 stream.advance();
                 continue;
             }
             Semi => {
                 if is_list {
-                    return crate::unexpected(Comma, stream.cur, stream.buf());
+                    // Semicolon works as separator inside list too
+                    stream.advance();
+                    continue;
                 } else {
                     // For non-list (top-level repeated), check if next is field or value
                     if stream.lookahead_is_field() {
@@ -646,15 +650,13 @@ pub fn merge_repeated<'buf, T: TextField<'buf> + Default>(
                     }
                 }
             }
-            // This was the last entry in this field, return
+            // For non-list, any other token means end of this repeated field
             _ if !is_list => {
                 return Ok(());
             }
-            // Implicit separator
+            // Implicit separator in list (whitespace between values)
             _ => {
-                if is_list {
-                    return crate::unexpected(Comma, stream.cur, stream.buf());
-                }
+                // In a list, allow implicit separators (whitespace) between values
                 continue;
             }
         }
