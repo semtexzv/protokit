@@ -4,13 +4,81 @@
 [![img](https://img.shields.io/docsrs/protokit)](https://docs.rs/protokit/latest)
 [![example workflow](https://github.com/semtexzv/protokit/actions/workflows/rust.yml/badge.svg)](https://github.com/semtexzv/protokit/actions/workflows/rust.yml)
 
-Implementation of protocol buffers for rust.
+Protocol Buffers for Rust — binary and text format, with a derive-first API.
 
-## Why not prost/pb-j/rust-protobuf?
+The only Rust implementation with full TextFormat support. 100% binary conformance, ~90% text conformance. No message boxing required.
 
-Started with my need for
-proper [textformat](https://protobuf.dev/reference/protobuf/textformat-spec/#any)
-support.
+## Define messages in Rust
+
+```rust
+#[derive(Default, Debug, Clone, BinProto)]
+pub struct Person {
+    #[field(1, string)]
+    pub name: String,
+    #[field(2, varint)]
+    pub age: u32,
+    #[field(3, nested, repeated)]
+    pub addresses: Vec<Address>,
+}
+
+#[derive(Default, Debug, Clone, BinProto)]
+pub struct Address {
+    #[field(1, string)]
+    pub street: String,
+    #[field(2, string)]
+    pub city: String,
+}
+```
+
+## Encode and decode
+
+```rust
+// Binary format
+let bytes = protokit::binformat::encode(&person)?;
+let decoded: Person = protokit::binformat::decode(&bytes)?;
+
+// Text format
+let text = protokit::textformat::encode(&person, &Registry::default())?;
+```
+
+## Compile from .proto files
+
+```rust
+// build.rs
+fn main() {
+    protokit_build::Build::new()
+        .include("proto/")
+        .compile("proto/person.proto")
+        .unwrap();
+}
+```
+
+```rust
+// main.rs — use the generated types
+pub mod gen {
+    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+}
+use gen::mypackage::Person;
+```
+
+## Enums
+
+```rust
+#[derive(Default, Debug, Clone, Copy)]
+pub struct Status(pub i32);
+
+#[protoenum]
+impl Status {
+    #[var(0, "UNKNOWN")]
+    pub const UNKNOWN: i32 = 0;
+    #[var(1, "ACTIVE")]
+    pub const ACTIVE: i32 = 1;
+    #[var(2, "INACTIVE")]
+    pub const INACTIVE: i32 = 2;
+}
+```
+
+## TextFormat with Any expansion
 
 ```prototext
 any_value {
@@ -20,27 +88,27 @@ any_value {
 }
 ```
 
-After I investigated other crates, I found out that they had other issues (
-required
-boxing in rust-protobuf, messy codegen in prost).
+This is what started the project — proper TextFormat support that handles `Any` types, which no other Rust library does.
 
-## Features
+## Crates
 
-- Binary(100% conformance) + Text(90% conformance) format support
-- No message boxing required
-- GRPC (usable with tonic)
-- Nice derive macro for creating message implementations without proto compiler:
+| Crate | Purpose |
+|-------|---------|
+| `protokit` | Core — derive macros, re-exports |
+| `protokit_binformat` | Wire format serialization |
+| `protokit_textformat` | TextFormat serialization |
+| `protokit_build` | `.proto` compiler (hand-written parser, no protoc needed) |
+| `protokit_grpc` | gRPC codegen (tonic-compatible) |
+| `protokit_desc` | Descriptor handling |
 
-```rust
-#[derive(Default, Debug, Clone, BinProto)]
-pub struct FieldPath {
-    #[field(1, varint, packed)]
-    pub fields: Vec<u32>,
-}
+## Why not prost?
 
-#[derive(Default, Debug, Clone, BinProto)]
-pub struct FieldMask {
-    #[field(1, nested, repeated)]
-    pub paths: Vec<FieldPath>,
-}
-```
+- No TextFormat support
+- Generated code is harder to read
+- Required boxing for recursive types
+
+Protokit stores nested messages inline and gives you both binary and text format from the same derive macro.
+
+## License
+
+MIT
